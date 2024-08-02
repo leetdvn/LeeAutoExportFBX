@@ -2,6 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QFileDialog>
+#include <QUndoStack>
+#include "commandline.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -17,10 +20,30 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-public slots:
-    void OnBrowserChanged(QString inContent);
+    void show_console() {
+        //AllocConsole();
+        freopen("conin$", "r", stdin);
+        freopen("conout$", "w", stdout);
+        freopen("conout$", "w", stderr);
+    }
 
+public slots:
+    void OnTextChanged();
+
+    void OnBrowserClicked();
+
+    void OnExportClicked();
 private:
     Ui::MainWindow *ui;
+
+    QUndoStack* undo_stack=nullptr;
+
+    QString logStr;
+    QString ipSourceDir;
+    QString ExportDir;
+
+    CommandLine* command=nullptr;
+
+
 };
 #endif // MAINWINDOW_H

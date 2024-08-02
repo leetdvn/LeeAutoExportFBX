@@ -26,28 +26,21 @@
    <string>LeeAutoExportFBX</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color :rgba(112, 112, 112, 20);</string>
+   <string notr="true">background-color :rgba(112, 112, 112, 40);</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>TextLabel</string>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="0">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item alignment="Qt::AlignmentFlag::AlignHCenter">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="AuthorLabel">
         <property name="text">
          <string>Leetdvn</string>
         </property>
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QHBoxLayout" name="SourceLayout">
         <property name="leftMargin">
          <number>10</number>
         </property>
@@ -61,14 +54,14 @@
          <number>10</number>
         </property>
         <item>
-         <widget class="QLabel" name="inputText">
+         <widget class="QLabel" name="SourceLabel">
           <property name="text">
            <string>input Folder</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QTextEdit" name="inputEditText">
+         <widget class="QTextEdit" name="SourceFolderText">
           <property name="maximumSize">
            <size>
             <width>708</width>
@@ -78,7 +71,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="BrowserButton">
+         <widget class="QPushButton" name="SourceBrowserBtn">
           <property name="text">
            <string>Browser</string>
           </property>
@@ -87,7 +80,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QHBoxLayout" name="ExportLayout">
         <property name="leftMargin">
          <number>10</number>
         </property>
@@ -101,14 +94,14 @@
          <number>10</number>
         </property>
         <item>
-         <widget class="QLabel" name="OutFolder">
+         <widget class="QLabel" name="ExportFolderLabel">
           <property name="text">
            <string>Out Folder</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QTextEdit" name="textEdit_2">
+         <widget class="QTextEdit" name="ExportFolderText">
           <property name="maximumSize">
            <size>
             <width>708</width>
@@ -118,7 +111,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="BrowserButton_2">
+         <widget class="QPushButton" name="ExportBrowserBTn">
           <property name="text">
            <string>Browser</string>
           </property>
@@ -128,8 +121,32 @@
       </item>
      </layout>
     </item>
+    <item row="3" column="0">
+     <widget class="QPushButton" name="ExportExecute">
+      <property name="text">
+       <string>Export</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QProgressBar" name="progressBar">
+      <property name="value">
+       <number>100</number>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
     <item row="2" column="0">
-     <widget class="QPlainTextEdit" name="plainTextEdit">
+     <widget class="QPlainTextEdit" name="LeeLog">
       <property name="enabled">
        <bool>false</bool>
       </property>
@@ -154,7 +171,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="styleSheet">
-     <string notr="true">font-color: rgb(0, 170, 255)</string>
+     <string notr="true"/>
     </property>
     <property name="title">
      <string>File</string>
