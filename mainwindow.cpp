@@ -217,6 +217,9 @@ QString MainWindow::GeneratedCommand(const QString inSourceFile, const QString i
 
     GetFilesInDir(ipSourceDir,oFiles);
 
+    for(auto mf : oFiles)
+        qDebug() << mf;
+
     return cmd;
 }
 
@@ -227,17 +230,17 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles)
 
     QStringList files = dir.entryList(MayaFiles);
 
-    //QStringList folders = dir.entryList(QDir::Dirs);
-    if(files.isEmpty()) return;
+    QStringList folders = dir.entryList(QDir::Dirs);
+
 
     for(auto f : files){
-        qDebug() << f;
-        if(f.endsWith(".ma"))
         OutFiles.push_back(f);
     }
 
-    // for(auto d : folders){
-    //     qDebug() << d;
-    // }
-
+    for(auto fo : folders){
+        if(fo.endsWith(".") || fo.endsWith("..")) continue;
+        //qDebug() << inDir + fo;
+        QString dirPath = inDir + fo + "/";
+        GetFilesInDir(dirPath,OutFiles);
+    }
 }

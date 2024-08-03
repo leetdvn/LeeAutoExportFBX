@@ -29,7 +29,7 @@ Could not find file: aiRectangleAreaLight.xml
 -------------------------------------------------------------------------------
 End attempted read of fragment XML.
 ###############################################################################
-leetdvnFile read in  0.013 seconds.
+leetdvnFile read in  0.012 seconds.
 Logfile: "C:\Users\thang\Documents\maya\FBX\Logs\2019.2\maya2019exp.log"
 Result: C:/Users/thang/Documents/Exports/abc.fbx
 Warning: Cache configuration rules or rule parts have been unregistered. The current configuration rules have been cleared and caching has been deactivated.
