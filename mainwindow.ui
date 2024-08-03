@@ -26,7 +26,7 @@
    <string>LeeAutoExportFBX</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color :rgba(112, 112, 112, 40);</string>
+   <string notr="true">background-color:rgb(156, 156, 156);</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -148,7 +148,7 @@
     <item row="2" column="0">
      <widget class="QPlainTextEdit" name="LeeLog">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="styleSheet">
        <string notr="true">background-color: rgba(94, 94, 94,100);</string>
@@ -170,6 +170,9 @@
     <string notr="true"/>
    </property>
    <widget class="QMenu" name="menuFile">
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
     <property name="styleSheet">
      <string notr="true"/>
     </property>
@@ -194,7 +197,6 @@
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <resources/>
  <connections/>

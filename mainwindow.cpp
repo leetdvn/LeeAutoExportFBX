@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-
-#include <QProcess>
+#include <qmessagebox.h>
+#include <QColorDialog>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -11,6 +11,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     undo_stack = new QUndoStack(this);
+    QColor color =Qt::white;
+    QPalette palette = ui->menuFile->palette();
+    palette.setColor(QPalette::WindowText, color);
+    ui->menuView->setPalette(palette);
 
     connect(ui->SourceFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
     connect(ui->ExportFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
@@ -20,6 +24,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->ExportBrowserBTn,&QPushButton::clicked,this,&MainWindow::OnBrowserClicked);
     connect(ui->ExportExecute,&QPushButton::clicked,this,&MainWindow::OnExportClicked);
+
+    mProcess = new QProcess();
+
+    //set Default testing folder;
+    ui->SourceFolderText->setText("C:/Users/thang/Documents/");
+    ui->ExportFolderText->setText("C:/Users/thang/Documents/Exports/");
+
+    MayaFiles <<"*.ma" << "*.mb";
+
 }
 
 MainWindow::~MainWindow()
@@ -87,30 +100,144 @@ void MainWindow::OnBrowserClicked()
 
 void MainWindow::OnExportClicked()
 {
+
+    // QStringList filters = state > 0 ? l3DFiles : lallFiles;
+    // fileSystemModel->setNameFilters(filters);
+    // lDir.setNameFilters(filters);
+
     qDebug() << "EXTPORT File..." << Qt::endl;
 
-    QDir dir = QDir("");
+    //QDir dir = QDir(ExportDir);
 
     //if(command==nullptr)
     //command = new CommandLine(this);
 
-    QString batchMaya = "C:\\Program Files\\Autodesk\\Maya2019\\bin\\mayabatch.exe -file \"C:/Users/thang/Documents/KunGLX_EP10_Shot 045.ma\"";
-    QString cmd2 = "C:\\Program Files\\Autodesk\\Maya2024\\bin\\mayapy.exe";
+    //QString batchMaya = "C:\\Program Files\\Autodesk\\Maya2019\\bin\\mayabatch.exe -file \"C:/Users/thang/Documents/textFbx.ma\" -command \"file -force -options \"v=0;\" -type \"FBX export\" -pr -ea \"C:/Users/thang/Documents/Exports/abc.fbx\"";
+    // QString ExportCmd = "\"C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe\" -file \"C:/Users/thang/Documents/textFbx.ma\" -command \"file -force -options \\\"v=0\\\" -type \\\"FBX export\\\" -pr -ea \\\"C:/Users/thang/Documents/Exports/abc.fbx\\\"";
 
-    QProcess *process= new QProcess();
-    QString cmd = QString::fromStdString("cmd.exe");
-    QStringList params = QStringList() <<  "file -o \"C:/Users/thang/Documents/KunGLX_EP10_Shot 045.ma\"";
+    QFile melFile("C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/MayaExportCmd.mel");
+    QFile LogFiles("C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/LeeLog.txt");
 
-    for(auto str : params)
-        qDebug() << str << Qt::endl;
-    process->start(batchMaya);
-    if(process->waitForStarted()){
-        qDebug() << "Starting";
+
+    QString Cmd = GeneratedCommand(ui->SourceFolderText->toPlainText() + "textFbx.ma" , ui->ExportFolderText->toPlainText() + "abc.fbx");
+
+    qDebug() << Cmd << Qt::endl;
+
+    if(!melFile.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::information(0, "error", melFile.errorString());
     }
-    process->waitForFinished();
+
+    QString mProgram = "C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe";
+    QString ShellCmd = " -file \"C:/Users/thang/Documents/textFbx.ma\"";//@"C:/EpicSources/UE_SOURCE_5.3/UnrealEngine/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe"  -projectfiles -project="E:/UEProjects/LeeAnonymous/LeeRikARPG_UShow.uproject" -game -LeeRikARPG_UShow -progress" ;
+
+
+
+    QStringList params = QStringList() << Cmd;
+
+    if(mProcess==nullptr)
+        mProcess = new QProcess(this);
+
+
+    QProcess xProcess;
+    //qDebug() << melStream.readAll() << Qt::endl;
+
+    //mProcess->start(ExportCmd);
+
+    // const char* cmdStr = batchMaya.toLocal8Bit();
+    //qDebug() << cmd2 << Qt::endl;
+
+    const char* cmdStr = Cmd.toLocal8Bit();
+
+    // mProcess->setProgram("cmd.exe");
+   // mProcess->startDetached(mProgram,params);
+    //mProcess->execute(ShellCmd);
+
+    //system(ShellCmd.toLocal8Bit());
+    xProcess.start(mProgram,params);
+
+    xProcess.waitForFinished(-1);
+    // QString error = mProcess->readAllStandardError();
+    // qDebug() << error << Qt::endl;
+
+    QString stdoutStr = xProcess.readAllStandardOutput();
+
+    ui->LeeLog->setPlainText(stdoutStr);
+    //Write to log file
+    if(LogFiles.open(QIODevice::WriteOnly)){
+        LogFiles.write(stdoutStr.toLocal8Bit());
+        LogFiles.close();
+    }
+
+    QString stderrStr = xProcess.readAllStandardError();
+
+    // qDebug() << stdoutStr << Qt::endl;
+    // qDebug() << stderrStr << Qt::endl;
+
+    // if(xProcess.waitForStarted()){
+    //     qDebug() << "Starting";
+
+    // }
+    // if(xProcess.isOpen()){
+    //     QString result = xProcess.readAllStandardOutput();
+    //     qDebug() << result << Qt::endl;
+    // }
+
+
+
     qDebug() << "finish";
+    mProcess=nullptr;
+
 
     // attach the new console to this application’s process
     //AttachConsole(process->processId());
-    show_console();
+    //show_console();
+}
+
+
+
+QString MainWindow::GeneratedCommand(const QString inSourceFile, const QString inExportFile)
+{
+    if(inSourceFile.isEmpty() || inExportFile.isNull()) return QString();
+
+    //Maya 2019 Working
+    QString cmd = inSourceFile + "\" ;\n" ;
+
+    QFile melFile("C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/MayaExportCmd.mel");
+    if(!melFile.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::information(0, "error", melFile.errorString());
+    }
+
+    QTextStream melStream(&melFile);
+
+    cmd += melStream.readAll();//"file -force -options \"v=0\" -type \"FBX export\" -pr -ea \"C:/Users/thang/Documents/Exports/abc";
+
+    QStringList oFiles;
+
+    GetFilesInDir(ipSourceDir,oFiles);
+
+    return cmd;
+}
+
+void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles)
+{
+    QDir dir(inDir);
+    if(!dir.exists()) return;
+
+    QStringList files = dir.entryList(MayaFiles);
+
+    //QStringList folders = dir.entryList(QDir::Dirs);
+    if(files.isEmpty()) return;
+
+    for(auto f : files){
+        qDebug() << f;
+        if(f.endsWith(".ma"))
+        OutFiles.push_back(f);
+    }
+
+    // for(auto d : folders){
+    //     qDebug() << d;
+    // }
+
 }

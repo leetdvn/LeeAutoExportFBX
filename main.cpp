@@ -4,7 +4,7 @@
 #include <QProcess>
 
 #ifdef _WIN32
-#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#pragma comment(linker, "/SUBSYSTEM:WINDOWS")
 #endif
 
 int main(int argc, char *argv[])
