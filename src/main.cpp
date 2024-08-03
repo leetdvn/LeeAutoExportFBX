@@ -20,9 +20,9 @@ int main(int argc, char *argv[])
     // SetConsoleOutputCP(65001);
 
     // reopen the std I/O streams to redirect I/O to the new console
-    freopen("CON", "w", stdout);
-    freopen("CON", "w", stderr);
-    freopen("CON", "r", stdin);
+    // freopen("CON", "w", stdout);
+    // freopen("CON", "w", stderr);
+    // freopen("CON", "r", stdin);
 
     QApplication a(argc, argv);
     MainWindow w;

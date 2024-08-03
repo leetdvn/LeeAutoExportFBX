@@ -101,27 +101,17 @@ void MainWindow::OnBrowserClicked()
 void MainWindow::OnExportClicked()
 {
 
-    // QStringList filters = state > 0 ? l3DFiles : lallFiles;
-    // fileSystemModel->setNameFilters(filters);
-    // lDir.setNameFilters(filters);
-
     qDebug() << "EXTPORT File..." << Qt::endl;
 
-    //QDir dir = QDir(ExportDir);
 
-    //if(command==nullptr)
-    //command = new CommandLine(this);
-
-    //QString batchMaya = "C:\\Program Files\\Autodesk\\Maya2019\\bin\\mayabatch.exe -file \"C:/Users/thang/Documents/textFbx.ma\" -command \"file -force -options \"v=0;\" -type \"FBX export\" -pr -ea \"C:/Users/thang/Documents/Exports/abc.fbx\"";
-    // QString ExportCmd = "\"C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe\" -file \"C:/Users/thang/Documents/textFbx.ma\" -command \"file -force -options \\\"v=0\\\" -type \\\"FBX export\\\" -pr -ea \\\"C:/Users/thang/Documents/Exports/abc.fbx\\\"";
-
-    QFile melFile("C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/MayaExportCmd.mel");
-    QFile LogFiles("C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/LeeLog.txt");
+    QFile melFile(MELEXPORTSCRIPT);
+    QFile BlenderFile()
+    QFile LogFiles(MASSFBXLOG);
 
 
     QString Cmd = GeneratedCommand(ui->SourceFolderText->toPlainText() + "textFbx.ma" , ui->ExportFolderText->toPlainText() + "abc.fbx");
 
-    qDebug() << Cmd << Qt::endl;
+    qDebug() << MELEXPORTSCRIPT << Qt::endl;
 
     if(!melFile.open(QIODevice::ReadOnly))
     {
@@ -129,9 +119,6 @@ void MainWindow::OnExportClicked()
     }
 
     QString mProgram = "C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe";
-    QString ShellCmd = " -file \"C:/Users/thang/Documents/textFbx.ma\"";//@"C:/EpicSources/UE_SOURCE_5.3/UnrealEngine/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe"  -projectfiles -project="E:/UEProjects/LeeAnonymous/LeeRikARPG_UShow.uproject" -game -LeeRikARPG_UShow -progress" ;
-
-
 
     QStringList params = QStringList() << Cmd;
 
@@ -140,25 +127,11 @@ void MainWindow::OnExportClicked()
 
 
     QProcess xProcess;
-    //qDebug() << melStream.readAll() << Qt::endl;
 
-    //mProcess->start(ExportCmd);
-
-    // const char* cmdStr = batchMaya.toLocal8Bit();
-    //qDebug() << cmd2 << Qt::endl;
-
-    const char* cmdStr = Cmd.toLocal8Bit();
-
-    // mProcess->setProgram("cmd.exe");
-   // mProcess->startDetached(mProgram,params);
-    //mProcess->execute(ShellCmd);
-
-    //system(ShellCmd.toLocal8Bit());
     xProcess.start(mProgram,params);
 
     xProcess.waitForFinished(-1);
-    // QString error = mProcess->readAllStandardError();
-    // qDebug() << error << Qt::endl;
+
 
     QString stdoutStr = xProcess.readAllStandardOutput();
 
@@ -171,27 +144,9 @@ void MainWindow::OnExportClicked()
 
     QString stderrStr = xProcess.readAllStandardError();
 
-    // qDebug() << stdoutStr << Qt::endl;
-    // qDebug() << stderrStr << Qt::endl;
-
-    // if(xProcess.waitForStarted()){
-    //     qDebug() << "Starting";
-
-    // }
-    // if(xProcess.isOpen()){
-    //     QString result = xProcess.readAllStandardOutput();
-    //     qDebug() << result << Qt::endl;
-    // }
-
-
-
     qDebug() << "finish";
     mProcess=nullptr;
 
-
-    // attach the new console to this application’s process
-    //AttachConsole(process->processId());
-    //show_console();
 }
 
 
@@ -203,7 +158,7 @@ QString MainWindow::GeneratedCommand(const QString inSourceFile, const QString i
     //Maya 2019 Working
     QString cmd = inSourceFile + "\" ;\n" ;
 
-    QFile melFile("C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/MayaExportCmd.mel");
+    QFile melFile("C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/Scripts/MayaExportCmd.mel");
     if(!melFile.open(QIODevice::ReadOnly))
     {
         QMessageBox::information(0, "error", melFile.errorString());
@@ -213,12 +168,9 @@ QString MainWindow::GeneratedCommand(const QString inSourceFile, const QString i
 
     cmd += melStream.readAll();//"file -force -options \"v=0\" -type \"FBX export\" -pr -ea \"C:/Users/thang/Documents/Exports/abc";
 
-    QStringList oFiles;
+    QStringList SFiles;
 
-    GetFilesInDir(ipSourceDir,oFiles);
-
-    for(auto mf : oFiles)
-        qDebug() << mf;
+    GetFilesInDir(ipSourceDir,SFiles);
 
     return cmd;
 }
@@ -234,7 +186,7 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles)
 
 
     for(auto f : files){
-        OutFiles.push_back(f);
+        OutFiles.push_back(inDir + f);
     }
 
     for(auto fo : folders){

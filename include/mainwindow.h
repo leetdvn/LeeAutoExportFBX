@@ -6,7 +6,9 @@
 #include <QUndoStack>
 #include "commandline.h"
 #include <QProcess>
-
+#if defined MELEXPORT
+#include "Definitions.h"
+#endif
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -20,14 +22,6 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
-    // void show_console() {
-    //     //AllocConsole();
-
-    //     freopen("conin$", "r", stdin);
-    //     freopen("conout$", "w", stdout);
-    //     freopen("conout$", "w", stderr);
-    // }
 
 public slots:
     void OnTextChanged();

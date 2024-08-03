@@ -13,19 +13,30 @@ set(CMAKE_WIN32_EXECUTABLE TRUE)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Gui Core)
 
+set(MELEXPORT ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/MayaExportCmd.mel)
+set(BLENDEREXPORT ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/BlenderExport.py)
+
+set(LEEDEFINE ${CMAKE_CURRENT_SOURCE_DIR}/include/Definitions.h)
+set(MASSFBXLOG ${CMAKE_CURRENT_BINARY_DIR}/Logs/MassFbxLog.txt)
+
+add_definitions(-MELEXPORT)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+    include/mainwindow.h
+    include/commandline.h
+    include/Definitions.h
+    src/main.cpp
+    src/mainwindow.cpp
+    src/commandline.cpp
+    src/mainwindow.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(LeeAutoExportFBX
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        commandline.h
-        commandline.cpp
 
 
     )
@@ -48,7 +59,7 @@ else()
 endif()
 
 target_link_libraries(LeeAutoExportFBX PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-
+target_compile_definitions(LeeAutoExportFBX PUBLIC MELEXPORT=${MELEXPORT})
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
@@ -72,4 +83,12 @@ install(TARGETS LeeAutoExportFBX
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(LeeAutoExportFBX)
+endif()
+
+if(NOT EXISTS(${LEEDEFINE}))
+    FILE(WRITE ${LEEDEFINE}
+    "#define MELEXPORTSCRIPT \"${MELEXPORT}\"\n"
+    "#define MASSFBXLOG \"${MASSFBXLOG}\"\n"
+    "#define BLENDEREXPORT \"${BLENDEREXPORT}\"\n"
+    )
 endif()

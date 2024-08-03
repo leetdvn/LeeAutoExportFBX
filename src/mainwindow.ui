@@ -32,31 +32,57 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="Line" name="line_5">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
       <item alignment="Qt::AlignmentFlag::AlignHCenter">
        <widget class="QLabel" name="AuthorLabel">
+        <property name="styleSheet">
+         <string notr="true">font: 700 16pt &quot;Times New Roman&quot;;</string>
+        </property>
         <property name="text">
-         <string>Leetdvn</string>
+         <string>Author Leetdvn</string>
         </property>
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="SourceLayout">
-        <property name="leftMargin">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="spacing">
          <number>10</number>
+        </property>
+        <property name="sizeConstraint">
+         <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+        </property>
+        <property name="leftMargin">
+         <number>2</number>
         </property>
         <property name="topMargin">
-         <number>10</number>
+         <number>2</number>
         </property>
         <property name="rightMargin">
-         <number>10</number>
+         <number>2</number>
         </property>
         <property name="bottomMargin">
-         <number>10</number>
+         <number>5</number>
         </property>
         <item>
          <widget class="QLabel" name="SourceLabel">
           <property name="text">
-           <string>input Folder</string>
+           <string>SourceFolder</string>
           </property>
          </widget>
         </item>
@@ -67,6 +93,9 @@
             <width>708</width>
             <height>29</height>
            </size>
+          </property>
+          <property name="placeholderText">
+           <string>Source Directory</string>
           </property>
          </widget>
         </item>
@@ -81,22 +110,25 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="ExportLayout">
+        <property name="spacing">
+         <number>6</number>
+        </property>
         <property name="leftMargin">
-         <number>10</number>
+         <number>2</number>
         </property>
         <property name="topMargin">
-         <number>10</number>
+         <number>2</number>
         </property>
         <property name="rightMargin">
-         <number>10</number>
+         <number>2</number>
         </property>
         <property name="bottomMargin">
-         <number>10</number>
+         <number>2</number>
         </property>
         <item>
          <widget class="QLabel" name="ExportFolderLabel">
           <property name="text">
-           <string>Out Folder</string>
+           <string> Export Folder</string>
           </property>
          </widget>
         </item>
@@ -107,6 +139,12 @@
             <width>708</width>
             <height>29</height>
            </size>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextInteractionFlag::NoTextInteraction</set>
+          </property>
+          <property name="placeholderText">
+           <string>Export  Directory</string>
           </property>
          </widget>
         </item>
@@ -121,39 +159,74 @@
       </item>
      </layout>
     </item>
+    <item row="1" column="0">
+     <widget class="Line" name="line_3">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
     <item row="3" column="0">
-     <widget class="QPushButton" name="ExportExecute">
-      <property name="text">
-       <string>Export</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>TextLabel</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QProgressBar" name="progressBar">
-      <property name="value">
-       <number>100</number>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
+     <widget class="Line" name="line_4">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item row="2" column="0">
-     <widget class="QPlainTextEdit" name="LeeLog">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgba(94, 94, 94,100);</string>
-      </property>
-     </widget>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QPushButton" name="ExportExecute">
+        <property name="text">
+         <string>Export</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progressBar">
+        <property name="font">
+         <font>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="value">
+         <number>50</number>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="invertedAppearance">
+         <bool>false</bool>
+        </property>
+        <property name="textDirection">
+         <enum>QProgressBar::Direction::TopToBottom</enum>
+        </property>
+       </widget>
+      </item>
+      <item alignment="Qt::AlignmentFlag::AlignHCenter">
+       <widget class="QLabel" name="label_2">
+        <property name="styleSheet">
+         <string notr="true">font: 700 12pt &quot;Segoe UI&quot;;</string>
+        </property>
+        <property name="text">
+         <string>Status Log</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPlainTextEdit" name="LeeLog">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: rgba(94, 94, 94,100);</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
