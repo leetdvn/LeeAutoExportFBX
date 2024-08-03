@@ -105,7 +105,7 @@ void MainWindow::OnExportClicked()
 
 
     QFile melFile(MELEXPORTSCRIPT);
-    QFile BlenderFile()
+    QFile BlenderFile("");
     QFile LogFiles(MASSFBXLOG);
 
 
@@ -113,39 +113,54 @@ void MainWindow::OnExportClicked()
 
     qDebug() << MELEXPORTSCRIPT << Qt::endl;
 
-    if(!melFile.open(QIODevice::ReadOnly))
-    {
-        QMessageBox::information(0, "error", melFile.errorString());
-    }
+    // if(!melFile.open(QIODevice::ReadOnly))
+    // {
+    //     QMessageBox::information(0, "error", melFile.errorString());
+    // }
 
     QString mProgram = "C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe";
+    QString OutLog;
 
-    QStringList params = QStringList() << Cmd;
+    // QStringList params = QStringList() << Cmd;
 
-    if(mProcess==nullptr)
-        mProcess = new QProcess(this);
-
-
-    QProcess xProcess;
-
-    xProcess.start(mProgram,params);
-
-    xProcess.waitForFinished(-1);
+    // if(mProcess==nullptr)
+    //     mProcess = new QProcess(this);
 
 
-    QString stdoutStr = xProcess.readAllStandardOutput();
+    // QProcess xProcess;
 
-    ui->LeeLog->setPlainText(stdoutStr);
-    //Write to log file
-    if(LogFiles.open(QIODevice::WriteOnly)){
-        LogFiles.write(stdoutStr.toLocal8Bit());
-        LogFiles.close();
-    }
+    // xProcess.start(mProgram,params);
 
-    QString stderrStr = xProcess.readAllStandardError();
+    // xProcess.waitForFinished(-1);
 
-    qDebug() << "finish";
-    mProcess=nullptr;
+
+    // QString stdoutStr = xProcess.readAllStandardOutput();
+
+    // ui->LeeLog->setPlainText(stdoutStr);
+    // //Write to log file
+    // if(LogFiles.open(QIODevice::WriteOnly)){
+    //     LogFiles.write(stdoutStr.toLocal8Bit());
+    //     LogFiles.close();
+    // }
+
+    // QString stderrStr = xProcess.readAllStandardError();
+
+    // qDebug() << "finish";
+    // mProcess=nullptr;
+
+    QStringList SFiles;
+
+    GetFilesInDir(ipSourceDir,SFiles);
+
+
+    QString SFile = ui->SourceFolderText->toPlainText() + "textFbx.ma";
+    QString ExFile = ui->ExportFolderText->toPlainText() + "abc.fbx";
+    CommandLine* command = new CommandLine();
+    command->CreateProcess(SFile,ExFile,OutLog);
+
+    //mProcess->waitForStarted(-1);
+    ui->LeeLog->setPlainText(OutLog);
+
 
 }
 
@@ -168,9 +183,6 @@ QString MainWindow::GeneratedCommand(const QString inSourceFile, const QString i
 
     cmd += melStream.readAll();//"file -force -options \"v=0\" -type \"FBX export\" -pr -ea \"C:/Users/thang/Documents/Exports/abc";
 
-    QStringList SFiles;
-
-    GetFilesInDir(ipSourceDir,SFiles);
 
     return cmd;
 }

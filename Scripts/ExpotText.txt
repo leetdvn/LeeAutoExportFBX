@@ -1,0 +1,1 @@
+C:/Windows/System32/cmd.exe /k @"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe" -b C:/Users/thang/Documents/abc.blend -P C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/Scripts/BlenderExport.py
