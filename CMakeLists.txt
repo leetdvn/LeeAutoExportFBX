@@ -27,10 +27,15 @@ set(PROJECT_SOURCES
     include/mainwindow.h
     include/commandline.h
     include/Definitions.h
+    include/leespoiler.h
+
     src/main.cpp
     src/mainwindow.cpp
     src/commandline.cpp
     src/mainwindow.ui
+    src/FbxOptions.ui
+    src/leespoiler.cpp
+
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

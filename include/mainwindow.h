@@ -6,12 +6,19 @@
 #include <QUndoStack>
 #include "commandline.h"
 #include <QProcess>
+#include "leespoiler.h"
+#include <QColorDialog>
+#include <QCheckBox>
+#include <QSpinBox>
+
 #if defined MELEXPORT
 #include "Definitions.h"
 #endif
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
+class FbxOptions;
 }
 QT_END_NAMESPACE
 
@@ -33,6 +40,7 @@ public slots:
     void GetFilesInDir(const QString inDir,QStringList &OutFiles);
 private:
     Ui::MainWindow *ui;
+    Ui::FbxOptions *uiOpt;
 
     QUndoStack* undo_stack=nullptr;
 
@@ -49,6 +57,14 @@ private:
     QStringList MayaFiles,BlenderFiles;
 
     QList<QStringList> leeFilters;
+
+protected:
+
+    void ImplementFbxOptions();
+
+    LeeSpoiler* Spoiler;
+
+    QPushButton* ExpotBtn;
 
 };
 #endif // MAINWINDOW_H

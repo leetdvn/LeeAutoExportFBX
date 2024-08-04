@@ -93,14 +93,25 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     //Create Command
     QString Cmd;
     if(isMaya){
+        if(!inSourceFile.endsWith(".ma") || !inSourceFile.endsWith(".mb")){
+            OutLog += "fle : " +  inSourceFile + " Not Maya file format software.\n";
+            qDebug() << inSourceFile << " Not Maya file format software." << Qt::endl;
+            return;
+        }
+
         Cmd=  mProgram + " -file \""  + inSourceFile + "\"\" ;\n" ;
         Cmd += GetMelCommand(MELEXPORTSCRIPT) + "\"" + inExportFile;
     }
     else{
+
         Cmd = mProgram +  " -b " + inSourceFile;
         Cmd += " -P "  BLENDEREXPORT ;
-        qDebug() << Cmd << Qt::endl;
 
+        if(!inSourceFile.endsWith(".blend")){
+            qDebug() << inSourceFile << " Not Blender file format software." << Qt::endl;
+            OutLog += "fle : " +  inSourceFile + " Not Blender file format software.\n";
+            return;
+        }
     }
     qDebug() << Cmd << Qt::endl;
     //QProcess
@@ -115,7 +126,7 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     // ExportProcess->start(mProgram,params);
 
     // ExportProcess->waitForFinished(-1);
-    OutLog = ExportProcess.readAllStandardOutput();
+    OutLog += ExportProcess.readAllStandardOutput();
     qDebug() << OutLog << Qt::endl;
     //ui->LeeLog->setPlainText(stdoutStr);
     //Write to log file

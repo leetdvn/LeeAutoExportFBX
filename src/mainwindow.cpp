@@ -1,20 +1,26 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "./ui_FbxOptions.h"
 #include <qmessagebox.h>
-#include <QColorDialog>
+
 
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , uiOpt(new Ui::FbxOptions)
 {
 
     ui->setupUi(this);
+
     undo_stack = new QUndoStack(this);
-    QColor color =Qt::white;
-    QPalette palette = ui->menuFile->palette();
-    palette.setColor(QPalette::WindowText, color);
-    ui->menuView->setPalette(palette);
+    // QColor color =Qt::white;
+    // QPalette palette = ui->menuFile->palette();
+    // palette.setColor(QPalette::WindowText, color);
+    // ui->menuView->setPalette(palette);
+
+    ImplementFbxOptions();
+    ui->progressBar->setValue(10);
 
     connect(ui->SourceFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
     connect(ui->ExportFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
@@ -121,45 +127,24 @@ void MainWindow::OnExportClicked()
     QString mProgram = "C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe";
     QString OutLog;
 
-    // QStringList params = QStringList() << Cmd;
-
-    // if(mProcess==nullptr)
-    //     mProcess = new QProcess(this);
-
-
-    // QProcess xProcess;
-
-    // xProcess.start(mProgram,params);
-
-    // xProcess.waitForFinished(-1);
-
-
-    // QString stdoutStr = xProcess.readAllStandardOutput();
-
-    // ui->LeeLog->setPlainText(stdoutStr);
-    // //Write to log file
-    // if(LogFiles.open(QIODevice::WriteOnly)){
-    //     LogFiles.write(stdoutStr.toLocal8Bit());
-    //     LogFiles.close();
-    // }
-
-    // QString stderrStr = xProcess.readAllStandardError();
-
-    // qDebug() << "finish";
-    // mProcess=nullptr;
 
     QStringList SFiles;
 
     GetFilesInDir(ipSourceDir,SFiles);
 
+    for(auto sf : SFiles){
+        OutLog += sf + "\n";
+    }
 
-    QString SFile = ui->SourceFolderText->toPlainText() + "textFbx.ma";
+
+    QString SFile = ui->SourceFolderText->toPlainText() + "text.ma";
     QString ExFile = ui->ExportFolderText->toPlainText() + "abc.fbx";
     CommandLine* command = new CommandLine();
-    command->CreateProcess(SFile,ExFile,OutLog);
+    command->CreateProcess(SFile,ExFile,OutLog,false);
+
+    ui->LeeLog->setPlainText(OutLog);
 
     //mProcess->waitForStarted(-1);
-    ui->LeeLog->setPlainText(OutLog);
 
 
 }
@@ -207,4 +192,24 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles)
         QString dirPath = inDir + fo + "/";
         GetFilesInDir(dirPath,OutFiles);
     }
+}
+
+
+void MainWindow::ImplementFbxOptions()
+{
+
+    Spoiler = new LeeSpoiler("MassFbx Options",100,this);
+    uiOpt->setupUi(Spoiler);
+
+    Spoiler->toggleButton->setStyleSheet("font: 700 11pt \"Sitka\"; color: rgb(255, 255, 255);");
+    Spoiler->toggleButton->setAutoRaise(true);
+    QVBoxLayout * vlayout = new QVBoxLayout();
+    QHBoxLayout* hlayout = new QHBoxLayout();
+
+    hlayout->addLayout(uiOpt->gridLayout);
+    vlayout->addLayout(hlayout);
+    Spoiler->setContentLayout(*vlayout);
+   // ui->AuthorLayout->insertWidget(ui->AuthorLayout->count(),Spoiler);// ->addWidget(Spoiler);
+    //ui->MainVLayout->layout()->addWidget(Spoiler);
+    ui->verticalLayout_3->insertWidget(ui->verticalLayout_3->count()-2,Spoiler,Qt::AlignHCenter);
 }
