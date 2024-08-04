@@ -131,14 +131,11 @@ void MainWindow::OnExportClicked()
         return;
     }
 
-    qDebug() << "Type Export " << SType <<Qt::endl;
-    OutLog += "Type Export " + QString::number(SType) + "\n";
     //create Filter List
-    QStringList filters;
-    InitFillters(filters);
+    QStringList filters= InitFillters();
 
     //Debug Filters
-    QString FilLog = "Filter type : ";
+    QString FilLog = "Export Type : ";
     for(auto ff : filters)
         FilLog+= ff;
     qDebug() << FilLog << Qt::endl;
@@ -148,45 +145,25 @@ void MainWindow::OnExportClicked()
     GetFilesInDir(ipSourceDir,SFiles,filters);
 
     //Log Files Searching
-    for(auto f : SFiles){
-        OutLog += f + "\n";
-        qDebug() << f <<Qt::endl;
+
+    //execute command current test 1 file
+    for(int i=0;i<SFiles.count();++i)
+    {
+        if(i > 2) return;
+        QString SFile = SFiles[i];
+        QString ExFile = GetExportPath(SFile,ExportDir);
+
+        //Execute Command
+        CommandLine* command = new CommandLine();
+        command->CreateProcess(SFile,ExFile,OutLog,SType);
+
+        connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
+        command->ExportProcess.waitForStarted();
+        OutLog += "Exporting from : " + SFile + " to : " + ExFile + "\n";
+        qDebug() << "file " << SFile << "number : " << SFiles.count() <<  Qt::endl;
+        ui->LeeLog->setPlainText(OutLog);
+        emit OnCompleted(command->CRFile);
     }
-
-    //Test Source Files
-    QString SFile = SFiles[0];
-    QString ExFile = GetExportPath(SFile,ExportDir);
-    OutLog = "Loading File : " + SFile + "\n";
-
-    //fbx exist file
-    if(!QFile(SFile).exists()){
-        //Source file does not exists
-        return;
-    }
-
-    QFile FbxFile(ExFile);
-    if(FbxFile.exists()){
-        //file exist need ovverride or next file;
-
-    }
-
-
-    //Execute Command
-    // CommandLine* command = new CommandLine();
-    // command->CreateProcess(SFile,ExFile,OutLog,SType);
-
-    // connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnReadAble);
-    // command->ExportProcess.waitForStarted();
-    // ui->LeeLog->setPlainText(OutLog);
-
-
-    // command->ExportProcess.waitForFinished(-1);
-    // OutLog += command->ExportProcess.readAllStandardOutput();
-    // ui->LeeLog->setPlainText(OutLog);
-
-
-
-
 
 }
 
@@ -211,38 +188,32 @@ QString MainWindow::GeneratedCommand(const QString inSourceFile, const QString i
     return cmd;
 }
 
-void MainWindow::InitFillters(QStringList &OutFilters)
+QStringList MainWindow::InitFillters()
 {
     if(uiOpt->comboBox == nullptr)
         SourceType=1;
 
     SourceType = uiOpt->comboBox->currentIndex();
 
-    if(SourceType < 0) {
-        OutFilters = MayaFiles;
-        return;
-    }
+    if(SourceType < 0) { return MayaFiles ;}
 
     switch (SourceType) {
         case 0:{
-            OutFilters = MayaFiles;
-            return ;
+            return MayaFiles;
         }
         case 1:{
-            OutFilters = BlenderFiles;
-            return;
-        }
+            return BlenderFiles; }
         case 2:{
+            QStringList nFilter= MayaFiles;
             for(auto f : BlenderFiles)
             {
-                MayaFiles.push_back(f);
+                nFilter.push_back(f);
             }
-            OutFilters = MayaFiles;
-            return ;
+            return nFilter;
         }
     }
 
-    return ;
+    return QStringList();
 }
 
 void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters)
@@ -267,25 +238,27 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QString
     }
 }
 
-void MainWindow::OnReadAble()
+void MainWindow::OnFinish()
 {
-    QString Out = "Finish...";
+    QString Out = ui->LeeLog->toPlainText();
 
     QProcess process = qobject_cast<QProcess>(sender());
 
+    QString CRFile = process.property("CRFile").toString();
     if(process.isOpen())
         process.deleteLater();
-    ui->LeeLog->setPlainText(Out);
-    //qDebug() << "ReadAble " << Qt::endl;
+
+    // Out +="Export Completed : " + CRFile + "\n";
+    // ui->LeeLog->setPlainText(Out);
+    // qDebug() << "ReadAble " << Qt::endl;
 }
 
 
 void MainWindow::ImplementFbxOptions()
 {
 
-    Spoiler = new LeeSpoiler("MassFbx Options",100,this);
+    Spoiler = new LeeSpoiler("LeeMassFbx Maya",100,this);
     uiOpt->setupUi(Spoiler);
-    uiOpt->comboBox->setCurrentIndex(1);
     connect(uiOpt->comboBox,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
 
     Spoiler->toggleButton->setStyleSheet("font: 700 11pt \"Sitka\"; color: rgb(255, 255, 255);");
@@ -321,7 +294,7 @@ QString MainWindow::GetExportPath(const QString inSourceFile, const QString inEx
 
     QString FbxPath = nPathDir + fname.left(fname.lastIndexOf(".")) + ".fbx";
 
-    qDebug() << "fbxPaht : " << FbxPath << Qt::endl;
+    //qDebug() << "fbxPaht : " << FbxPath << Qt::endl;
 
     //make dir export fbx
     QDir nDir(nPathDir);
@@ -345,7 +318,29 @@ SoftwereType MainWindow::GetSoftWareType()
     return None;
 }
 
+void MainWindow::ExecuteExportFbx(QString inSourceFile, QString inExportDir)
+{
+    QString ExFile = GetExportPath(inSourceFile,inExportDir);
+
+}
+
 void MainWindow::OnComboBoxChanged(int valuechanged)
 {
     qDebug() << "Value Changed " << valuechanged << Qt::endl;
+    QString textChanged;
+    switch (valuechanged) {
+        case 0:{textChanged="LeeMassFbx Option Maya";break;}
+        case 1:{textChanged="LeeMassFbx Option Blender";break;}
+        case 2:{textChanged="LeeMassFbx Option Maya And Blender";break;}
+    }
+
+    Spoiler->toggleButton->setText(textChanged);
+}
+
+void MainWindow::OnCompleted(QString comletedfile)
+{
+    QString Out = ui->LeeLog->toPlainText();
+    Out+="Export Completed : " + comletedfile + "\n";
+    ui->LeeLog->setPlainText(Out);
+
 }

@@ -1,8 +1,5 @@
 #include "commandline.h"
 
-
-
-
 CommandLine::CommandLine(QObject *parent)
     :QObject(parent)
 {
@@ -53,8 +50,6 @@ QString CommandLine::MakeCmd(const QString inSourceFile, const QString inExportF
 {
     QFile Sfile(inSourceFile);
     if(!Sfile.exists()) return QString();
-
-
 }
 
 QString CommandLine::MakeMayaCommand(const QString inSourceFile, const QString inExportFile)
@@ -64,12 +59,6 @@ QString CommandLine::MakeMayaCommand(const QString inSourceFile, const QString i
 
 QString CommandLine::MakeBlenderCommand(const QString inSourceFile, const QString inExportFile)
 {
-    return QString();
-}
-
-QString CommandLine::MakeCommand(const QString inSourceFile, const QString inExportFile, SoftwereType inSType)
-{
-    QString mProgram = inSType ==0  ? "\"C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe\"" : "\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" ";
     return QString();
 }
 
@@ -86,16 +75,18 @@ QString CommandLine::GetMelCommand(const QString inMelScript)
     return melStream.readAll();
 }
 
-void CommandLine::CreateProcess(const QString inSourceFile, const QString inExportFile,QString &OutLog,SoftwereType inSType)
+QString CommandLine::IsValidProgram(const QString inSourceFile)
 {
-    //init Programs
-    QString mProgram = inSType ==0  ? "\"C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe\"" : "\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" ";
+    return inSourceFile.endsWith(".blend") ?
+        "\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" ":
+        "\"C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe\"";
 
-    QString CmdProgram= "C:/Program Files/Blender Foundation/Blender 4.2/blender.exe";
-    //make bat
-    QString BlendBat("/home/Documents/GitHub/LeeAutoExportFBX/Scripts/ExpotText.txt"); //"C:\Users\thang\Documents\GitHub\LeeAutoExportFBX\Scripts\ExpotText.txt"
+}
+
+void CommandLine::InitBlenderScript(const QString inExportFile)
+{
+    //Blender Export Scripts
     QFile blendExp(BLENDEREXPORT);
-
     if(blendExp.open(QIODevice::WriteOnly))
     {
         QString Cmd = "import bpy\nbpy.ops.export_scene.fbx(filepath='"+ inExportFile + "')";
@@ -103,47 +94,46 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
         blendExp.close();
     }
 
+}
+
+void CommandLine::CreateProcess(const QString inSourceFile, const QString inExportFile,QString &OutLog,SoftwereType inSType)
+{
+    //init Programs
+    QString mProgram = IsValidProgram(inSourceFile);
+
+    //Blender Export Scripts Init
+    InitBlenderScript(inExportFile);
+
     //Log
     QFile ExportLog(MASSFBXLOG);
 
     //Create Command
     QString Cmd;
-    if(inSType ==0){
-        if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
-            Cmd =  mProgram + " -file \""  + inSourceFile + "\"\" ;\n" ;
-            Cmd += GetMelCommand(MELEXPORTSCRIPT) + "\"" + inExportFile;
-        }
-        else{
-            OutLog += "fle : " +  inSourceFile + " Not Maya file format software.\n";
-            qDebug() << inSourceFile << " Not Maya file format software." << Qt::endl;
-            return;
-        }
-
+    if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
+        Cmd =  mProgram + " -file \""  + inSourceFile + "\"\" ;\n" ;
+        Cmd += GetMelCommand(MELEXPORTSCRIPT) + "\"" + inExportFile;
     }
-    qDebug() << "Source : " << inSourceFile << "Type : " << inSType << Qt::endl;
-
-    if(inSType==1){
-        qDebug() << "Source : " << Cmd << Qt::endl;
-
-        if(!inSourceFile.endsWith(".blend")){
-            qDebug() << inSourceFile << " Not Blender file format software." << Qt::endl;
-            OutLog += "fle : " +  inSourceFile + " Not Blender file format software.\n";
-            return;
-        }
+    else if(inSourceFile.endsWith(".blend")){
         Cmd = mProgram +  " -b " + inSourceFile;
         Cmd += " -P "  BLENDEREXPORT;
-
     }
-    qDebug() << Cmd << Qt::endl;
+    else{
+        qDebug() << inSourceFile << " Not Blender or Maya file format software." << Qt::endl;
+        OutLog += "fle : " +  inSourceFile + " Not Blender file format software.\n";
+        return;
+    }
+
+    qDebug() << "command : "<< Cmd << Qt::endl;
     //QProcess
 
 
     QStringList params = QStringList() << Cmd;
 
     //run command..//
-    //process.start("\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" -b C:/Users/thang/Documents/abc.blend -P " + QString(BLENDEREXPORT));
     ExportProcess.start(Cmd);
     ExportProcess.waitForStarted();
+    //ExportProcess.setProperty("CRFile",QVariant(inExportFile));
+    CRFile = inExportFile;
     // ExportProcess->start(mProgram,params);
 
     // ExportProcess->waitForFinished(-1);

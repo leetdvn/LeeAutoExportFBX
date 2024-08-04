@@ -33,6 +33,7 @@ public:
 
     void UpdateLogString(QPlainTextEdit* inText,QString &LogStr);
     QProcess ExportProcess;
+    QString CRFile;
 
 signals:
     void OnReadLine(QString Line);
@@ -55,12 +56,11 @@ private:
 
     QString MakeBlenderCommand(const QString inSourceFile, const QString inExportFile);
 
-    QString MakeCommand(const QString inSourceFile, const QString inExportFile,SoftwereType inSType=Maya);
-
     QString GetMelCommand(const QString inMelScript);
 
+    QString IsValidProgram(const QString inSourceFile);
 
+    void InitBlenderScript(const QString inExportFile);
 };
-
 
 #endif // COMMANDLINE_H

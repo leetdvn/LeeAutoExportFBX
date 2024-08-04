@@ -219,7 +219,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QPlainTextEdit" name="LeeLog"/>
+       <widget class="QPlainTextEdit" name="LeeLog">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="placeholderText">
+         <string>Log</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QProgressBar" name="progressBar">
@@ -271,6 +278,7 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="styleSheet">
@@ -289,6 +297,11 @@
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
   </widget>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
