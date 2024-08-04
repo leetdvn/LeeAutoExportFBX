@@ -68,7 +68,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTextEdit" name="SourceFolderText_2">
+         <widget class="QTextEdit" name="MayaText">
           <property name="maximumSize">
            <size>
             <width>708</width>
@@ -99,7 +99,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTextEdit" name="SourceFolderText_3">
+         <widget class="QTextEdit" name="BlenderText">
           <property name="maximumSize">
            <size>
             <width>708</width>
@@ -219,12 +219,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QPlainTextEdit" name="LeeLog">
+       <widget class="QTextEdit" name="LeeLog">
         <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="placeholderText">
-         <string>Log</string>
+         <bool>true</bool>
         </property>
        </widget>
       </item>

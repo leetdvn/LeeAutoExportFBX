@@ -111,6 +111,15 @@ void MainWindow::OnExportClicked()
 
     qDebug() << "EXTPORT File Running.." << Qt::endl;
 
+    if(command){
+        if(command->IsRunning()){
+            QString OutLog =ui->LeeLog->toHtml();
+            OutLog += "Running File : " + command->GetCSFile();
+            ui->LeeLog->setHtml(OutLog);
+            return;
+        }
+    }
+
     QFile melFile(MELEXPORTSCRIPT);
     QFile BlenderFile("");
     QFile LogFiles(MASSFBXLOG);
@@ -139,31 +148,45 @@ void MainWindow::OnExportClicked()
     for(auto ff : filters)
         FilLog+= ff;
     qDebug() << FilLog << Qt::endl;
-    OutLog += FilLog + "\n";
+    OutLog += FilLog + "<br>";
     //Get Source Files
     QStringList SFiles;
     GetFilesInDir(ipSourceDir,SFiles,filters);
 
     //Log Files Searching
 
+    isRunning=true;
     //execute command current test 1 file
     for(int i=0;i<SFiles.count();++i)
     {
-        if(i > 2) return;
+        if(i > 5) return;
         QString SFile = SFiles[i];
         QString ExFile = GetExportPath(SFile,ExportDir);
 
         //Execute Command
-        CommandLine* command = new CommandLine();
+        command = new CommandLine();
         command->CreateProcess(SFile,ExFile,OutLog,SType);
 
         connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
+        connect(command,&CommandLine::SendCRFile,this,&MainWindow::Display);
+        connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
         command->ExportProcess.waitForStarted();
-        OutLog += "Exporting from : " + SFile + " to : " + ExFile + "\n";
+        OutLog += "Exporting from : " + SFile + " to : " + ExFile;
+        if(i <5) OutLog +="<br>";
         qDebug() << "file " << SFile << "number : " << SFiles.count() <<  Qt::endl;
-        ui->LeeLog->setPlainText(OutLog);
-        emit OnCompleted(command->CRFile);
+
+        //ui->MayaText->setHtml("<font color=\"red\">Red text</font>");
+        ui->LeeLog->setHtml(OutLog);
+        ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
+
+        // command->ExportProcess.waitForFinished(-1);
+        // OutLog += command->ExportProcess.readAllStandardOutput() + "\n";
+        // OutLog += "Export Completed : " + SFile + "\n";
+        // ui->LeeLog->setPlainText(OutLog);
+
     }
+
+    command=nullptr;
 
 }
 
@@ -216,6 +239,29 @@ QStringList MainWindow::InitFillters()
     return QStringList();
 }
 
+void MainWindow::Display(QString inReceiveFile,QString CSFile)
+{
+    QString OutLog =ui->LeeLog->toHtml();
+    QFile fileExp(inReceiveFile);
+    //<color:#ff0000=\"DeepPink\">
+    QString Message = fileExp.exists() ? "<font color=\"green\">Export Completed : </font>" : "<font color=\"red\">Export Failure : </font>";
+    QString FMessage = fileExp.exists() ? inReceiveFile : CSFile;
+    OutLog += Message + FMessage;
+    ui->LeeLog->setHtml(OutLog);
+    ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
+    LastCompletedFile = CSFile;
+
+}
+
+void MainWindow::DisplayErr(QString ErStr)
+{
+    // QString OutLog =ui->LeeLog->toPlainText();
+    // OutLog += "Err : " + ErStr + "\n";
+    // ui->LeeLog->setPlainText(OutLog);
+    qDebug() << "err : " << ErStr;
+
+}
+
 void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters)
 {
     QDir dir(inDir);
@@ -240,17 +286,10 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QString
 
 void MainWindow::OnFinish()
 {
-    QString Out = ui->LeeLog->toPlainText();
-
     QProcess process = qobject_cast<QProcess>(sender());
 
-    QString CRFile = process.property("CRFile").toString();
     if(process.isOpen())
         process.deleteLater();
-
-    // Out +="Export Completed : " + CRFile + "\n";
-    // ui->LeeLog->setPlainText(Out);
-    // qDebug() << "ReadAble " << Qt::endl;
 }
 
 
@@ -337,10 +376,3 @@ void MainWindow::OnComboBoxChanged(int valuechanged)
     Spoiler->toggleButton->setText(textChanged);
 }
 
-void MainWindow::OnCompleted(QString comletedfile)
-{
-    QString Out = ui->LeeLog->toPlainText();
-    Out+="Export Completed : " + comletedfile + "\n";
-    ui->LeeLog->setPlainText(Out);
-
-}

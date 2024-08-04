@@ -32,11 +32,15 @@ public:
     void CreateProcess(const QString inSourceFile, const QString inExportFile,QString &OutLog,SoftwereType inSType=Maya);
 
     void UpdateLogString(QPlainTextEdit* inText,QString &LogStr);
+    QString GetCSFile(){return CSFile;}
+    bool IsRunning(){return isRunning;}
     QProcess ExportProcess;
-    QString CRFile;
 
 signals:
     void OnReadLine(QString Line);
+    void SendCRFile(QString SendPath,QString SendSFile);
+    void SendErrorStr(QString SentStr);
+
 
 public slots:
     void ReadSTDIN();
@@ -61,6 +65,15 @@ private:
     QString IsValidProgram(const QString inSourceFile);
 
     void InitBlenderScript(const QString inExportFile);
+
+    QString CRFile,CSFile;
+    QString ErrorStr;
+
+    bool isRunning;
+
+private slots:
+    void OnSentCRFile();
+    void OnError();
 };
 
 #endif // COMMANDLINE_H

@@ -96,13 +96,29 @@ void CommandLine::InitBlenderScript(const QString inExportFile)
 
 }
 
+void CommandLine::OnSentCRFile()
+{
+    ErrorStr= ExportProcess.readAllStandardError();
+
+    OnError();
+    emit SendCRFile(CRFile,CSFile);
+    StopThread();
+    isRunning=false;
+}
+
+void CommandLine::OnError()
+{
+    emit SendErrorStr(ErrorStr);
+}
+
 void CommandLine::CreateProcess(const QString inSourceFile, const QString inExportFile,QString &OutLog,SoftwereType inSType)
 {
     //init Programs
     QString mProgram = IsValidProgram(inSourceFile);
 
     //Blender Export Scripts Init
-    InitBlenderScript(inExportFile);
+    if(inSourceFile.endsWith(".blend"))
+        InitBlenderScript(inExportFile);
 
     //Log
     QFile ExportLog(MASSFBXLOG);
@@ -119,7 +135,7 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     }
     else{
         qDebug() << inSourceFile << " Not Blender or Maya file format software." << Qt::endl;
-        OutLog += "fle : " +  inSourceFile + " Not Blender file format software.\n";
+        OutLog += "fle : " +  inSourceFile + " Not Blender file format software. <br>";
         return;
     }
 
@@ -130,10 +146,14 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     QStringList params = QStringList() << Cmd;
 
     //run command..//
+    CRFile = inExportFile;
+    CSFile = inSourceFile;
+    connect(&ExportProcess,&QProcess::finished,this,&CommandLine::OnSentCRFile);
+    connect(&ExportProcess,&QProcess::errorOccurred,this,&CommandLine::OnError);
     ExportProcess.start(Cmd);
     ExportProcess.waitForStarted();
+    isRunning=true;
     //ExportProcess.setProperty("CRFile",QVariant(inExportFile));
-    CRFile = inExportFile;
     // ExportProcess->start(mProgram,params);
 
     // ExportProcess->waitForFinished(-1);
@@ -159,4 +179,7 @@ void CommandLine::UpdateLogString(QPlainTextEdit *inText, QString &LogStr)
     if(!inText) return;
 
     return inText->setPlainText(LogStr);
+}
+
+void SendCRFile(QString SendPath,QString SendSFile){
 }

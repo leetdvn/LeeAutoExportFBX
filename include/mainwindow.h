@@ -10,6 +10,7 @@
 #include <QColorDialog>
 #include <QCheckBox>
 #include <QSpinBox>
+#include <QScrollBar>
 
 #if defined MELEXPORT
 #include "Definitions.h"
@@ -39,9 +40,6 @@ public slots:
 
     void OnComboBoxChanged(int valuechanged);
 
-    void OnCompleted(QString comletedfile);
-
-
     void GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters);
 
     void OnFinish();
@@ -55,8 +53,6 @@ private:
     QString ipSourceDir;
     QString ExportDir;
 
-    CommandLine* command=nullptr;
-
     QProcess* mProcess=nullptr;
 
     QString GeneratedCommand(const QString inSourceFile, const QString inExportFile);
@@ -67,8 +63,12 @@ private:
 
     QList<QStringList> leeFilters;
 
-protected:
+private slots:
+    void Display(QString inReceiveFile,QString CSFile);
 
+    void DisplayErr(QString ErStr);
+protected:
+    CommandLine* command = nullptr;
     void ImplementFbxOptions();
 
     QString GetExportPath(const QString inSourceFile,const QString inExportDir);
@@ -83,7 +83,9 @@ protected:
     QPushButton* ExpotBtn;
 
     int SourceType=-1;
-    QString FinishStr;
+    QString LastCompletedFile;
+
+    bool isRunning;
 
 };
 #endif // MAINWINDOW_H
