@@ -36,9 +36,8 @@ LeeSpoiler::LeeSpoiler(const QString& title, const int animationDuration, QWidge
 
     mainLayout->setVerticalSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
-
     int row = 0;
-    mainLayout->addWidget(toggleButton, row, 0, 1, 1, Qt::AlignLeft);
+    mainLayout->addWidget(toggleButton, row, 0, 1, 1, Qt::AlignCenter);
     mainLayout->addWidget(headerLine, row++, 2, 1, 1);
     mainLayout->addWidget(contentArea, row, 0, 1, 3);
     setLayout(mainLayout);

@@ -14,6 +14,14 @@
 #include "Definitions.h"
 #endif
 
+enum SoftwereType
+{
+    Maya,
+    Blender,
+    MayaAndBlender,
+    None
+};
+
 class CommandLine : public QObject
 {
     Q_OBJECT
@@ -21,9 +29,10 @@ class CommandLine : public QObject
 public:
     explicit CommandLine(QObject *parent=0);
     ~CommandLine();
-    void CreateProcess(const QString inSourceFile, const QString inExportFile,QString &OutLog,bool isMaya=true);
+    void CreateProcess(const QString inSourceFile, const QString inExportFile,QString &OutLog,SoftwereType inSType=Maya);
 
     void UpdateLogString(QPlainTextEdit* inText,QString &LogStr);
+    QProcess ExportProcess;
 
 signals:
     void OnReadLine(QString Line);
@@ -42,9 +51,15 @@ private:
 
     QString MakeCmd(const QString inSourceFile, const QString inExportFile,bool isOverride=false);
 
+    QString MakeMayaCommand(const QString inSourceFile, const QString inExportFile);
+
+    QString MakeBlenderCommand(const QString inSourceFile, const QString inExportFile);
+
+    QString MakeCommand(const QString inSourceFile, const QString inExportFile,SoftwereType inSType=Maya);
+
     QString GetMelCommand(const QString inMelScript);
 
-    QProcess ExportProcess;
+
 };
 
 

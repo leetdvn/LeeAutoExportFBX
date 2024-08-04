@@ -1,5 +1,2 @@
 import bpy
-from bpy.types import AddonPreferences, PropertyGroup, Operator, Panel
-from bpy.props import BoolProperty, IntProperty, EnumProperty, StringProperty, PointerProperty, FloatVectorProperty
-
-print("Taoday")
+bpy.ops.export_scene.fbx(filepath='C:/Users/thang/Documents/Exports/taoday/taoday.fbx')

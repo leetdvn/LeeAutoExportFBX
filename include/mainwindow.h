@@ -37,7 +37,11 @@ public slots:
 
     void OnExportClicked();
 
-    void GetFilesInDir(const QString inDir,QStringList &OutFiles);
+    void OnComboBoxChanged(int valuechanged);
+
+    void GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters);
+
+    void OnReadAble();
 private:
     Ui::MainWindow *ui;
     Ui::FbxOptions *uiOpt;
@@ -54,6 +58,8 @@ private:
 
     QString GeneratedCommand(const QString inSourceFile, const QString inExportFile);
 
+    void InitFillters(QStringList &OutFilters);
+
     QStringList MayaFiles,BlenderFiles;
 
     QList<QStringList> leeFilters;
@@ -62,9 +68,15 @@ protected:
 
     void ImplementFbxOptions();
 
+    QString GetExportPath(const QString inSourceFile,const QString inExportDir);
+
+    SoftwereType GetSoftWareType();
+
     LeeSpoiler* Spoiler;
 
     QPushButton* ExpotBtn;
+
+    int SourceType=-1;
 
 };
 #endif // MAINWINDOW_H

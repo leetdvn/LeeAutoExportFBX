@@ -39,6 +39,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     MayaFiles <<"*.ma" << "*.mb";
 
+    BlenderFiles << "*.blend";
+
 }
 
 MainWindow::~MainWindow()
@@ -107,49 +109,86 @@ void MainWindow::OnBrowserClicked()
 void MainWindow::OnExportClicked()
 {
 
-    qDebug() << "EXTPORT File..." << Qt::endl;
-
+    qDebug() << "EXTPORT File Running.." << Qt::endl;
 
     QFile melFile(MELEXPORTSCRIPT);
     QFile BlenderFile("");
     QFile LogFiles(MASSFBXLOG);
+    //clear log
+    ui->LeeLog->setPlainText(QString());
 
-
-    QString Cmd = GeneratedCommand(ui->SourceFolderText->toPlainText() + "textFbx.ma" , ui->ExportFolderText->toPlainText() + "abc.fbx");
-
-    qDebug() << MELEXPORTSCRIPT << Qt::endl;
-
-    // if(!melFile.open(QIODevice::ReadOnly))
-    // {
-    //     QMessageBox::information(0, "error", melFile.errorString());
-    // }
-
-    QString mProgram = "C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe";
+    //qDebug() << MELEXPORTSCRIPT << Qt::endl;
+    //Define Log Str
     QString OutLog;
 
 
+    SoftwereType SType = GetSoftWareType();
+
+    //type None Error type
+    if(SType==None) {
+
+        /*Debug Something here*/
+        return;
+    }
+
+    qDebug() << "Type Export " << SType <<Qt::endl;
+    OutLog += "Type Export " + QString::number(SType) + "\n";
+    //create Filter List
+    QStringList filters;
+    InitFillters(filters);
+
+    //Debug Filters
+    QString FilLog = "Filter type : ";
+    for(auto ff : filters)
+        FilLog+= ff;
+    qDebug() << FilLog << Qt::endl;
+    OutLog += FilLog + "\n";
+    //Get Source Files
     QStringList SFiles;
+    GetFilesInDir(ipSourceDir,SFiles,filters);
 
-    GetFilesInDir(ipSourceDir,SFiles);
+    //Log Files Searching
+    for(auto f : SFiles){
+        OutLog += f + "\n";
+        qDebug() << f <<Qt::endl;
+    }
 
-    for(auto sf : SFiles){
-        OutLog += sf + "\n";
+    //Test Source Files
+    QString SFile = SFiles[0];
+    QString ExFile = GetExportPath(SFile,ExportDir);
+    OutLog = "Loading File : " + SFile + "\n";
+
+    //fbx exist file
+    if(!QFile(SFile).exists()){
+        //Source file does not exists
+        return;
+    }
+
+    QFile FbxFile(ExFile);
+    if(FbxFile.exists()){
+        //file exist need ovverride or next file;
+
     }
 
 
-    QString SFile = ui->SourceFolderText->toPlainText() + "text.ma";
-    QString ExFile = ui->ExportFolderText->toPlainText() + "abc.fbx";
-    CommandLine* command = new CommandLine();
-    command->CreateProcess(SFile,ExFile,OutLog,false);
+    //Execute Command
+    // CommandLine* command = new CommandLine();
+    // command->CreateProcess(SFile,ExFile,OutLog,SType);
 
-    ui->LeeLog->setPlainText(OutLog);
+    // connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnReadAble);
+    // command->ExportProcess.waitForStarted();
+    // ui->LeeLog->setPlainText(OutLog);
 
-    //mProcess->waitForStarted(-1);
+
+    // command->ExportProcess.waitForFinished(-1);
+    // OutLog += command->ExportProcess.readAllStandardOutput();
+    // ui->LeeLog->setPlainText(OutLog);
+
+
+
 
 
 }
-
-
 
 QString MainWindow::GeneratedCommand(const QString inSourceFile, const QString inExportFile)
 {
@@ -172,12 +211,46 @@ QString MainWindow::GeneratedCommand(const QString inSourceFile, const QString i
     return cmd;
 }
 
-void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles)
+void MainWindow::InitFillters(QStringList &OutFilters)
+{
+    if(uiOpt->comboBox == nullptr)
+        SourceType=1;
+
+    SourceType = uiOpt->comboBox->currentIndex();
+
+    if(SourceType < 0) {
+        OutFilters = MayaFiles;
+        return;
+    }
+
+    switch (SourceType) {
+        case 0:{
+            OutFilters = MayaFiles;
+            return ;
+        }
+        case 1:{
+            OutFilters = BlenderFiles;
+            return;
+        }
+        case 2:{
+            for(auto f : BlenderFiles)
+            {
+                MayaFiles.push_back(f);
+            }
+            OutFilters = MayaFiles;
+            return ;
+        }
+    }
+
+    return ;
+}
+
+void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters)
 {
     QDir dir(inDir);
     if(!dir.exists()) return;
 
-    QStringList files = dir.entryList(MayaFiles);
+    QStringList files = dir.entryList(inFilters);
 
     QStringList folders = dir.entryList(QDir::Dirs);
 
@@ -190,8 +263,20 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles)
         if(fo.endsWith(".") || fo.endsWith("..")) continue;
         //qDebug() << inDir + fo;
         QString dirPath = inDir + fo + "/";
-        GetFilesInDir(dirPath,OutFiles);
+        GetFilesInDir(dirPath,OutFiles,inFilters);
     }
+}
+
+void MainWindow::OnReadAble()
+{
+    QString Out = "Finish...";
+
+    QProcess process = qobject_cast<QProcess>(sender());
+
+    if(process.isOpen())
+        process.deleteLater();
+    ui->LeeLog->setPlainText(Out);
+    //qDebug() << "ReadAble " << Qt::endl;
 }
 
 
@@ -200,6 +285,8 @@ void MainWindow::ImplementFbxOptions()
 
     Spoiler = new LeeSpoiler("MassFbx Options",100,this);
     uiOpt->setupUi(Spoiler);
+    uiOpt->comboBox->setCurrentIndex(1);
+    connect(uiOpt->comboBox,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
 
     Spoiler->toggleButton->setStyleSheet("font: 700 11pt \"Sitka\"; color: rgb(255, 255, 255);");
     Spoiler->toggleButton->setAutoRaise(true);
@@ -212,4 +299,53 @@ void MainWindow::ImplementFbxOptions()
    // ui->AuthorLayout->insertWidget(ui->AuthorLayout->count(),Spoiler);// ->addWidget(Spoiler);
     //ui->MainVLayout->layout()->addWidget(Spoiler);
     ui->verticalLayout_3->insertWidget(ui->verticalLayout_3->count()-2,Spoiler,Qt::AlignHCenter);
+    //ui->verticalLayout_3->addWidget(Spoiler,Qt::AlignCenter);
+}
+
+QString MainWindow::GetExportPath(const QString inSourceFile, const QString inExportDir)
+{
+    if(inSourceFile.isEmpty() || inSourceFile.isNull()) return QString();
+
+    QFile file(inSourceFile);
+    if(!file.exists()) return QString();
+
+    QString fpath = inSourceFile;
+
+    fpath.replace("\\","/");
+
+    QStringList splitStr= fpath.split("/");
+
+    QString fname =splitStr[splitStr.count()-1];
+
+    QString nPathDir = inExportDir + fname.left(fname.lastIndexOf(".")) + "/";
+
+    QString FbxPath = nPathDir + fname.left(fname.lastIndexOf(".")) + ".fbx";
+
+    qDebug() << "fbxPaht : " << FbxPath << Qt::endl;
+
+    //make dir export fbx
+    QDir nDir(nPathDir);
+
+    if(!nDir.exists())
+        nDir.mkpath(nPathDir);
+
+    //return fbx file exports
+    return FbxPath;
+}
+
+SoftwereType MainWindow::GetSoftWareType()
+{
+    int SType = uiOpt->comboBox->currentIndex();
+
+    switch (SType) {
+        case 0: return Maya;
+        case 1: return Blender;
+        case 2: return MayaAndBlender;
+    }
+    return None;
+}
+
+void MainWindow::OnComboBoxChanged(int valuechanged)
+{
+    qDebug() << "Value Changed " << valuechanged << Qt::endl;
 }

@@ -57,6 +57,22 @@ QString CommandLine::MakeCmd(const QString inSourceFile, const QString inExportF
 
 }
 
+QString CommandLine::MakeMayaCommand(const QString inSourceFile, const QString inExportFile)
+{
+    return QString();
+}
+
+QString CommandLine::MakeBlenderCommand(const QString inSourceFile, const QString inExportFile)
+{
+    return QString();
+}
+
+QString CommandLine::MakeCommand(const QString inSourceFile, const QString inExportFile, SoftwereType inSType)
+{
+    QString mProgram = inSType ==0  ? "\"C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe\"" : "\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" ";
+    return QString();
+}
+
 QString CommandLine::GetMelCommand(const QString inMelScript)
 {
     QFile melFile(MELEXPORTSCRIPT);
@@ -70,19 +86,19 @@ QString CommandLine::GetMelCommand(const QString inMelScript)
     return melStream.readAll();
 }
 
-void CommandLine::CreateProcess(const QString inSourceFile, const QString inExportFile,QString &OutLog,bool isMaya)
+void CommandLine::CreateProcess(const QString inSourceFile, const QString inExportFile,QString &OutLog,SoftwereType inSType)
 {
     //init Programs
-    QString mProgram = isMaya ? "\"C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe\"" : "\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" ";
+    QString mProgram = inSType ==0  ? "\"C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe\"" : "\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" ";
 
     QString CmdProgram= "C:/Program Files/Blender Foundation/Blender 4.2/blender.exe";
     //make bat
     QString BlendBat("/home/Documents/GitHub/LeeAutoExportFBX/Scripts/ExpotText.txt"); //"C:\Users\thang\Documents\GitHub\LeeAutoExportFBX\Scripts\ExpotText.txt"
-    QFile blendExp(BlendBat);
+    QFile blendExp(BLENDEREXPORT);
 
     if(blendExp.open(QIODevice::WriteOnly))
     {
-        QString Cmd = "C:/Windows/System32/cmd.exe /k @\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" -b " + inSourceFile + " -P " + BLENDEREXPORT;
+        QString Cmd = "import bpy\nbpy.ops.export_scene.fbx(filepath='"+ inExportFile + "')";
         blendExp.write(Cmd.toLocal8Bit());
         blendExp.close();
     }
@@ -92,26 +108,31 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
 
     //Create Command
     QString Cmd;
-    if(isMaya){
-        if(!inSourceFile.endsWith(".ma") || !inSourceFile.endsWith(".mb")){
+    if(inSType ==0){
+        if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
+            Cmd =  mProgram + " -file \""  + inSourceFile + "\"\" ;\n" ;
+            Cmd += GetMelCommand(MELEXPORTSCRIPT) + "\"" + inExportFile;
+        }
+        else{
             OutLog += "fle : " +  inSourceFile + " Not Maya file format software.\n";
             qDebug() << inSourceFile << " Not Maya file format software." << Qt::endl;
             return;
         }
 
-        Cmd=  mProgram + " -file \""  + inSourceFile + "\"\" ;\n" ;
-        Cmd += GetMelCommand(MELEXPORTSCRIPT) + "\"" + inExportFile;
     }
-    else{
+    qDebug() << "Source : " << inSourceFile << "Type : " << inSType << Qt::endl;
 
-        Cmd = mProgram +  " -b " + inSourceFile;
-        Cmd += " -P "  BLENDEREXPORT ;
+    if(inSType==1){
+        qDebug() << "Source : " << Cmd << Qt::endl;
 
         if(!inSourceFile.endsWith(".blend")){
             qDebug() << inSourceFile << " Not Blender file format software." << Qt::endl;
             OutLog += "fle : " +  inSourceFile + " Not Blender file format software.\n";
             return;
         }
+        Cmd = mProgram +  " -b " + inSourceFile;
+        Cmd += " -P "  BLENDEREXPORT;
+
     }
     qDebug() << Cmd << Qt::endl;
     //QProcess
@@ -122,7 +143,7 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     //run command..//
     //process.start("\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" -b C:/Users/thang/Documents/abc.blend -P " + QString(BLENDEREXPORT));
     ExportProcess.start(Cmd);
-    ExportProcess.waitForFinished(-1);
+    ExportProcess.waitForStarted();
     // ExportProcess->start(mProgram,params);
 
     // ExportProcess->waitForFinished(-1);
