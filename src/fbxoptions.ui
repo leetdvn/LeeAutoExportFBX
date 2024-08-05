@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>496</width>
-    <height>64</height>
+    <width>549</width>
+    <height>96</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,7 +48,7 @@
            </property>
           </widget>
          </item>
-         <item>
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QCheckBox" name="checkBox">
            <property name="minimumSize">
             <size>
@@ -58,6 +58,13 @@
            </property>
            <property name="text">
             <string>Bake Anim</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
            </property>
           </widget>
          </item>
@@ -79,6 +86,13 @@
           <widget class="QCheckBox" name="checkBox_2">
            <property name="text">
             <string>All In FBX</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line_2">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
            </property>
           </widget>
          </item>

@@ -35,7 +35,7 @@ set(PROJECT_SOURCES
     src/mainwindow.ui
     src/FbxOptions.ui
     src/leespoiler.cpp
-
+    LeeAutoExportFBX.rc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
