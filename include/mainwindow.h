@@ -11,6 +11,9 @@
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QScrollBar>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonValue>
 
 #if defined MELEXPORT
 #include "Definitions.h"
@@ -23,6 +26,14 @@ class FbxOptions;
 }
 QT_END_NAMESPACE
 
+enum DataPath
+{
+    LBatchMaya,
+    LBlender,
+    LSource,
+    LExport
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -34,7 +45,9 @@ public:
 public slots:
     void OnTextChanged();
 
-    void OnBrowserClicked();
+    void OnBrowserFolder();
+
+    void OnBrowserFile();
 
     void OnExportClicked();
 
@@ -52,21 +65,39 @@ private:
     QString logStr;
     QString ipSourceDir;
     QString ExportDir;
-
     QProcess* mProcess=nullptr;
 
     QString GeneratedCommand(const QString inSourceFile, const QString inExportFile);
 
     QStringList InitFillters();
 
+    //init Default
+    void InitLocal();
+
     QStringList MayaFiles,BlenderFiles;
 
     QList<QStringList> leeFilters;
+
+    bool IsValidPath(const QString inPath);
+
+    bool ValidPaths();
+
+    void SaveRecentData(const QString inFilePath);
+
+    void SaveToLocal(DataPath inType,const QString inContent);
+
+    void LoadRecentData();
+
+    QJsonObject LoadObjectFromFile(const QString infile);
+
+    QString localfilePath="C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/LeeMassFbx.json";
 
 private slots:
     void Display(QString inReceiveFile,QString CSFile);
 
     void DisplayErr(QString ErStr);
+
+    void OnCompletedId(int Id);
 protected:
     CommandLine* command = nullptr;
     void ImplementFbxOptions();
@@ -74,6 +105,9 @@ protected:
     QString GetExportPath(const QString inSourceFile,const QString inExportDir);
 
     SoftwereType GetSoftWareType();
+
+    //info Env
+    void InfoEnv();
 
     //execute Fbx Export
     void ExecuteExportFbx(QString inSourceFile,QString inExportDir);
@@ -83,9 +117,14 @@ protected:
     QPushButton* ExpotBtn;
 
     int SourceType=-1;
+
     QString LastCompletedFile;
 
+    QString _Pc,_Users,_Host;
     bool isRunning;
+
+    int TotalFiles;
+    int completedId=0;
 
 };
 #endif // MAINWINDOW_H

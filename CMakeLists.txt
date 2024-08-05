@@ -6,7 +6,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_WIN32_EXECUTABLE TRUE)
 
@@ -15,11 +15,11 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Gui Core)
 
 set(MELEXPORT ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/MayaExportCmd.mel)
 set(BLENDEREXPORT ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/BlenderExport.py)
+set(SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Scripts)
+
 
 set(LEEDEFINE ${CMAKE_CURRENT_SOURCE_DIR}/include/Definitions.h)
 set(MASSFBXLOG ${CMAKE_CURRENT_BINARY_DIR}/Logs/MassFbxLog.txt)
-
-add_definitions(-MELEXPORT)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -95,5 +95,7 @@ if(NOT EXISTS(${LEEDEFINE}))
     "#define MELEXPORTSCRIPT \"${MELEXPORT}\"\n"
     "#define MASSFBXLOG \"${MASSFBXLOG}\"\n"
     "#define BLENDEREXPORT \"${BLENDEREXPORT}\"\n"
+    "#define SCRIPTDIR \"${SCRIPT_DIR}/\"\n"
+
     )
 endif()

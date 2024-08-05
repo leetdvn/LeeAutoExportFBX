@@ -26,22 +26,65 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ExportFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
 
 
-    connect(ui->SourceBrowserBtn,&QPushButton::clicked, this, &MainWindow::OnBrowserClicked);
+    connect(ui->SourceBrowserBtn,&QPushButton::clicked, this, &MainWindow::OnBrowserFolder);
+    connect(ui->ExportBrowserBTn,&QPushButton::clicked,this,&MainWindow::OnBrowserFolder);
 
-    connect(ui->ExportBrowserBTn,&QPushButton::clicked,this,&MainWindow::OnBrowserClicked);
+    connect(ui->MayaFileBtn,&QPushButton::clicked, this, &MainWindow::OnBrowserFile);
+    connect(ui->BlenderFileBtn,&QPushButton::clicked,this,&MainWindow::OnBrowserFile);
+
     connect(ui->ExportExecute,&QPushButton::clicked,this,&MainWindow::OnExportClicked);
 
     mProcess = new QProcess();
 
+    //Info Env
+    InfoEnv();
+
+
+    //init default
+    InitLocal();
+
     //set Default testing folder;
-    ui->SourceFolderText->setText("C:/Users/thang/Documents/");
-    ui->ExportFolderText->setText("C:/Users/thang/Documents/Exports/");
+    // ui->SourceFolderText->setText("C:/Users/leepl/Documents/");
+    // ui->ExportFolderText->setText("C:/Users/leepl/Documents/Exports/");
+    LoadRecentData();
 
     MayaFiles <<"*.ma" << "*.mb";
 
     BlenderFiles << "*.blend";
 
 }
+
+#pragma region Init
+void MainWindow::InfoEnv()
+{
+    //init Default
+    _Users = qgetenv("USERNAME");
+    _Host = qgetenv("HOSTNAME");
+    _Pc = qgetenv("COMPUTERNAME");
+
+    qDebug() << "Pc : " << _Pc ;
+    qDebug() << "Users : " << _Users;
+
+    if(_Host !="")
+        qDebug() << "Host : " << _Host << Qt::endl;
+
+}
+
+void MainWindow::InitLocal()
+{
+    //init Defaults
+    QString localPath = "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/";
+
+    QDir lDir(localPath);
+    QFile lfile(localfilePath);
+    if(!lDir.exists()) lDir.mkdir(localPath);
+    if(!lfile.exists()){
+        if(lfile.open(QIODevice::ReadWrite))
+            lfile.close();
+    }
+}
+
+#pragma endregion //
 
 MainWindow::~MainWindow()
 {
@@ -73,7 +116,7 @@ void MainWindow::OnTextChanged()
         ExportDir = dir;
 }
 
-void MainWindow::OnBrowserClicked()
+void MainWindow::OnBrowserFolder()
 {
      qDebug() << "browser clicked.." << Qt::endl;
     QFileDialog* fdialog = new QFileDialog();
@@ -86,23 +129,68 @@ void MainWindow::OnBrowserClicked()
 
     qDebug() << dir << Qt::endl;
 
-    if(!dir.isNull() || dir.isEmpty()){
+
+    if(!dir.isNull() || !dir.isEmpty()){
         QPushButton* const senderButton= qobject_cast<QPushButton*>(sender());
         if(senderButton){
+            dir+="/";
             //qDebug() << senderButton->objectName() << Qt::endl;
             if(senderButton->objectName()== ui->SourceBrowserBtn->objectName())
             {
+
                 ui->SourceFolderText->setText(dir);
+                SaveToLocal(LSource,dir);
             }
-            else
+            else{
                 ui->ExportFolderText->setText(dir);
+                SaveToLocal(LExport,dir);
+            }
         }
-        // ui->SourceFolderText->setText(dir);
-        // ui->SourceFolderText->setEnabled(false);
-        // ImplanteTreeView(dir);
-        // lCurrentDirName = dir;
-        // lDir.setPath(dir);
     }
+}
+
+void MainWindow::OnBrowserFile()
+{
+    QPushButton* const senderButton= qobject_cast<QPushButton*>(sender());
+
+    QString wTitle = senderButton->objectName().startsWith("Maya") ?
+                        "Open Maya File" :
+                        "Open Blender File";
+
+    QString Soft = senderButton->objectName().startsWith("Maya") ?
+                        tr("MayaBatch File (*.exe)"):
+                        tr("Blender File (*.exe)");
+
+    QString baseDir = "C:/Program Files/";
+    QString Dir  = senderButton->objectName().startsWith("Maya") ?
+                        baseDir + "Autodesk/" :
+                        baseDir + "Blender Foundation/";
+    QFileDialog* fdialog = new QFileDialog();
+    fdialog->setFileMode(QFileDialog::Directory);
+    fdialog->setOption(QFileDialog::ShowDirsOnly);
+
+    if(QDir(Dir).exists()) baseDir= Dir;
+
+    QString file = QFileDialog::getOpenFileName(this, wTitle,baseDir,Soft);
+
+    DataPath type = senderButton->objectName().startsWith("Maya") ? LBatchMaya : LBlender;
+    SaveToLocal(type,file);
+
+    qDebug() << file << Qt::endl;
+
+    QTextEdit* textE = nullptr;
+
+    if(senderButton){
+        textE = senderButton->objectName().startsWith("Maya") ? ui->MayaText : ui->BlenderText;
+    }
+
+    if(!file.isNull() || file.isEmpty()){
+        qDebug() << senderButton->objectName() << Qt::endl;
+    }
+
+    if(textE !=nullptr)
+        textE->setPlainText(file);
+
 
 }
 
@@ -111,8 +199,12 @@ void MainWindow::OnExportClicked()
 
     qDebug() << "EXTPORT File Running.." << Qt::endl;
 
+    //valid path
+    //if(!ValidPaths()) return;
+
+    //check Running status
     if(command){
-        if(command->IsRunning()){
+        if(command->IsRunning() && !isRunning){
             QString OutLog =ui->LeeLog->toHtml();
             OutLog += "Running File : " + command->GetCSFile();
             ui->LeeLog->setHtml(OutLog);
@@ -154,25 +246,32 @@ void MainWindow::OnExportClicked()
     GetFilesInDir(ipSourceDir,SFiles,filters);
 
     //Log Files Searching
+    qDebug() << "Files Count " << SFiles.count() << Qt::endl;
+    qDebug() << "ip Source " << ipSourceDir << Qt::endl;
 
-    isRunning=true;
+
+    ui->progressBar->setValue(0);
+    TotalFiles = SFiles.count();
     //execute command current test 1 file
     for(int i=0;i<SFiles.count();++i)
     {
-        if(i > 5) return;
         QString SFile = SFiles[i];
         QString ExFile = GetExportPath(SFile,ExportDir);
 
         //Execute Command
         command = new CommandLine();
+        command->SetMayaPro(ui->MayaText->toPlainText());
+        command->SetBlenderPro(ui->BlenderText->toPlainText());
+        command->SetCommandId(i+1);
         command->CreateProcess(SFile,ExFile,OutLog,SType);
 
         connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
         connect(command,&CommandLine::SendCRFile,this,&MainWindow::Display);
         connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
+        connect(command,&CommandLine::SendId,this,&MainWindow::OnCompletedId);
         command->ExportProcess.waitForStarted();
         OutLog += "Exporting from : " + SFile + " to : " + ExFile;
-        if(i <5) OutLog +="<br>";
+        if(i <SFiles.count()) OutLog +="<br>";
         qDebug() << "file " << SFile << "number : " << SFiles.count() <<  Qt::endl;
 
         //ui->MayaText->setHtml("<font color=\"red\">Red text</font>");
@@ -239,6 +338,138 @@ QStringList MainWindow::InitFillters()
     return QStringList();
 }
 
+
+bool MainWindow::IsValidPath(const QString inPath)
+{
+    if(inPath.isEmpty() || inPath.isNull()) return false;
+
+    return false;
+}
+
+bool MainWindow::ValidPaths()
+{
+    QStringList paths ={
+        ui->MayaText->toPlainText(),
+        ui->BlenderText->toPlainText(),
+        ui->SourceFolderText->toPlainText(),
+        ui->ExportFolderText->toPlainText()
+    };
+
+    int count;
+    for(auto f: paths){
+        if(count < 2){
+            qDebug() << "Valid Path : " << paths[count] << Qt::endl;
+            if(!QFile(f).exists()) return false;
+        }
+        else{
+            qDebug() << "Valid Path : " << paths[count] << Qt::endl;
+            if(!QDir(f).exists()) return false;
+        }
+        count++;
+    }
+
+    return true;
+}
+
+void MainWindow::SaveRecentData(const QString inFilePath)
+{
+    QJsonObject obj;
+    obj["BatchMaya"]= ui->MayaText->toPlainText();
+    obj["Blender"]= ui->BlenderText->toPlainText();
+    obj["SourcePath"]= ui->SourceFolderText->toPlainText();
+    obj["ExportPath"]= ui->ExportFolderText->toPlainText();
+
+    QJsonDocument jdoc;
+    jdoc.setObject(obj);
+
+    QFile file(inFilePath);
+
+    if(file.open(QIODevice::ReadWrite)){
+        file.write(jdoc.toJson());
+        file.close();
+    }
+}
+
+void MainWindow::SaveToLocal(DataPath inType,const QString inContent)
+{
+
+    QJsonObject jObj = LoadObjectFromFile(localfilePath);
+
+    QString Session;
+
+    switch (inType) {
+        case LBatchMaya:{
+            Session="BatchMaya";
+            break;
+        }
+        case LBlender:{
+            Session="Blender";
+            break;
+        }
+        case LSource:{
+            Session="SourcePath";
+            break;
+        }
+        case LExport:{
+            Session="ExportPath";
+            break;
+        }
+    }
+
+    qDebug() << "ip : " << inType << "Sess : " << Session << "path : " << inContent <<  Qt::endl;
+    jObj[Session] = inContent;
+
+    QJsonDocument jdoc;
+    jdoc.setObject(jObj);
+
+    QFile file(localfilePath);
+
+    if(file.open(QIODevice::WriteOnly)){
+        file.write(jdoc.toJson());
+        file.close();
+    }
+}
+
+void MainWindow::LoadRecentData()
+{
+    QJsonDocument jdoc;
+    QFile jfile(localfilePath);
+    if(jfile.exists()){
+        if(jfile.open(QIODevice::ReadOnly))
+        {
+            QString content = jfile.readAll();
+            jdoc=QJsonDocument::fromJson(content.toUtf8());
+        }
+        jfile.close();
+    }
+
+    QJsonObject jobj = jdoc.object();
+    QJsonValue maya = jobj.value("BatchMaya");
+    QJsonValue blender = jobj.value("Blender");
+    QJsonValue source = jobj.value("SourcePath");
+    QJsonValue exp = jobj.value("ExportPath");
+    ui->MayaText->setText(maya.toString());
+    ui->BlenderText->setText(blender.toString());
+    ui->SourceFolderText->setText(source.toString());
+    ui->ExportFolderText->setText(exp.toString());
+}
+
+QJsonObject MainWindow::LoadObjectFromFile(const QString infile)
+{
+    QJsonDocument jdoc;
+    QFile jfile(infile);
+    if(jfile.exists()){
+        if(jfile.open(QIODevice::ReadOnly))
+        {
+            QString content = jfile.readAll();
+            jdoc=QJsonDocument::fromJson(content.toUtf8());
+        }
+        jfile.close();
+    }
+
+    return jdoc.object();
+}
+
 void MainWindow::Display(QString inReceiveFile,QString CSFile)
 {
     QString OutLog =ui->LeeLog->toHtml();
@@ -262,6 +493,20 @@ void MainWindow::DisplayErr(QString ErStr)
 
 }
 
+void MainWindow::OnCompletedId(int Id)
+{
+    completedId+=1;
+    int value = (100.0/TotalFiles) * completedId;
+    ui->progressBar->setValue(value);
+    if(value >=99){
+        ui->progressBar->setValue(100);
+    }
+
+    isRunning = completedId == TotalFiles ? false : true;
+
+    qDebug() << "completed : " << value << "/ " << TotalFiles << " file ";
+}
+
 void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters)
 {
     QDir dir(inDir);
@@ -280,6 +525,7 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QString
         if(fo.endsWith(".") || fo.endsWith("..")) continue;
         //qDebug() << inDir + fo;
         QString dirPath = inDir + fo + "/";
+        qDebug() << inDir + fo;
         GetFilesInDir(dirPath,OutFiles,inFilters);
     }
 }

@@ -63,7 +63,7 @@
         <item>
          <widget class="QLabel" name="SourceLabel_2">
           <property name="text">
-           <string>    Maya Bin     </string>
+           <string>    Maya Batch</string>
           </property>
          </widget>
         </item>
@@ -81,9 +81,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="SourceBrowserBtn_2">
+         <widget class="QPushButton" name="MayaFileBtn">
           <property name="text">
-           <string>Browser</string>
+           <string>MayaBatch</string>
           </property>
          </widget>
         </item>
@@ -94,7 +94,7 @@
         <item>
          <widget class="QLabel" name="SourceLabel_3">
           <property name="text">
-           <string>    Blender Bin </string>
+           <string>      Blender     </string>
           </property>
          </widget>
         </item>
@@ -112,9 +112,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="SourceBrowserBtn_3">
+         <widget class="QPushButton" name="BlenderFileBtn">
           <property name="text">
-           <string>Browser</string>
+           <string>Blender</string>
           </property>
          </widget>
         </item>
@@ -125,7 +125,7 @@
         <item>
          <widget class="QLabel" name="SourceLabel">
           <property name="text">
-           <string>SourceFolder  </string>
+           <string>SourceFolder </string>
           </property>
          </widget>
         </item>
@@ -156,7 +156,7 @@
         <item>
          <widget class="QLabel" name="ExportFolderLabel">
           <property name="text">
-           <string> Export Folder </string>
+           <string> Export Folder</string>
           </property>
          </widget>
         </item>

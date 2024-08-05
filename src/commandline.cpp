@@ -1,5 +1,7 @@
 #include "commandline.h"
 
+#include <QDir>
+
 CommandLine::CommandLine(QObject *parent)
     :QObject(parent)
 {
@@ -50,6 +52,8 @@ QString CommandLine::MakeCmd(const QString inSourceFile, const QString inExportF
 {
     QFile Sfile(inSourceFile);
     if(!Sfile.exists()) return QString();
+
+    return QString();
 }
 
 QString CommandLine::MakeMayaCommand(const QString inSourceFile, const QString inExportFile)
@@ -78,15 +82,29 @@ QString CommandLine::GetMelCommand(const QString inMelScript)
 QString CommandLine::IsValidProgram(const QString inSourceFile)
 {
     return inSourceFile.endsWith(".blend") ?
-        "\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" ":
-        "\"C:/Program Files/Autodesk/Maya2019/bin/mayabatch.exe\"";
+        BlenderProgram:
+        MayaProgram;
 
 }
 
-void CommandLine::InitBlenderScript(const QString inExportFile)
+QString CommandLine::InitBlenderScript(const QString inExportFile)
 {
+
+    QStringList nName = inExportFile.split("/");
+
+    QString fileName = nName[nName.count()-1];
+
+    QString newName = fileName.left(fileName.lastIndexOf("."));
+
+    QDir sDir(LocalScripts);
+    if(!sDir.exists())
+        sDir.mkdir(LocalScripts);
+
+    QString ScriptFile = LocalScripts + newName + ".py";
+    BlenderScripts.append(newName + ".py");
+    //qDebug() << "file Name : "  + newName ;
     //Blender Export Scripts
-    QFile blendExp(BLENDEREXPORT);
+    QFile blendExp(ScriptFile);
     if(blendExp.open(QIODevice::WriteOnly))
     {
         QString Cmd = "import bpy\nbpy.ops.export_scene.fbx(filepath='"+ inExportFile + "')";
@@ -94,6 +112,7 @@ void CommandLine::InitBlenderScript(const QString inExportFile)
         blendExp.close();
     }
 
+    return ScriptFile;
 }
 
 void CommandLine::OnSentCRFile()
@@ -102,8 +121,22 @@ void CommandLine::OnSentCRFile()
 
     OnError();
     emit SendCRFile(CRFile,CSFile);
+    emit OnSendId();
+
     StopThread();
     isRunning=false;
+
+    if(BlenderScripts.count() > 0){
+        for(auto s : BlenderScripts)
+        {
+            QDir dir(LocalScripts);
+            QFile file(LocalScripts + s);
+
+            qDebug() << "script : " + file.fileName();
+            if(file.exists())
+                dir.remove(s);
+        }
+    }
 }
 
 void CommandLine::OnError()
@@ -111,14 +144,17 @@ void CommandLine::OnError()
     emit SendErrorStr(ErrorStr);
 }
 
+void CommandLine::OnSendId()
+{
+    emit SendId(commandId);
+}
+
 void CommandLine::CreateProcess(const QString inSourceFile, const QString inExportFile,QString &OutLog,SoftwereType inSType)
 {
     //init Programs
     QString mProgram = IsValidProgram(inSourceFile);
 
-    //Blender Export Scripts Init
-    if(inSourceFile.endsWith(".blend"))
-        InitBlenderScript(inExportFile);
+    ;
 
     //Log
     QFile ExportLog(MASSFBXLOG);
@@ -130,8 +166,11 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
         Cmd += GetMelCommand(MELEXPORTSCRIPT) + "\"" + inExportFile;
     }
     else if(inSourceFile.endsWith(".blend")){
-        Cmd = mProgram +  " -b " + inSourceFile;
-        Cmd += " -P "  BLENDEREXPORT;
+        //Blender Export Scripts Init
+        QString ScriptF= InitBlenderScript(inExportFile);
+        //BlenderScripts.append(ScriptF);
+        Cmd = mProgram +  " -b \"" + inSourceFile;
+        Cmd += "\" -P \"" + ScriptF + "\"";
     }
     else{
         qDebug() << inSourceFile << " Not Blender or Maya file format software." << Qt::endl;

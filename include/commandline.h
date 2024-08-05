@@ -36,10 +36,15 @@ public:
     bool IsRunning(){return isRunning;}
     QProcess ExportProcess;
 
+    void SetMayaPro(const QString inPath){MayaProgram = "\"" + inPath +"\" "; };
+    void SetBlenderPro(const QString inPath){BlenderProgram = "\"" + inPath +"\" "; };
+    void SetCommandId(int inId){commandId = inId;}
+
 signals:
     void OnReadLine(QString Line);
     void SendCRFile(QString SendPath,QString SendSFile);
     void SendErrorStr(QString SentStr);
+    void SendId(int);
 
 
 public slots:
@@ -64,16 +69,23 @@ private:
 
     QString IsValidProgram(const QString inSourceFile);
 
-    void InitBlenderScript(const QString inExportFile);
+    QString InitBlenderScript(const QString inExportFile);
+
+    QString LocalScripts ="C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/Scripts/";
 
     QString CRFile,CSFile;
     QString ErrorStr;
+    QString MayaProgram;
+    QString BlenderProgram;
+    QStringList BlenderScripts;
 
+    int commandId=-1;
     bool isRunning;
 
 private slots:
     void OnSentCRFile();
     void OnError();
+    void OnSendId();
 };
 
 #endif // COMMANDLINE_H
