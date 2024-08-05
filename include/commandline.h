@@ -71,6 +71,8 @@ private:
 
     QString InitBlenderScript(const QString inExportFile);
 
+    QString InitMelScript(const QString inExportFile);
+
     QString LocalScripts ="C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/Scripts/";
 
     QString CRFile,CSFile;

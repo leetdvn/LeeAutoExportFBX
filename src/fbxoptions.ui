@@ -61,6 +61,13 @@
            </property>
           </widget>
          </item>
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
+          <widget class="QCheckBox" name="makedirBox">
+           <property name="text">
+            <string>Make Dir</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="Line" name="line_8">
            <property name="orientation">

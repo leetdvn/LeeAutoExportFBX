@@ -575,7 +575,8 @@ QString MainWindow::GetExportPath(const QString inSourceFile, const QString inEx
 
     QString fname =splitStr[splitStr.count()-1];
 
-    QString nPathDir = inExportDir + fname.left(fname.lastIndexOf(".")) + "/";
+    bool makedir = uiOpt->makedirBox->isChecked();
+    QString nPathDir = makedir ? inExportDir + fname.left(fname.lastIndexOf(".")) + "/" : inExportDir ;
 
     QString FbxPath = nPathDir + fname.left(fname.lastIndexOf(".")) + ".fbx";
 
@@ -583,6 +584,8 @@ QString MainWindow::GetExportPath(const QString inSourceFile, const QString inEx
 
     //make dir export fbx
     QDir nDir(nPathDir);
+
+    if(!makedir) return FbxPath;
 
     if(!nDir.exists())
         nDir.mkpath(nPathDir);

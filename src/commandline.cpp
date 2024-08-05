@@ -115,6 +115,33 @@ QString CommandLine::InitBlenderScript(const QString inExportFile)
     return ScriptFile;
 }
 
+QString CommandLine::InitMelScript(const QString inExportFile)
+{
+    QStringList nName = inExportFile.split("/");
+
+    QString fileName = nName[nName.count()-1];
+
+    QString newName = fileName.left(fileName.lastIndexOf("."));
+
+    QDir sDir(LocalScripts);
+    if(!sDir.exists())
+        sDir.mkdir(LocalScripts);
+
+    QString ScriptFile = LocalScripts + newName + ".mel";
+    BlenderScripts.append(newName + ".mel");
+    //qDebug() << "file Name : "  + newName ;
+    //Blender Export Scripts
+    QFile blendExp(ScriptFile);
+    if(blendExp.open(QIODevice::WriteOnly))
+    {
+        QString Cmd = "file -force -options \"v=0\" -type \"FBX export\" -pr -ea \""+ inExportFile + "\";";
+        blendExp.write(Cmd.toLocal8Bit());
+        blendExp.close();
+    }
+
+    return ScriptFile;
+}
+
 void CommandLine::OnSentCRFile()
 {
     ErrorStr= ExportProcess.readAllStandardError();
@@ -133,8 +160,8 @@ void CommandLine::OnSentCRFile()
             QFile file(LocalScripts + s);
 
             qDebug() << "script : " + file.fileName();
-            if(file.exists())
-                dir.remove(s);
+            // if(file.exists())
+            //     dir.remove(s);
         }
     }
 }
@@ -162,8 +189,9 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     //Create Command
     QString Cmd;
     if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
-        Cmd =  mProgram + " -file \""  + inSourceFile + "\"\" ;\n" ;
-        Cmd += GetMelCommand(MELEXPORTSCRIPT) + "\"" + inExportFile;
+        QString Mel= InitMelScript(inExportFile);
+        Cmd =  mProgram + " -file \""  + inSourceFile + "\" -script " ;
+        Cmd += "\"" + inExportFile + "\"";
     }
     else if(inSourceFile.endsWith(".blend")){
         //Blender Export Scripts Init
