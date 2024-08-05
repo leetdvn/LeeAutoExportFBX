@@ -84,7 +84,7 @@ void MainWindow::InitLocal()
     }
 
 
-    QString Mel = CommandLine::GetMelCommand(SCRIPTDIR +QString("MayaExportCmd.mel"));
+    QString Mel = CommandLine::GetMelCommand(QString("Scripts/MayaExportCmd.mel"));
 
     QFile melfile(MELEXPORTSCRIPT);
     if(melfile.open(QIODevice::ReadWrite)){
@@ -92,7 +92,7 @@ void MainWindow::InitLocal()
         melfile.close();
     }
 
-    QString bPython = CommandLine::GetMelCommand(SCRIPTDIR +QString("BlenderExport.py"));
+    QString bPython = CommandLine::GetMelCommand(QString("Scripts/BlenderExport.py"));
 
     QFile Blender(BLENDEREXPORT);
     if(Blender.open(QIODevice::ReadWrite)){

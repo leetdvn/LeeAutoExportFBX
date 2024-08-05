@@ -40,8 +40,6 @@ set(PROJECT_SOURCES
     src/FbxOptions.ui
     src/leespoiler.cpp
     LeeAutoExportFBX.rc
-    Scripts/BlenderExport.py
-    Scripts/MayaExportCmd.mel
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -70,6 +68,7 @@ else()
 endif()
 
 target_link_libraries(LeeAutoExportFBX PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+
 target_compile_definitions(LeeAutoExportFBX PUBLIC MELEXPORT=${MELEXPORT})
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -107,5 +106,7 @@ if(NOT EXISTS(${LEEDEFINE}))
 endif()
 
 #copy file
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Scripts/MayaExportCmd.mel ${LOCALSCRIPT}/MayaExportCmd.mel COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Scripts/BlenderExport.py ${LOCALSCRIPT}/BlenderExport.py COPYONLY)
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Scripts)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Scripts/MayaExportCmd.mel ${CMAKE_CURRENT_BINARY_DIR}/Scripts/MayaExportCmd.mel COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Scripts/BlenderExport.py ${CMAKE_CURRENT_BINARY_DIR}/Scripts/BlenderExport.py COPYONLY)
+

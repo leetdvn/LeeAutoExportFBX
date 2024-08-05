@@ -69,7 +69,8 @@ QString CommandLine::MakeBlenderCommand(const QString inSourceFile, const QStrin
 
 QString CommandLine::GetMelCommand(const QString inMelScript)
 {
-    QFile melFile(MELEXPORTSCRIPT);
+    QFile melFile(inMelScript);
+
     if(!melFile.open(QIODevice::ReadOnly))
     {
         QMessageBox::information(0, "error", melFile.errorString());
