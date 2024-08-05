@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
     // ui->menuView->setPalette(palette);
 
     ImplementFbxOptions();
-    ui->progressBar->setValue(10);
+    ui->progressBar->setValue(0);
 
     connect(ui->SourceFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
     connect(ui->ExportFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
@@ -212,6 +212,9 @@ void MainWindow::OnExportClicked()
         }
     }
 
+    if(!uiOpt->DebugBox->isChecked())
+        ClearScripts();
+
     QFile melFile(MELEXPORTSCRIPT);
     QFile BlenderFile("");
     QFile LogFiles(MASSFBXLOG);
@@ -248,41 +251,47 @@ void MainWindow::OnExportClicked()
     //Log Files Searching
     qDebug() << "Files Count " << SFiles.count() << Qt::endl;
     qDebug() << "ip Source " << ipSourceDir << Qt::endl;
-
-
     ui->progressBar->setValue(0);
     TotalFiles = SFiles.count();
     //execute command current test 1 file
-    for(int i=0;i<SFiles.count();++i)
+    #pragma omp parallel for
     {
-        QString SFile = SFiles[i];
-        QString ExFile = GetExportPath(SFile,ExportDir);
+        for(int i=0;i<SFiles.count();++i)
+        {
+            QString SFile = SFiles[i];
+            QString ExFile = GetExportPath(SFile,ExportDir);
 
-        //Execute Command
-        command = new CommandLine();
-        command->SetMayaPro(ui->MayaText->toPlainText());
-        command->SetBlenderPro(ui->BlenderText->toPlainText());
-        command->SetCommandId(i+1);
-        command->CreateProcess(SFile,ExFile,OutLog,SType);
+            //Execute Command
+            command = new CommandLine();
 
-        connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
-        connect(command,&CommandLine::SendCRFile,this,&MainWindow::Display);
-        connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
-        connect(command,&CommandLine::SendId,this,&MainWindow::OnCompletedId);
-        command->ExportProcess.waitForStarted();
-        OutLog += "Exporting from : " + SFile + " to : " + ExFile;
-        if(i <SFiles.count()) OutLog +="<br>";
-        qDebug() << "file " << SFile << "number : " << SFiles.count() <<  Qt::endl;
+            command->SetMayaPro(ui->MayaText->toPlainText());
+            command->SetBlenderPro(ui->BlenderText->toPlainText());
+            command->SetCommandId(i+1);
 
-        //ui->MayaText->setHtml("<font color=\"red\">Red text</font>");
-        ui->LeeLog->setHtml(OutLog);
-        ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
+            //debug mode
+            if(!uiOpt->DebugBox->isChecked()) command->SetClearOnComplete(true);
 
-        // command->ExportProcess.waitForFinished(-1);
-        // OutLog += command->ExportProcess.readAllStandardOutput() + "\n";
-        // OutLog += "Export Completed : " + SFile + "\n";
-        // ui->LeeLog->setPlainText(OutLog);
+            command->CreateProcess(SFile,ExFile,OutLog,SType);
 
+            connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
+            connect(command,&CommandLine::SendCRFile,this,&MainWindow::Display);
+            connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
+            connect(command,&CommandLine::SendId,this,&MainWindow::OnCompletedId);
+            command->ExportProcess.waitForStarted();
+            OutLog += "Exporting from : " + SFile + " to : " + ExFile;
+            if(i!=SFiles.count()-1) OutLog +="<br>";
+            qDebug() << "file " << SFile << "number : " << SFiles.count() <<  Qt::endl;
+
+            //ui->MayaText->setHtml("<font color=\"red\">Red text</font>");
+            ui->LeeLog->setHtml(OutLog);
+            ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
+
+            // command->ExportProcess.waitForFinished(-1);
+            // OutLog += command->ExportProcess.readAllStandardOutput() + "\n";
+            // OutLog += "Export Completed : " + SFile + "\n";
+            // ui->LeeLog->setPlainText(OutLog);
+
+        }
     }
 
     command=nullptr;
@@ -337,7 +346,6 @@ QStringList MainWindow::InitFillters()
 
     return QStringList();
 }
-
 
 bool MainWindow::IsValidPath(const QString inPath)
 {
@@ -477,10 +485,17 @@ void MainWindow::Display(QString inReceiveFile,QString CSFile)
     //<color:#ff0000=\"DeepPink\">
     QString Message = fileExp.exists() ? "<font color=\"green\">Export Completed : </font>" : "<font color=\"red\">Export Failure : </font>";
     QString FMessage = fileExp.exists() ? inReceiveFile : CSFile;
-    OutLog += Message + FMessage;
+    OutLog += Message + FMessage ;
+
+    //qDebug() << "id : " << completedId << "total : " << TotalFiles;
+    if(completedId == TotalFiles-1)
+        OutLog += "<br><font color=\"yellow\">MassExport Total : " +  QString::number(TotalFiles) +  " files.</font>";
+
     ui->LeeLog->setHtml(OutLog);
+
     ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
     LastCompletedFile = CSFile;
+
 
 }
 
@@ -502,9 +517,7 @@ void MainWindow::OnCompletedId(int Id)
         ui->progressBar->setValue(100);
     }
 
-    isRunning = completedId == TotalFiles ? false : true;
-
-    qDebug() << "completed : " << value << "/ " << TotalFiles << " file ";
+    isRunning = completedId == TotalFiles -1 ? false : true;
 }
 
 void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters)
@@ -523,9 +536,7 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QString
 
     for(auto fo : folders){
         if(fo.endsWith(".") || fo.endsWith("..")) continue;
-        //qDebug() << inDir + fo;
         QString dirPath = inDir + fo + "/";
-        qDebug() << inDir + fo;
         GetFilesInDir(dirPath,OutFiles,inFilters);
     }
 }
@@ -537,7 +548,6 @@ void MainWindow::OnFinish()
     if(process.isOpen())
         process.deleteLater();
 }
-
 
 void MainWindow::ImplementFbxOptions()
 {
@@ -604,6 +614,22 @@ SoftwereType MainWindow::GetSoftWareType()
         case 2: return MayaAndBlender;
     }
     return None;
+}
+
+void MainWindow::ClearScripts()
+{
+    QStringList scripts = QStringList() << "*.mel" << ".py";
+
+    QDir SDir(SCRIPTDIR);
+
+    QStringList files = SDir.entryList(scripts);
+
+    if(files.count() <=0) return;
+
+    for(auto s : files) {
+        SDir.remove(s);
+    }
+
 }
 
 void MainWindow::ExecuteExportFbx(QString inSourceFile, QString inExportDir)

@@ -33,6 +33,7 @@ public:
 
     void UpdateLogString(QPlainTextEdit* inText,QString &LogStr);
     QString GetCSFile(){return CSFile;}
+    void SetClearOnComplete(bool isDelete);
     bool IsRunning(){return isRunning;}
     QProcess ExportProcess;
 
@@ -79,10 +80,13 @@ private:
     QString ErrorStr;
     QString MayaProgram;
     QString BlenderProgram;
+
+    QString ScriptPath;
     QStringList BlenderScripts;
 
     int commandId=-1;
     bool isRunning;
+    bool ClearOnCompleted;
 
 private slots:
     void OnSentCRFile();

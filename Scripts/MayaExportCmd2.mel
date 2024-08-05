@@ -1,1 +1,0 @@
-file -force -options "v=0" -type "FBX export" -pr -ea "C:/Users/thang/Documents/Exports/taoday/taodaytest.fbx";

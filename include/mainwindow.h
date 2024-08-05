@@ -14,6 +14,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonValue>
+#include <omp.h>
 
 #if defined MELEXPORT
 #include "Definitions.h"
@@ -106,6 +107,7 @@ protected:
 
     SoftwereType GetSoftWareType();
 
+    void ClearScripts();
     //info Env
     void InfoEnv();
 

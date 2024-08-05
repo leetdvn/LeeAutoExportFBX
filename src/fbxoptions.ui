@@ -57,7 +57,7 @@
             </size>
            </property>
            <property name="text">
-            <string>Bake Animation</string>
+            <string>Bake Anim</string>
            </property>
           </widget>
          </item>
@@ -75,10 +75,17 @@
            </property>
           </widget>
          </item>
-         <item>
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QCheckBox" name="checkBox_2">
            <property name="text">
             <string>All In FBX</string>
+           </property>
+          </widget>
+         </item>
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
+          <widget class="QCheckBox" name="DebugBox">
+           <property name="text">
+            <string>Debug</string>
            </property>
           </widget>
          </item>

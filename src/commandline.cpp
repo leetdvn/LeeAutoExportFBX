@@ -147,11 +147,14 @@ void CommandLine::OnSentCRFile()
     ErrorStr= ExportProcess.readAllStandardError();
 
     OnError();
+    //make signal
     emit SendCRFile(CRFile,CSFile);
     emit OnSendId();
 
     StopThread();
     isRunning=false;
+
+    if(!ClearOnCompleted) return;
 
     if(BlenderScripts.count() > 0){
         for(auto s : BlenderScripts)
@@ -159,9 +162,8 @@ void CommandLine::OnSentCRFile()
             QDir dir(LocalScripts);
             QFile file(LocalScripts + s);
 
-            qDebug() << "script : " + file.fileName();
-            // if(file.exists())
-            //     dir.remove(s);
+            if(file.exists())
+                dir.remove(s);
         }
     }
 }
@@ -189,16 +191,16 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     //Create Command
     QString Cmd;
     if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
-        QString Mel= InitMelScript(inExportFile);
+        ScriptPath= InitMelScript(inExportFile);
         Cmd =  mProgram + " -file \""  + inSourceFile + "\" -script " ;
-        Cmd += "\"" + inExportFile + "\"";
+        Cmd += "\"" + ScriptPath + "\"";
     }
     else if(inSourceFile.endsWith(".blend")){
         //Blender Export Scripts Init
-        QString ScriptF= InitBlenderScript(inExportFile);
+        ScriptPath = InitBlenderScript(inExportFile);
         //BlenderScripts.append(ScriptF);
         Cmd = mProgram +  " -b \"" + inSourceFile;
-        Cmd += "\" -P \"" + ScriptF + "\"";
+        Cmd += "\" -P \"" + ScriptPath + "\"";
     }
     else{
         qDebug() << inSourceFile << " Not Blender or Maya file format software." << Qt::endl;
@@ -246,6 +248,11 @@ void CommandLine::UpdateLogString(QPlainTextEdit *inText, QString &LogStr)
     if(!inText) return;
 
     return inText->setPlainText(LogStr);
+}
+
+void CommandLine::SetClearOnComplete(bool isDelete)
+{
+    ClearOnCompleted = isDelete;
 }
 
 void SendCRFile(QString SendPath,QString SendSFile){
