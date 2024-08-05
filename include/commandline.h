@@ -22,6 +22,9 @@ enum SoftwereType
     None
 };
 
+#define LOCALSCRIPTS  QString("C:/Users/%1/AppData/Local/LeeMassFbx/Scripts/").arg(qgetenv("USERNAME"))
+
+
 class CommandLine : public QObject
 {
     Q_OBJECT
@@ -40,6 +43,8 @@ public:
     void SetMayaPro(const QString inPath){MayaProgram = "\"" + inPath +"\" "; };
     void SetBlenderPro(const QString inPath){BlenderProgram = "\"" + inPath +"\" "; };
     void SetCommandId(int inId){commandId = inId;}
+
+    static QString GetMelCommand(const QString inMelScript);
 
 signals:
     void OnReadLine(QString Line);
@@ -66,15 +71,12 @@ private:
 
     QString MakeBlenderCommand(const QString inSourceFile, const QString inExportFile);
 
-    QString GetMelCommand(const QString inMelScript);
-
     QString IsValidProgram(const QString inSourceFile);
 
     QString InitBlenderScript(const QString inExportFile);
 
     QString InitMelScript(const QString inExportFile);
 
-    QString LocalScripts ="C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/Scripts/";
 
     QString CRFile,CSFile;
     QString ErrorStr;

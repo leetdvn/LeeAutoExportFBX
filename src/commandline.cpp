@@ -11,6 +11,7 @@ CommandLine::CommandLine(QObject *parent)
     connect(this,SIGNAL(OnReadLine(QString)),this,SLOT(HandleSTDIN(QString)));
 
     mThread.start();
+
 }
 
 CommandLine::~CommandLine()
@@ -96,11 +97,11 @@ QString CommandLine::InitBlenderScript(const QString inExportFile)
 
     QString newName = fileName.left(fileName.lastIndexOf("."));
 
-    QDir sDir(LocalScripts);
+    QDir sDir(LOCALSCRIPTS);
     if(!sDir.exists())
-        sDir.mkdir(LocalScripts);
+        sDir.mkdir(LOCALSCRIPTS);
 
-    QString ScriptFile = LocalScripts + newName + ".py";
+    QString ScriptFile = LOCALSCRIPTS + newName + ".py";
     BlenderScripts.append(newName + ".py");
     //qDebug() << "file Name : "  + newName ;
     //Blender Export Scripts
@@ -123,18 +124,19 @@ QString CommandLine::InitMelScript(const QString inExportFile)
 
     QString newName = fileName.left(fileName.lastIndexOf("."));
 
-    QDir sDir(LocalScripts);
+    QDir sDir(LOCALSCRIPTS);
     if(!sDir.exists())
-        sDir.mkdir(LocalScripts);
+        sDir.mkdir(LOCALSCRIPTS);
 
-    QString ScriptFile = LocalScripts + newName + ".mel";
+    QString ScriptFile = LOCALSCRIPTS + newName + ".mel";
     BlenderScripts.append(newName + ".mel");
-    //qDebug() << "file Name : "  + newName ;
+    // QString melS = GetMelCommand(MELEXPORTSCRIPT);
+    // qDebug() << "mel : " << melS.arg(inExportFile);
     //Blender Export Scripts
     QFile blendExp(ScriptFile);
     if(blendExp.open(QIODevice::WriteOnly))
     {
-        QString Cmd = "file -force -options \"v=0\" -type \"FBX export\" -pr -ea \""+ inExportFile + "\";";
+        QString Cmd = GetMelCommand(MELEXPORTSCRIPT).arg(inExportFile);//"file -force -options \"v=0\" -type \"FBX export\" -pr -ea \""+ inExportFile + "\";";
         blendExp.write(Cmd.toLocal8Bit());
         blendExp.close();
     }
@@ -159,8 +161,8 @@ void CommandLine::OnSentCRFile()
     if(BlenderScripts.count() > 0){
         for(auto s : BlenderScripts)
         {
-            QDir dir(LocalScripts);
-            QFile file(LocalScripts + s);
+            QDir dir(LOCALSCRIPTS);
+            QFile file(LOCALSCRIPTS + s);
 
             if(file.exists())
                 dir.remove(s);

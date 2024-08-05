@@ -1,4 +1,4 @@
-#define MELEXPORTSCRIPT "C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/Scripts/MayaExportCmd.mel"
+#define MELEXPORTSCRIPT "C:/Users/thang/AppData/Local/LeeMassFbx/MayaExportCmd.mel"
 #define MASSFBXLOG "C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/Build/Release/Logs/MassFbxLog.txt"
-#define BLENDEREXPORT "C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/Scripts/BlenderExport.py"
+#define BLENDEREXPORT "C:/Users/thang/AppData/Local/LeeMassFbx/BlenderExport.py"
 #define SCRIPTDIR "C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/Scripts/"

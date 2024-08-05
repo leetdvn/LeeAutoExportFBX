@@ -13,10 +13,15 @@ set(CMAKE_WIN32_EXECUTABLE TRUE)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Gui Core)
 
-set(MELEXPORT ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/MayaExportCmd.mel)
-set(BLENDEREXPORT ${CMAKE_CURRENT_SOURCE_DIR}/Scripts/BlenderExport.py)
 set(SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Scripts)
 
+set(USER $ENV{USERNAME})
+set(LOCALSCRIPT "C:/Users/${USER}/AppData/Local/LeeMassFbx/")
+set(MELEXPORT ${LOCALSCRIPT}MayaExportCmd.mel)
+set(BLENDEREXPORT ${LOCALSCRIPT}BlenderExport.py)
+
+#Message(STATUS "${LOCALSCRIPT}")
+Message(STATUS "Lee ${LOCALSCRIPT}")
 
 set(LEEDEFINE ${CMAKE_CURRENT_SOURCE_DIR}/include/Definitions.h)
 set(MASSFBXLOG ${CMAKE_CURRENT_BINARY_DIR}/Logs/MassFbxLog.txt)
@@ -28,7 +33,6 @@ set(PROJECT_SOURCES
     include/commandline.h
     include/Definitions.h
     include/leespoiler.h
-
     src/main.cpp
     src/mainwindow.cpp
     src/commandline.cpp
@@ -36,6 +40,8 @@ set(PROJECT_SOURCES
     src/FbxOptions.ui
     src/leespoiler.cpp
     LeeAutoExportFBX.rc
+    Scripts/BlenderExport.py
+    Scripts/MayaExportCmd.mel
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -99,3 +105,7 @@ if(NOT EXISTS(${LEEDEFINE}))
 
     )
 endif()
+
+#copy file
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Scripts/MayaExportCmd.mel ${LOCALSCRIPT}/MayaExportCmd.mel COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Scripts/BlenderExport.py ${LOCALSCRIPT}/BlenderExport.py COPYONLY)

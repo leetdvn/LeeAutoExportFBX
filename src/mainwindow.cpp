@@ -82,6 +82,23 @@ void MainWindow::InitLocal()
         if(lfile.open(QIODevice::ReadWrite))
             lfile.close();
     }
+
+
+    QString Mel = CommandLine::GetMelCommand(SCRIPTDIR +QString("MayaExportCmd.mel"));
+
+    QFile melfile(MELEXPORTSCRIPT);
+    if(melfile.open(QIODevice::ReadWrite)){
+        melfile.write(Mel.toLocal8Bit());
+        melfile.close();
+    }
+
+    QString bPython = CommandLine::GetMelCommand(SCRIPTDIR +QString("BlenderExport.py"));
+
+    QFile Blender(BLENDEREXPORT);
+    if(Blender.open(QIODevice::ReadWrite)){
+        Blender.write(bPython.toLocal8Bit());
+        Blender.close();
+    }
 }
 
 #pragma endregion //
@@ -204,7 +221,7 @@ void MainWindow::OnExportClicked()
 
     //check Running status
     if(command){
-        if(command->IsRunning() && !isRunning){
+        if(command->IsRunning() || !isRunning){
             QString OutLog =ui->LeeLog->toHtml();
             OutLog += "Running File : " + command->GetCSFile();
             ui->LeeLog->setHtml(OutLog);
@@ -239,7 +256,8 @@ void MainWindow::OnExportClicked()
     QStringList filters= InitFillters();
 
     //Debug Filters
-    QString FilLog = "Export Type : ";
+    QString FilLog =QString("PC : %1 <br>USERS : %2 <br>DOMAIN : %3").arg(_Pc,_Users,_Host);
+    FilLog+= "<br>Export Type : ";
     for(auto ff : filters)
         FilLog+= ff;
     qDebug() << FilLog << Qt::endl;
@@ -253,6 +271,10 @@ void MainWindow::OnExportClicked()
     qDebug() << "ip Source " << ipSourceDir << Qt::endl;
     ui->progressBar->setValue(0);
     TotalFiles = SFiles.count();
+
+    isRunning = true;
+    completedId = 0;
+    ui->ExportExecute->setEnabled(false);
     //execute command current test 1 file
     #pragma omp parallel for
     {
@@ -517,7 +539,11 @@ void MainWindow::OnCompletedId(int Id)
         ui->progressBar->setValue(100);
     }
 
-    isRunning = completedId == TotalFiles -1 ? false : true;
+    isRunning = completedId == TotalFiles ? false : true;
+
+    //qDebug() << "id  : " << completedId << "total : " << TotalFiles;
+
+    ui->ExportExecute->setEnabled(!isRunning);
 }
 
 void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters)
@@ -618,9 +644,9 @@ SoftwereType MainWindow::GetSoftWareType()
 
 void MainWindow::ClearScripts()
 {
-    QStringList scripts = QStringList() << "*.mel" << ".py";
+    QStringList scripts = QStringList() << "*.mel" << "*.py";
 
-    QDir SDir(SCRIPTDIR);
+    QDir SDir(LOCALSCRIPTS);
 
     QStringList files = SDir.entryList(scripts);
 
