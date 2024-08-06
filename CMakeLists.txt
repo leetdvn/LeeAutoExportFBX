@@ -40,6 +40,9 @@ set(PROJECT_SOURCES
     src/FbxOptions.ui
     src/leespoiler.cpp
     LeeAutoExportFBX.rc
+    include/massfbxultilities.h
+    src/massfbxultilities.cpp
+
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -49,17 +49,39 @@ void CommandLine::StopThread()
     if(mThread.isRunning()) mThread.quit();
 }
 
-QString CommandLine::MakeCmd(const QString inSourceFile, const QString inExportFile,bool isOverride)
+QString CommandLine::MakeCmdAsScript(const QString inProgram,const QString inSourceFile, const QString inExportFile,bool &isSuccess)
 {
-    QFile Sfile(inSourceFile);
-    if(!Sfile.exists()) return QString();
+    QString Cmd;
+    if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
+        ScriptPath= InitMelScript(inExportFile);
+        Cmd =  inProgram + " -file \""  + inSourceFile + "\" -script " ;
+        Cmd += "\"" + ScriptPath + "\"";
+        isSuccess=true;
+    }
+    else if(inSourceFile.endsWith(".blend")){
+        //Blender Export Scripts Init
+        ScriptPath = InitBlenderScript(inExportFile);
+        //BlenderScripts.append(ScriptF);
+        Cmd = inProgram +  " -b \"" + inSourceFile;
+        Cmd += "\" -P \"" + ScriptPath + "\"";
+        isSuccess=true;
+    }
+    else{
+        isSuccess= false;
+    }
 
-    return QString();
+    return Cmd;
 }
 
 QString CommandLine::MakeMayaCommand(const QString inSourceFile, const QString inExportFile)
-{
-    return QString();
+{   
+    QString iProgram = IsValidProgram(inSourceFile);
+    QString Cmd;
+    ScriptPath= InitMelScript(inExportFile);
+    Cmd =  iProgram + " -file \""  + inSourceFile + "\" -script " ;
+    Cmd += "\"" + ScriptPath + "\"";
+
+    return Cmd;
 }
 
 QString CommandLine::MakeBlenderCommand(const QString inSourceFile, const QString inExportFile)
@@ -202,20 +224,10 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     QFile ExportLog(MASSFBXLOG);
 
     //Create Command
-    QString Cmd;
-    if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
-        ScriptPath= InitMelScript(inExportFile);
-        Cmd =  mProgram + " -file \""  + inSourceFile + "\" -script " ;
-        Cmd += "\"" + ScriptPath + "\"";
-    }
-    else if(inSourceFile.endsWith(".blend")){
-        //Blender Export Scripts Init
-        ScriptPath = InitBlenderScript(inExportFile);
-        //BlenderScripts.append(ScriptF);
-        Cmd = mProgram +  " -b \"" + inSourceFile;
-        Cmd += "\" -P \"" + ScriptPath + "\"";
-    }
-    else{
+    bool isSuccess;
+    QString Cmd = MakeCmdAsScript(mProgram,inSourceFile,inExportFile,isSuccess);
+    //log
+    if(!isSuccess){
         qDebug() << inSourceFile << " Not Blender or Maya file format software." << Qt::endl;
         OutLog += "fle : " +  inSourceFile + " Not Blender file format software. <br>";
         return;

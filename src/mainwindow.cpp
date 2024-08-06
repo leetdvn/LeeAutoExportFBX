@@ -101,7 +101,7 @@ void MainWindow::InitLocal()
 
     QFile fbxlog(MASSFBXLOG);
     if(!fbxlog.exists()){
-        if(fbxlog.open(QIODevice::WriteOnly)){
+        if(fbxlog.open(QIODevice::ReadWrite| QIODevice::NewOnly)){
             QString info = QString("PC : %1\nUSER : %2\nDOMAIN : %3\n").arg(_Pc,_Users,_Host);
             fbxlog.write(info.toLocal8Bit());
             fbxlog.close();

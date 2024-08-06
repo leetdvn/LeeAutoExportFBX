@@ -9,6 +9,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QPlainTextEdit>
+#include <massfbxultilities.h>
 
 #if defined MELEXPORT
 #include "Definitions.h"
@@ -24,6 +25,8 @@ enum SoftwereType
 
 #define LOCALSCRIPTS  QString("C:/Users/%1/AppData/Local/LeeMassFbx/Scripts/").arg(qgetenv("USERNAME"))
 
+
+using namespace MassFbxUltilities;
 
 class CommandLine : public QObject
 {
@@ -65,7 +68,7 @@ public slots:
 private:
     QThread mThread;
 
-    QString MakeCmd(const QString inSourceFile, const QString inExportFile,bool isOverride=false);
+    QString MakeCmdAsScript(const QString inProgram,const QString inSourceFile, const QString inExportFile, bool &isSuccess);
 
     QString MakeMayaCommand(const QString inSourceFile, const QString inExportFile);
 

@@ -36,6 +36,9 @@ enum DataPath
     LExport
 };
 
+using namespace MassFbxUltilities;
+
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

@@ -72,3 +72,5 @@ CMakeLists.txt.user*
 *.exe
 build
 
+include/Definitions.h
+deploy.bat
