@@ -74,3 +74,4 @@ build
 
 include/Definitions.h
 deploy.bat
+include/Definitions.h

@@ -54,7 +54,7 @@ QString CommandLine::MakeCmdAsScript(const QString inProgram,const QString inSou
     QString Cmd;
     if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
         ScriptPath= InitMelScript(inExportFile);
-        Cmd =  inProgram + " -file \""  + inSourceFile + "\" -script " ;
+        Cmd =  inProgram + " -file \""  + inSourceFile + "\"-noAutoloadPlugins -script " ;
         Cmd += "\"" + ScriptPath + "\"";
         isSuccess=true;
     }
