@@ -4,7 +4,6 @@
 #include <qmessagebox.h>
 
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -59,7 +58,7 @@ void MainWindow::InfoEnv()
 {
     //init Default
     _Users = qgetenv("USERNAME");
-    _Host = qgetenv("HOSTNAME");
+    _Host = QHostInfo::localDomainName();
     _Pc = qgetenv("COMPUTERNAME");
 
     qDebug() << "Pc : " << _Pc ;
@@ -98,6 +97,15 @@ void MainWindow::InitLocal()
     if(Blender.open(QIODevice::ReadWrite)){
         Blender.write(bPython.toLocal8Bit());
         Blender.close();
+    }
+
+    QFile fbxlog(MASSFBXLOG);
+    if(!fbxlog.exists()){
+        if(fbxlog.open(QIODevice::WriteOnly)){
+            QString info = QString("PC : %1\nUSER : %2\nDOMAIN : %3\n").arg(_Pc,_Users,_Host);
+            fbxlog.write(info.toLocal8Bit());
+            fbxlog.close();
+        }
     }
 }
 

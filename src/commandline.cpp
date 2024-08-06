@@ -1,6 +1,7 @@
 #include "commandline.h"
 
 #include <QDir>
+#include <QXmlStreamReader>
 
 CommandLine::CommandLine(QObject *parent)
     :QObject(parent)
@@ -11,7 +12,6 @@ CommandLine::CommandLine(QObject *parent)
     connect(this,SIGNAL(OnReadLine(QString)),this,SLOT(HandleSTDIN(QString)));
 
     mThread.start();
-
 }
 
 CommandLine::~CommandLine()
@@ -134,15 +134,25 @@ QString CommandLine::InitMelScript(const QString inExportFile)
     // QString melS = GetMelCommand(MELEXPORTSCRIPT);
     // qDebug() << "mel : " << melS.arg(inExportFile);
     //Blender Export Scripts
-    QFile blendExp(ScriptFile);
-    if(blendExp.open(QIODevice::WriteOnly))
+    QFile MelExp(ScriptFile);
+    if(MelExp.open(QIODevice::ReadWrite | QIODevice::Append))
     {
         QString Cmd = GetMelCommand(MELEXPORTSCRIPT).arg(inExportFile);//"file -force -options \"v=0\" -type \"FBX export\" -pr -ea \""+ inExportFile + "\";";
-        blendExp.write(Cmd.toLocal8Bit());
-        blendExp.close();
+        MelExp.write(Cmd.toLocal8Bit());
+        MelExp.close();
     }
 
     return ScriptFile;
+}
+
+void CommandLine::AddToLog(QString inContentLine)
+{
+    QFile fbxlog(MASSFBXLOG);
+    inContentLine +="\n";
+    if(fbxlog.open(QIODevice::WriteOnly | QIODevice::Append)){
+        fbxlog.write(inContentLine.toLocal8Bit());
+        fbxlog.close();
+    }
 }
 
 void CommandLine::OnSentCRFile()
@@ -211,6 +221,7 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
         return;
     }
 
+    AddToLog(Cmd);
     qDebug() << "command : "<< Cmd << Qt::endl;
     //QProcess
 
@@ -231,12 +242,12 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     // ExportProcess->waitForFinished(-1);
     OutLog += ExportProcess.readAllStandardOutput();
     qDebug() << OutLog << Qt::endl;
-    //ui->LeeLog->setPlainText(stdoutStr);
+
     //Write to log file
-    if(ExportLog.open(QIODevice::WriteOnly)){
-        ExportLog.write(OutLog.toLocal8Bit());
-        ExportLog.close();
-    }
+    // if(ExportLog.open(QIODevice::WriteOnly)){
+    //     // ExportLog.write(OutLog.toLocal8Bit());
+    //     // ExportLog.close();
+    // }
 
     QFile completedFile(inExportFile);
     if(completedFile.exists())

@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_WIN32_EXECUTABLE TRUE)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Gui Core)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Gui Core Network)
 
 set(SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Scripts)
 
@@ -24,7 +24,7 @@ set(BLENDEREXPORT ${LOCALSCRIPT}BlenderExport.py)
 Message(STATUS "Lee ${LOCALSCRIPT}")
 
 set(LEEDEFINE ${CMAKE_CURRENT_SOURCE_DIR}/include/Definitions.h)
-set(MASSFBXLOG ${CMAKE_CURRENT_BINARY_DIR}/Logs/MassFbxLog.txt)
+set(MASSFBXLOG ${LOCALSCRIPT}MassFbxLog.txt)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -67,7 +67,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(LeeAutoExportFBX PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(LeeAutoExportFBX PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt6::Network)
 
 target_compile_definitions(LeeAutoExportFBX PUBLIC MELEXPORT=${MELEXPORT})
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

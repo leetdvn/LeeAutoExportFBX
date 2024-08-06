@@ -77,6 +77,7 @@ private:
 
     QString InitMelScript(const QString inExportFile);
 
+    void AddToLog(QString inContentLine);
 
     QString CRFile,CSFile;
     QString ErrorStr;
@@ -90,6 +91,7 @@ private:
     bool isRunning;
     bool ClearOnCompleted;
 
+    void QRegExp(const char *);
 private slots:
     void OnSentCRFile();
     void OnError();

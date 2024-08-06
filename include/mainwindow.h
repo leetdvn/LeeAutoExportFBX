@@ -15,6 +15,7 @@
 #include <QJsonDocument>
 #include <QJsonValue>
 #include <omp.h>
+#include <QHostInfo>
 
 #if defined MELEXPORT
 #include "Definitions.h"
