@@ -5,8 +5,11 @@
 #include <QDir>
 #include <QFile>
 
+
 namespace MassFbxUltilities
 {
+
+
 
 bool IsValidPath(QString inPaths);
 

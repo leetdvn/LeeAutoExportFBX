@@ -18,6 +18,9 @@ CommandLine::~CommandLine()
 {
     if(mThread.isRunning())
         mThread.quit();
+
+    ExportProcess.terminate();
+    ExportProcess.kill();
 }
 
 void CommandLine::ReadSTDIN()
@@ -159,7 +162,7 @@ QString CommandLine::InitMelScript(const QString inExportFile)
     QFile MelExp(ScriptFile);
     if(MelExp.open(QIODevice::ReadWrite | QIODevice::Append))
     {
-        QString Cmd = GetMelCommand(MELEXPORTSCRIPT).arg(inExportFile);//"file -force -options \"v=0\" -type \"FBX export\" -pr -ea \""+ inExportFile + "\";";
+        QString Cmd = GetMelCommand(MELEXPORTSCRIPT).arg(inExportFile);
         MelExp.write(Cmd.toLocal8Bit());
         MelExp.close();
     }

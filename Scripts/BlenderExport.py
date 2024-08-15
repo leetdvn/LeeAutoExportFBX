@@ -12,3 +12,16 @@ import bpy
 #Create Cube
 # bpy.ops.mesh.primitive_cube_add(size=4,name="taoday")
 # cube_obj = bpy.context.active_object
+Export = "ExportCollection"
+col = bpy.data.collections[Export]
+for o in col.objects:
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.context.scene.objects[o.name]
+    bpy.data.objects[o.name].select_set(True)
+    expPath = '%1'  + o.name + ".fbx"
+    bpy.ops.export_scene.fbx(filepath=expPath,use_selection=True)
+    #print(o.name)
+
+
+#Bake Layer Clear Contrains
+#bpy.ops.nla.bake(frame_start=112, frame_end=225, visual_keying=True, clear_constraints=True, clear_parents=True, use_current_action=True, clean_curves=True, bake_types={'POSE'})

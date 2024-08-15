@@ -98,15 +98,15 @@ if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(LeeAutoExportFBX)
 endif()
 
-if(NOT EXISTS(${LEEDEFINE}))
-    FILE(WRITE ${LEEDEFINE}
-    "#define MELEXPORTSCRIPT \"${MELEXPORT}\"\n"
-    "#define MASSFBXLOG \"${MASSFBXLOG}\"\n"
-    "#define BLENDEREXPORT \"${BLENDEREXPORT}\"\n"
-    "#define SCRIPTDIR \"${SCRIPT_DIR}/\"\n"
-
-    )
-endif()
+# if(NOT EXISTS(${LEEDEFINE}))
+#     FILE(WRITE ${LEEDEFINE}
+#     "#define MELEXPORTSCRIPT \"${MELEXPORT}\"\n"
+#     "#define MASSFBXLOG \"${MASSFBXLOG}\"\n"
+#     "#define BLENDEREXPORT \"${BLENDEREXPORT}\"\n"
+#     "#define SCRIPTDIR \"${SCRIPT_DIR}/\"\n"
+#     "#define MASSVERSION \"LeeMassFbx Tools  Version 1.0 \"\n"
+#     )
+# endif()
 
 #copy file
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Scripts)

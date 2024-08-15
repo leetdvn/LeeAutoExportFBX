@@ -1,4 +1,28 @@
-#define MELEXPORTSCRIPT "C:/Users/thang/AppData/Local/LeeMassFbx/MayaExportCmd.mel"
-#define MASSFBXLOG "C:/Users/thang/AppData/Local/LeeMassFbx/MassFbxLog.txt"
-#define BLENDEREXPORT "C:/Users/thang/AppData/Local/LeeMassFbx/BlenderExport.py"
-#define SCRIPTDIR "C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/Scripts/"
+#ifndef _DEFINITIONS_H_
+#define _DEFINITIONS_H_
+
+#pragma once
+
+#include <QDir>
+
+//Data Dir
+#define MASSFBXDIR = "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/"
+
+//Mel Script path
+#define MELEXPORTSCRIPT  "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/MayaExportCmd.mel"
+
+//Loger
+#define MASSFBXLOG "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/MassFbxLog.txt"
+
+//Blender Python Smart Export
+#define BLENDERSMARTEXPORT "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/BlenderExport.py"
+
+//Blender Python Local
+#define BLENDERSINGLEEXPORT "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/BlenderExport.py"
+
+//Base Script Dir
+#define SCRIPTDIR  QDir::currentPath() + QString("/Scripts")// "C:/Users/leepl/Documents/GitHub/LeeAutoExportFBX/Scripts/"
+
+#define MASSVERSION "LeeMassFbx Tools  Version 1.02 "
+
+#endif

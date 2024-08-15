@@ -16,10 +16,12 @@
 #include <QJsonValue>
 #include <omp.h>
 #include <QHostInfo>
+#include <QNetworkInterface>
+#include <qmessagebox.h>
+#include <massfbxultilities.h>
 
-#if defined MELEXPORT
-#include "Definitions.h"
-#endif
+
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -83,6 +85,8 @@ private:
 
     QList<QStringList> leeFilters;
 
+    QList<CommandLine*> MassCmds;
+
     bool IsValidPath(const QString inPath);
 
     bool ValidPaths();
@@ -97,6 +101,9 @@ private:
 
     QString localfilePath="C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/LeeMassFbx.json";
 
+    QString GetMacAdress();
+
+    bool StudioIsValid();
 private slots:
     void Display(QString inReceiveFile,QString CSFile);
 

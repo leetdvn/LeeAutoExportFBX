@@ -9,11 +9,8 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QPlainTextEdit>
+#include <Definitions.h>
 #include <massfbxultilities.h>
-
-#if defined MELEXPORT
-#include "Definitions.h"
-#endif
 
 enum SoftwereType
 {

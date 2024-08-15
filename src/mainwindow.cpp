@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "./ui_FbxOptions.h"
-#include <qmessagebox.h>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -66,7 +65,6 @@ void MainWindow::InfoEnv()
 
     if(_Host !="")
         qDebug() << "Host : " << _Host << Qt::endl;
-
 }
 
 void MainWindow::InitLocal()
@@ -82,19 +80,26 @@ void MainWindow::InitLocal()
             lfile.close();
     }
 
+    //Base Path
+    QString MelPath = QDir::currentPath() + QString("/Scripts/MayaExportCmd.mel"); // CommandLine::GetMelCommand(QString("Scripts/MayaExportCmd.mel"));
+    QString Mel = CommandLine::GetMelCommand(MelPath);
 
-    QString Mel = CommandLine::GetMelCommand(QString("Scripts/MayaExportCmd.mel"));
 
     QFile melfile(MELEXPORTSCRIPT);
-    if(melfile.open(QIODevice::ReadWrite)){
+    if(melfile.open(QIODevice::NewOnly)){
+        qDebug() << "Blender File : " << Mel << Qt::endl;
         melfile.write(Mel.toLocal8Bit());
         melfile.close();
     }
 
-    QString bPython = CommandLine::GetMelCommand(QString("Scripts/BlenderExport.py"));
+    QString bPythonPath = QDir::currentPath() +  QString("/Scripts/BlenderExport.py");//CommandLine::GetMelCommand(QString("Scripts/BlenderExport.py"));
+    QString bPython = CommandLine::GetMelCommand(bPythonPath);
 
-    QFile Blender(BLENDEREXPORT);
-    if(Blender.open(QIODevice::ReadWrite)){
+
+    //Copy Scripts
+    QFile Blender(BLENDERSMARTEXPORT);
+    if(Blender.open(QIODevice::NewOnly)){
+        qDebug() << "Blender File : " << bPython << Qt::endl;
         Blender.write(bPython.toLocal8Bit());
         Blender.close();
     }
@@ -113,6 +118,12 @@ void MainWindow::InitLocal()
 
 MainWindow::~MainWindow()
 {
+    if(MassCmds.length() > 0)
+    {
+        for(auto* cmd : MassCmds){
+            cmd->deleteLater();
+        }
+    }
     command->StopThread();
     delete ui;
 }
@@ -223,7 +234,17 @@ void MainWindow::OnExportClicked()
 {
 
     qDebug() << "EXTPORT File Running.." << Qt::endl;
+    QString OutLog;
 
+    if(!StudioIsValid()){
+        OutLog = "<font color=\"red\">Cannot use unauthorized tools</font>";
+        ui->LeeLog->setHtml(OutLog);
+        return;
+    }
+    else{
+        OutLog += "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font><br>";
+        ui->LeeLog->setHtml(OutLog);
+    }
     //valid path
     //if(!ValidPaths()) return;
 
@@ -248,7 +269,6 @@ void MainWindow::OnExportClicked()
 
     //qDebug() << MELEXPORTSCRIPT << Qt::endl;
     //Define Log Str
-    QString OutLog;
 
 
     SoftwereType SType = GetSoftWareType();
@@ -293,7 +313,7 @@ void MainWindow::OnExportClicked()
 
             //Execute Command
             command = new CommandLine();
-
+            MassCmds.push_back(command);
             command->SetMayaPro(ui->MayaText->toPlainText());
             command->SetBlenderPro(ui->BlenderText->toPlainText());
             command->SetCommandId(i+1);
@@ -335,7 +355,10 @@ QString MainWindow::GeneratedCommand(const QString inSourceFile, const QString i
     //Maya 2019 Working
     QString cmd = inSourceFile + "\" ;\n" ;
 
-    QFile melFile("C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/Scripts/MayaExportCmd.mel");
+    //File
+    QString fpath = "";
+    //Base Script  Source
+    QFile melFile("Scripts/MayaExportCmd.mel");
     if(!melFile.open(QIODevice::ReadOnly))
     {
         QMessageBox::information(0, "error", melFile.errorString());
@@ -506,6 +529,28 @@ QJsonObject MainWindow::LoadObjectFromFile(const QString infile)
     }
 
     return jdoc.object();
+}
+
+QString MainWindow::GetMacAdress()
+{
+    QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
+    bool result = false;
+    for (int i = 0; i < ifaces.count(); i++){
+        QNetworkInterface iface = ifaces.at(i);
+        if (iface.hardwareAddress() != "") { return iface.hardwareAddress(); }
+    }
+    return QString();
+}
+
+bool MainWindow::StudioIsValid()
+{
+    //My Mac Supervisor
+    if(GetMacAdress() == "10:7C:61:47:26:B1") {return true;}
+    //Studio PC Domain Name
+    if(_Host == "giaoduc.edu") return true;
+
+
+    return false;
 }
 
 void MainWindow::Display(QString inReceiveFile,QString CSFile)
