@@ -13,6 +13,10 @@ namespace MassFbxUltilities
 
 bool IsValidPath(QString inPaths);
 
+void MakeScript(QString inPath,QString inContent);
+
+QStringList GetFilesInDirectory(const QString inDir);
+
 };
 
 #endif // MASSFBXULTILITIES_H

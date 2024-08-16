@@ -1,7 +1,9 @@
+#pragma once
+
+
 #ifndef _DEFINITIONS_H_
 #define _DEFINITIONS_H_
 
-#pragma once
 
 #include <QDir>
 
@@ -15,13 +17,13 @@
 #define MASSFBXLOG "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/MassFbxLog.txt"
 
 //Blender Python Smart Export
-#define BLENDERSMARTEXPORT "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/BlenderExport.py"
+#define BLENDERSMARTEXPORT QDir::currentPath() + QString("/Scripts/") + "BlenderExport.py"
 
 //Blender Python Local
-#define BLENDERSINGLEEXPORT "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/BlenderExport.py"
+#define BLENDERSINGLEEXPORT "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/BlenderExportFile.py"
 
 //Base Script Dir
-#define SCRIPTDIR  QDir::currentPath() + QString("/Scripts")// "C:/Users/leepl/Documents/GitHub/LeeAutoExportFBX/Scripts/"
+#define SCRIPTDIR  QDir::currentPath() + QString("/Scripts/")// "C:/Users/leepl/Documents/GitHub/LeeAutoExportFBX/Scripts/"
 
 #define MASSVERSION "LeeMassFbx Tools  Version 1.02 "
 

@@ -98,6 +98,15 @@ if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(LeeAutoExportFBX)
 endif()
 
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Scripts)
+
+# Scripts Files
+file(GLOB_RECURSE files "{CMAKE_CURRENT_SOURCE_DIR}/Scripts/" "*.py" "*.mel")
+
+# Copy to build Folders
+file(COPY ${files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Scripts)
+
+
 # if(NOT EXISTS(${LEEDEFINE}))
 #     FILE(WRITE ${LEEDEFINE}
 #     "#define MELEXPORTSCRIPT \"${MELEXPORT}\"\n"
@@ -106,10 +115,9 @@ endif()
 #     "#define SCRIPTDIR \"${SCRIPT_DIR}/\"\n"
 #     "#define MASSVERSION \"LeeMassFbx Tools  Version 1.0 \"\n"
 #     )
-# endif()
-
+#endif()
 #copy file
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Scripts)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Scripts/MayaExportCmd.mel ${CMAKE_CURRENT_BINARY_DIR}/Scripts/MayaExportCmd.mel COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Scripts/BlenderExport.py ${CMAKE_CURRENT_BINARY_DIR}/Scripts/BlenderExport.py COPYONLY)
+
+#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Scripts/MayaExportCmd.mel ${CMAKE_CURRENT_BINARY_DIR}/Scripts/MayaExportCmd.mel COPYONLY)
+#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Scripts/BlenderExport.py ${CMAKE_CURRENT_BINARY_DIR}/Scripts/BlenderExport.py COPYONLY)
 

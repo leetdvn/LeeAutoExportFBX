@@ -134,7 +134,7 @@ QString CommandLine::InitBlenderScript(const QString inExportFile)
     QFile blendExp(ScriptFile);
     if(blendExp.open(QIODevice::WriteOnly))
     {
-        QString Cmd = "import bpy\nbpy.ops.export_scene.fbx(filepath='"+ inExportFile + "')";
+        QString Cmd =  GetMelCommand(BLENDERSMARTEXPORT); //"import bpy\nbpy.ops.export_scene.fbx(filepath='"+ inExportFile + "')";
         blendExp.write(Cmd.toLocal8Bit());
         blendExp.close();
     }
@@ -246,8 +246,8 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     //run command..//
     CRFile = inExportFile;
     CSFile = inSourceFile;
-    connect(&ExportProcess,&QProcess::finished,this,&CommandLine::OnSentCRFile);
     connect(&ExportProcess,&QProcess::errorOccurred,this,&CommandLine::OnError);
+    connect(&ExportProcess,&QProcess::finished,this,&CommandLine::OnSentCRFile);
     ExportProcess.start(Cmd);
     ExportProcess.waitForStarted();
     isRunning=true;

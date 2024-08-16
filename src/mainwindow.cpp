@@ -72,6 +72,7 @@ void MainWindow::InitLocal()
     //init Defaults
     QString localPath = "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/";
 
+
     QDir lDir(localPath);
     QFile lfile(localfilePath);
     if(!lDir.exists()) lDir.mkdir(localPath);
@@ -323,9 +324,9 @@ void MainWindow::OnExportClicked()
 
             command->CreateProcess(SFile,ExFile,OutLog,SType);
 
+            connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
             connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
             connect(command,&CommandLine::SendCRFile,this,&MainWindow::Display);
-            connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
             connect(command,&CommandLine::SendId,this,&MainWindow::OnCompletedId);
             command->ExportProcess.waitForStarted();
             OutLog += "Exporting from : " + SFile + " to : " + ExFile;
@@ -398,13 +399,6 @@ QStringList MainWindow::InitFillters()
     }
 
     return QStringList();
-}
-
-bool MainWindow::IsValidPath(const QString inPath)
-{
-    if(inPath.isEmpty() || inPath.isNull()) return false;
-
-    return false;
 }
 
 bool MainWindow::ValidPaths()
@@ -549,12 +543,25 @@ bool MainWindow::StudioIsValid()
     //Studio PC Domain Name
     if(_Host == "giaoduc.edu") return true;
 
+    QString LogAuthor = "<font color=\"red\"> Error : You cannot use the software without the consent of Plus Studio. </font>";
+
+    AddToLog(LogAuthor);
 
     return false;
 }
 
+void MainWindow::AddToLog(QString inMessage)
+{
+    if(inMessage =="") return;
+
+    QString CLog = ui->LeeLog->toHtml();
+    CLog += inMessage;
+    ui->LeeLog->setHtml(CLog);
+}
+
 void MainWindow::Display(QString inReceiveFile,QString CSFile)
 {
+    if(isError) return;
     QString OutLog =ui->LeeLog->toHtml();
     QFile fileExp(inReceiveFile);
     //<color:#ff0000=\"DeepPink\">
@@ -570,17 +577,19 @@ void MainWindow::Display(QString inReceiveFile,QString CSFile)
 
     ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
     LastCompletedFile = CSFile;
-
-
 }
 
 void MainWindow::DisplayErr(QString ErStr)
 {
-    // QString OutLog =ui->LeeLog->toPlainText();
-    // OutLog += "Err : " + ErStr + "\n";
-    // ui->LeeLog->setPlainText(OutLog);
-    qDebug() << "err : " << ErStr;
-
+    QString LogErr = "<font color=\"red\"> Error : " + ErStr +  " </font>";
+    QString LogNotFound = "<font color=\"purple\"> Error : Collections Export is not found. </font>";
+    if(ErStr !=""){
+        AddToLog(LogErr);
+        isError=true;
+        if(ErStr.endsWith("\"ExportCollection\" not found'\r\n")){
+            AddToLog(LogNotFound);
+        }
+    }
 }
 
 void MainWindow::OnCompletedId(int Id)

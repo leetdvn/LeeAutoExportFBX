@@ -87,8 +87,6 @@ private:
 
     QList<CommandLine*> MassCmds;
 
-    bool IsValidPath(const QString inPath);
-
     bool ValidPaths();
 
     void SaveRecentData(const QString inFilePath);
@@ -104,6 +102,9 @@ private:
     QString GetMacAdress();
 
     bool StudioIsValid();
+
+    void AddToLog(QString inMessage);
+
 private slots:
     void Display(QString inReceiveFile,QString CSFile);
 
@@ -138,6 +139,8 @@ protected:
 
     int TotalFiles;
     int completedId=0;
+
+    bool isError=false;
 
 };
 #endif // MAINWINDOW_H
