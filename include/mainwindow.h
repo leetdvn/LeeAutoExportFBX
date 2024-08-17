@@ -81,7 +81,12 @@ private:
     //init Default
     void InitLocal();
 
+    //
     QStringList MayaFiles,BlenderFiles;
+
+    //
+    QStringList EpSourceFiles;
+    int EpCount;
 
     QList<QStringList> leeFilters;
 

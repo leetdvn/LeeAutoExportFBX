@@ -77,7 +77,7 @@ private:
 
     QString InitMelScript(const QString inExportFile);
 
-    void AddToLog(QString inContentLine);
+    void AddToLogData(QString inContentLine);
 
     QString CRFile,CSFile;
     QString ErrorStr;

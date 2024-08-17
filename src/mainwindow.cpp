@@ -292,14 +292,13 @@ void MainWindow::OnExportClicked()
     qDebug() << FilLog << Qt::endl;
     OutLog += FilLog + "<br>";
     //Get Source Files
-    QStringList SFiles;
-    GetFilesInDir(ipSourceDir,SFiles,filters);
+    GetFilesInDir(ipSourceDir,EpSourceFiles,filters);
 
     //Log Files Searching
-    qDebug() << "Files Count " << SFiles.count() << Qt::endl;
+    qDebug() << "Files Count " << EpSourceFiles.count() << Qt::endl;
     qDebug() << "ip Source " << ipSourceDir << Qt::endl;
     ui->progressBar->setValue(0);
-    TotalFiles = SFiles.count();
+    TotalFiles = EpSourceFiles.count();
 
     isRunning = true;
     completedId = 0;
@@ -307,9 +306,9 @@ void MainWindow::OnExportClicked()
     //execute command current test 1 file
     #pragma omp parallel for
     {
-        for(int i=0;i<SFiles.count();++i)
+        for(int i=0;i<EpSourceFiles.count();++i)
         {
-            QString SFile = SFiles[i];
+            QString SFile = EpSourceFiles[i];
             QString ExFile = GetExportPath(SFile,ExportDir);
 
             //Execute Command
@@ -317,8 +316,8 @@ void MainWindow::OnExportClicked()
             MassCmds.push_back(command);
             command->SetMayaPro(ui->MayaText->toPlainText());
             command->SetBlenderPro(ui->BlenderText->toPlainText());
-            command->SetCommandId(i+1);
-
+            command->SetCommandId(i +1);
+            EpCount++;
             //debug mode
             if(!uiOpt->DebugBox->isChecked()) command->SetClearOnComplete(true);
 
@@ -330,8 +329,9 @@ void MainWindow::OnExportClicked()
             connect(command,&CommandLine::SendId,this,&MainWindow::OnCompletedId);
             command->ExportProcess.waitForStarted();
             OutLog += "Exporting from : " + SFile + " to : " + ExFile;
-            if(i!=SFiles.count()-1) OutLog +="<br>";
-            qDebug() << "file " << SFile << "number : " << SFiles.count() <<  Qt::endl;
+
+            if(i !=EpSourceFiles.count()) OutLog +="<br>";
+            qDebug() << "file " << SFile << "number : " << EpSourceFiles.count() <<  Qt::endl;
 
             //ui->MayaText->setHtml("<font color=\"red\">Red text</font>");
             ui->LeeLog->setHtml(OutLog);
@@ -538,8 +538,9 @@ QString MainWindow::GetMacAdress()
 
 bool MainWindow::StudioIsValid()
 {
+    qDebug() << GetMacAdress() << Qt::endl;
     //My Mac Supervisor
-    if(GetMacAdress() == "10:7C:61:47:26:B1") {return true;}
+    if(GetMacAdress() == "10:7C:61:47:26:B1" || GetMacAdress() == "04:7C:16:E3:94:DB") {return true;}
     //Studio PC Domain Name
     if(_Host == "giaoduc.edu") return true;
 
@@ -581,15 +582,22 @@ void MainWindow::Display(QString inReceiveFile,QString CSFile)
 
 void MainWindow::DisplayErr(QString ErStr)
 {
+    //Report Error message
     QString LogErr = "<font color=\"red\"> Error : " + ErStr +  " </font>";
-    QString LogNotFound = "<font color=\"purple\"> Error : Collections Export is not found. </font>";
+    QString LogNotFound;
     if(ErStr !=""){
-        AddToLog(LogErr);
-        isError=true;
         if(ErStr.endsWith("\"ExportCollection\" not found'\r\n")){
-            AddToLog(LogNotFound);
+            LogNotFound= "<font color=\"purple\"> Error : Collections Export is not found. </font>";
         }
+        else if(ErStr.startsWith("Warning"))
+        {
+            LogNotFound = "<font color=\"yellow\"> Warning </font>";
+        }
+
+        isError = ErStr.endsWith("\"ExportCollection\" not found'\r\n") ? true : false;
+        AddToLog(LogNotFound);
     }
+    qDebug() << "Err : " << ErStr << Qt::endl;
 }
 
 void MainWindow::OnCompletedId(int Id)
@@ -635,6 +643,12 @@ void MainWindow::OnFinish()
 
     if(process.isOpen())
         process.deleteLater();
+
+    //new Designs
+    if(EpCount < EpSourceFiles.count())
+    {
+
+    }
 }
 
 void MainWindow::ImplementFbxOptions()

@@ -1,6 +1,7 @@
 #include "commandline.h"
 
 #include <QDir>
+#include <QTimer>
 #include <QXmlStreamReader>
 
 CommandLine::CommandLine(QObject *parent)
@@ -160,7 +161,7 @@ QString CommandLine::InitMelScript(const QString inExportFile)
     // qDebug() << "mel : " << melS.arg(inExportFile);
     //Blender Export Scripts
     QFile MelExp(ScriptFile);
-    if(MelExp.open(QIODevice::ReadWrite | QIODevice::Append))
+    if(MelExp.open(QIODevice::ReadWrite | QIODevice::Truncate))
     {
         QString Cmd = GetMelCommand(MELEXPORTSCRIPT).arg(inExportFile);
         MelExp.write(Cmd.toLocal8Bit());
@@ -170,7 +171,7 @@ QString CommandLine::InitMelScript(const QString inExportFile)
     return ScriptFile;
 }
 
-void CommandLine::AddToLog(QString inContentLine)
+void CommandLine::AddToLogData(QString inContentLine)
 {
     QFile fbxlog(MASSFBXLOG);
     inContentLine +="\n";
@@ -209,6 +210,8 @@ void CommandLine::OnSentCRFile()
 void CommandLine::OnError()
 {
     emit SendErrorStr(ErrorStr);
+    AddToLogData(ErrorStr);
+
 }
 
 void CommandLine::OnSendId()
@@ -221,7 +224,6 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     //init Programs
     QString mProgram = IsValidProgram(inSourceFile);
 
-    ;
 
     //Log
     QFile ExportLog(MASSFBXLOG);
@@ -229,6 +231,7 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
     //Create Command
     bool isSuccess;
     QString Cmd = MakeCmdAsScript(mProgram,inSourceFile,inExportFile,isSuccess);
+    QString LogExp = "Export file : " + inSourceFile + "| Time  : " + QDateTime::currentDateTime().toString();
     //log
     if(!isSuccess){
         qDebug() << inSourceFile << " Not Blender or Maya file format software." << Qt::endl;
@@ -236,7 +239,12 @@ void CommandLine::CreateProcess(const QString inSourceFile, const QString inExpo
         return;
     }
 
-    AddToLog(Cmd);
+    //AddToLogData(Cmd);
+    AddToLogData(LogExp);
+
+    //Debug Cmd
+    AddToLogData(Cmd);
+
     qDebug() << "command : "<< Cmd << Qt::endl;
     //QProcess
 
