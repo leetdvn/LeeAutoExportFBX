@@ -279,13 +279,9 @@ void MainWindow::OnExportClicked()
         ui->LeeLog->setHtml(OutLog);
     }
 
+    //Valid Soft Ware path name
     if(!IsValidSoft()) return;
-    // if(uiOpt->comboBox->currentText()=="Maya"){
-    //     AddToLog();
-    //     return;
-    // }
-    //valid path
-    //if(!ValidPaths()) return;
+
 
     //check Running status
     if(command){
