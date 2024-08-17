@@ -23,6 +23,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->SourceFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
     connect(ui->ExportFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
 
+    connect(ui->MayaText,&QTextEdit::textChanged, this, &MainWindow::OnSoftWareChanged);
+    connect(ui->BlenderText,&QTextEdit::textChanged, this, &MainWindow::OnSoftWareChanged);
+    //connect(ui->ExportFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
+
 
     connect(ui->SourceBrowserBtn,&QPushButton::clicked, this, &MainWindow::OnBrowserFolder);
     connect(ui->ExportBrowserBTn,&QPushButton::clicked,this,&MainWindow::OnBrowserFolder);
@@ -50,6 +54,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     BlenderFiles << "*.blend";
 
+    if(ui->LeeLog->toHtml().isEmpty()){
+        ui->LeeLog->setHtml("");
+    }
 }
 
 #pragma region Init
@@ -153,6 +160,31 @@ void MainWindow::OnTextChanged()
         ExportDir = dir;
 }
 
+void MainWindow::OnSoftWareChanged()
+{
+    if(isRunning) return;
+
+    QTextEdit* softw = qobject_cast<QTextEdit*>(sender());
+
+    QString softStr = softw->toPlainText();
+    QString Wrongsoftlog ;
+    //maya Button or blender Soft
+    if(softw->objectName() == ui->MayaText->objectName())
+    {
+        if(!IsValidMaya(softStr))
+            Wrongsoftlog  = "this softwave is not valid choise mayabatch.exe file";
+    }
+    else if(softw->objectName() == ui->BlenderText->objectName()){
+        if(!IsValidBlender(softStr))
+            Wrongsoftlog  = "this softwave is not valid choise blender.exe file";
+    }
+
+    AddToLog(Wrongsoftlog,"yellow");
+    //Set Vertical Scroll to end value
+    ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
+
+}
+
 void MainWindow::OnBrowserFolder()
 {
      qDebug() << "browser clicked.." << Qt::endl;
@@ -243,9 +275,15 @@ void MainWindow::OnExportClicked()
         return;
     }
     else{
-        OutLog += "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font><br>";
+        OutLog += "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font>";
         ui->LeeLog->setHtml(OutLog);
     }
+
+    if(!IsValidSoft()) return;
+    // if(uiOpt->comboBox->currentText()=="Maya"){
+    //     AddToLog();
+    //     return;
+    // }
     //valid path
     //if(!ValidPaths()) return;
 
@@ -551,13 +589,57 @@ bool MainWindow::StudioIsValid()
     return false;
 }
 
-void MainWindow::AddToLog(QString inMessage)
+bool MainWindow::IsValidSoft()
+{
+    QString SoftOptions = uiOpt->comboBox->currentText();
+    bool result = false;
+    QString CLog;//= ui->LeeLog->toHtml();
+
+    if(SoftOptions == "Maya") {
+        result = IsValidMaya(ui->MayaText->toPlainText());
+        if(!result){
+            CLog += "Maya Path is Not SoftWave";
+            AddToLog(CLog,"red");
+
+            return result;
+        }
+    }
+
+    else if(SoftOptions == "Blender") {
+        result = IsValidBlender(ui->BlenderText->toPlainText());
+        if(!result){
+            CLog += "Blender Path is Not SoftWave";
+            AddToLog(CLog,"red");
+            return result;
+        }
+    }
+
+    result= IsValidMaya(ui->MayaText->toPlainText()) && IsValidBlender(ui->BlenderText->toPlainText());
+
+    if(!result){
+        if(!IsValidMaya(ui->MayaText->toPlainText())){
+            CLog += "Choise mayabatch.exe ";
+        }
+        if(!IsValidBlender(ui->BlenderText->toPlainText())){
+            CLog+=" Choise blender.exe location ";
+        }
+        AddToLog(CLog,"red");
+    }
+
+
+    return result;
+}
+
+void MainWindow::AddToLog(QString inMessage,QString inColor)
 {
     if(inMessage =="") return;
 
     QString CLog = ui->LeeLog->toHtml();
-    CLog += inMessage;
+
+    CLog += "<font color=\"" + inColor + "\"> " +  inMessage +  "</font>";
     ui->LeeLog->setHtml(CLog);
+    ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
+
 }
 
 void MainWindow::Display(QString inReceiveFile,QString CSFile)

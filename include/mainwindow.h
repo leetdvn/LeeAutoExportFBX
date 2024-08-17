@@ -52,6 +52,8 @@ public:
 public slots:
     void OnTextChanged();
 
+    void OnSoftWareChanged();
+
     void OnBrowserFolder();
 
     void OnBrowserFile();
@@ -108,15 +110,24 @@ private:
 
     bool StudioIsValid();
 
-    void AddToLog(QString inMessage);
+    bool IsValidMaya(const QString inProgramPath) {return inProgramPath.endsWith("mayabatch.exe");}
+
+    bool IsValidBlender(const QString inProgramPath) {return inProgramPath.endsWith("blender.exe");}
+
+    bool IsValidSoft();
+
+    void AddToLog(QString inMessage,QString inColor="black");
 
 private slots:
+
     void Display(QString inReceiveFile,QString CSFile);
 
     void DisplayErr(QString ErStr);
 
     void OnCompletedId(int Id);
+
 protected:
+
     CommandLine* command = nullptr;
     void ImplementFbxOptions();
 
@@ -140,7 +151,7 @@ protected:
     QString LastCompletedFile;
 
     QString _Pc,_Users,_Host;
-    bool isRunning;
+    bool isRunning=false;
 
     int TotalFiles;
     int completedId=0;
