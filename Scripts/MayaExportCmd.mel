@@ -1,9 +1,19 @@
-string $MassExp[] = `editDisplayLayerMembers -q MassExport`;
-
-for($i = 0 ; $i < size($MassExp) ; ++$i){
-    select -cl;
-    select -r $MassExp[$i];
-    string $exp = "%1" + $MassExp[$i] + ".fbx" ;
-    catch(`file -force -options "v=0" -type "FBX export" -pr -es $exp`);
-};
-//file -force -options "v=0" -type "FBX export" -pr -ea "C:/Users/thang/Documents/Exports/";
+global proc MassFbxExp(){
+	if(!`objExists "MassExport"`){
+		print("not found MassExport\n");
+		return;
+	}
+	if(!`pluginInfo -q -l "fbxmaya"`)
+	   loadPlugin "fbxmaya";
+	string $MassExp[] = `editDisplayLayerMembers -q MassExport`;
+	for($i = 0 ; $i < size($MassExp) ; ++$i){
+		select -cl;
+		select -r $MassExp[$i];
+		string $exp = "%1" + $MassExp[$i] + ".fbx" ;
+		file -force -options "v=0" -type "FBX export" -pr -es $exp;
+		if(`file -q -ex $exp`)
+			print($exp + " export Successful\n");
+	};
+}
+MassFbxExp();
+//file -force -options "v=0" -type "FBX export" -pr -ea "%1";

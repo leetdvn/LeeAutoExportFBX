@@ -60,7 +60,7 @@ QString CommandLine::MakeCmdAsScript(const QString inProgram,const QString inSou
         ScriptPath= InitMelScript(inExportFile);
         Cmd =  inProgram + " -file \""  + inSourceFile + "\" -noAutoloadPlugins -script " ;
         Cmd += "\"" + ScriptPath + "\"";
-        Cmd+= " -log \"C:/Users/thang/AppData/Local/LeeMassFbx/MassMayaLog.txt\"";
+        Cmd+= " -log \"C:/Users/thang/AppData/Local/LeeMassFbx/Logs/MassMayaLog.txt\"";
         isSuccess=true;
     }
     else if(inSourceFile.endsWith(".blend")){

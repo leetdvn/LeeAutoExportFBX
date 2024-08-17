@@ -76,13 +76,26 @@ void MainWindow::InfoEnv()
 
 void MainWindow::InitLocal()
 {
+    //init List Dir
+    QStringList MassDirs = {"LeeMassFbx","LeeMassFbx/Scripts","LeeMassFbx/Logs"};
     //init Defaults
+
+    QString baseDir = "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/";
+    for(auto d : MassDirs){
+        QString nDir = baseDir + d;
+        QDir dir(nDir);
+        if(!dir.exists())
+            dir.mkdir(nDir);
+    }
+
     QString localPath = "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/";
 
+    // QDir lDir(localPath);
+    // QDir LogDir(localPath + "Logs/");
+    // if(!lDir.exists()) lDir.mkdir(localPath);
+    // if(!LogDir.exists()) LogDir.mkdir(localPath + "Logs/");
 
-    QDir lDir(localPath);
     QFile lfile(localfilePath);
-    if(!lDir.exists()) lDir.mkdir(localPath);
     if(!lfile.exists()){
         if(lfile.open(QIODevice::ReadWrite))
             lfile.close();

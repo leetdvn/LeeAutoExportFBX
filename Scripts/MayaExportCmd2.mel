@@ -1,0 +1,9 @@
+string $MassExp[] = `editDisplayLayerMembers -q MassExport`;
+
+for($i = 0 ; $i < size($MassExp) ; ++$i){
+    select -cl;
+    select -r $MassExp[$i];
+    string $exp = "%1" + $MassExp[$i] + ".fbx" ;
+    evalDeferred("file -force -options \"v=0\" -type \"FBX export\" -pr -es \"" + $exp + "\"");
+};
+//file -force -options "v=0" -type "FBX export" -pr -ea "C:/Users/thang/Documents/Exports/";
