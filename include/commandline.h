@@ -43,6 +43,7 @@ public:
     void SetMayaPro(const QString inPath){MayaProgram = "\"" + inPath +"\" "; };
     void SetBlenderPro(const QString inPath){BlenderProgram = "\"" + inPath +"\" "; };
     void SetCommandId(int inId){commandId = inId;}
+    void SetExportFolder(const QString inFolder){ExpFolder = inFolder;}
 
     static QString GetMelCommand(const QString inMelScript);
 
@@ -83,6 +84,8 @@ private:
     QString ErrorStr;
     QString MayaProgram;
     QString BlenderProgram;
+
+    QString ExpFolder;
 
     QString ScriptPath;
     QStringList BlenderScripts;

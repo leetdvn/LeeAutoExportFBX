@@ -58,8 +58,9 @@ QString CommandLine::MakeCmdAsScript(const QString inProgram,const QString inSou
     QString Cmd;
     if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
         ScriptPath= InitMelScript(inExportFile);
-        Cmd =  inProgram + " -file \""  + inSourceFile + "\"-noAutoloadPlugins -script " ;
+        Cmd =  inProgram + " -file \""  + inSourceFile + "\" -noAutoloadPlugins -script " ;
         Cmd += "\"" + ScriptPath + "\"";
+        Cmd+= " -log \"C:/Users/thang/AppData/Local/LeeMassFbx/MassMayaLog.txt\"";
         isSuccess=true;
     }
     else if(inSourceFile.endsWith(".blend")){
@@ -163,7 +164,7 @@ QString CommandLine::InitMelScript(const QString inExportFile)
     QFile MelExp(ScriptFile);
     if(MelExp.open(QIODevice::ReadWrite | QIODevice::Truncate))
     {
-        QString Cmd = GetMelCommand(MELEXPORTSCRIPT).arg(inExportFile);
+        QString Cmd = GetMelCommand(MELEXPORTSCRIPT).arg(ExpFolder);
         MelExp.write(Cmd.toLocal8Bit());
         MelExp.close();
     }

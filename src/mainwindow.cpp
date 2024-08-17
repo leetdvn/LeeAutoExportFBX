@@ -308,13 +308,6 @@ void MainWindow::OnExportClicked()
 
     SoftwereType SType = GetSoftWareType();
 
-    //type None Error type
-    if(SType==None) {
-
-        /*Debug Something here*/
-        return;
-    }
-
     //create Filter List
     QStringList filters= InitFillters();
 
@@ -324,7 +317,7 @@ void MainWindow::OnExportClicked()
     for(auto ff : filters)
         FilLog+= ff;
     qDebug() << FilLog << Qt::endl;
-    OutLog += FilLog + "<br>";
+    logStr += FilLog + "<br>";
     //Get Source Files
     GetFilesInDir(ipSourceDir,EpSourceFiles,filters);
 
@@ -337,47 +330,51 @@ void MainWindow::OnExportClicked()
     isRunning = true;
     completedId = 0;
     ui->ExportExecute->setEnabled(false);
+
+    ExecuteExportFbx(EpCount);
     //execute command current test 1 file
-    #pragma omp parallel for
-    {
-        for(int i=0;i<EpSourceFiles.count();++i)
-        {
-            QString SFile = EpSourceFiles[i];
-            QString ExFile = GetExportPath(SFile,ExportDir);
+    // #pragma omp parallel for
+    // {
+    //     for(int i=0;i<EpSourceFiles.count();++i)
+    //     {
+    //         QString SFile = EpSourceFiles[i];
 
-            //Execute Command
-            command = new CommandLine();
-            MassCmds.push_back(command);
-            command->SetMayaPro(ui->MayaText->toPlainText());
-            command->SetBlenderPro(ui->BlenderText->toPlainText());
-            command->SetCommandId(i +1);
-            EpCount++;
-            //debug mode
-            if(!uiOpt->DebugBox->isChecked()) command->SetClearOnComplete(true);
+    //         //make Path file
+    //         QString ExFile = GetExportPath(SFile,ExportDir);
 
-            command->CreateProcess(SFile,ExFile,OutLog,SType);
+    //         //Execute Command
+    //         command = new CommandLine();
+    //         MassCmds.push_back(command);
+    //         command->SetMayaPro(ui->MayaText->toPlainText());
+    //         command->SetBlenderPro(ui->BlenderText->toPlainText());
+    //         command->SetCommandId(i +1);
+    //         EpCount++;
+    //         //debug mode
+    //         if(!uiOpt->DebugBox->isChecked()) command->SetClearOnComplete(true);
 
-            connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
-            connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
-            connect(command,&CommandLine::SendCRFile,this,&MainWindow::Display);
-            connect(command,&CommandLine::SendId,this,&MainWindow::OnCompletedId);
-            command->ExportProcess.waitForStarted();
-            OutLog += "Exporting from : " + SFile + " to : " + ExFile;
+    //         command->CreateProcess(SFile,ExFile,OutLog,SType);
 
-            if(i !=EpSourceFiles.count()) OutLog +="<br>";
-            qDebug() << "file " << SFile << "number : " << EpSourceFiles.count() <<  Qt::endl;
+    //         connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
+    //         connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
+    //         connect(command,&CommandLine::SendCRFile,this,&MainWindow::Display);
+    //         connect(command,&CommandLine::SendId,this,&MainWindow::OnCompletedId);
+    //         command->ExportProcess.waitForStarted();
+    //         OutLog += "Exporting from : " + SFile + " to : " + ExFile;
 
-            //ui->MayaText->setHtml("<font color=\"red\">Red text</font>");
-            ui->LeeLog->setHtml(OutLog);
-            ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
+    //         if(i !=EpSourceFiles.count()) OutLog +="<br>";
+    //         qDebug() << "file " << SFile << "number : " << EpSourceFiles.count() <<  Qt::endl;
 
-            // command->ExportProcess.waitForFinished(-1);
-            // OutLog += command->ExportProcess.readAllStandardOutput() + "\n";
-            // OutLog += "Export Completed : " + SFile + "\n";
-            // ui->LeeLog->setPlainText(OutLog);
+    //         //ui->MayaText->setHtml("<font color=\"red\">Red text</font>");
+    //         ui->LeeLog->setHtml(OutLog);
+    //         ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
 
-        }
-    }
+    //         // command->ExportProcess.waitForFinished(-1);
+    //         // OutLog += command->ExportProcess.readAllStandardOutput() + "\n";
+    //         // OutLog += "Export Completed : " + SFile + "\n";
+    //         // ui->LeeLog->setPlainText(OutLog);
+
+    //     }
+    // }
 
     command=nullptr;
 
@@ -592,12 +589,15 @@ bool MainWindow::IsValidSoft()
     QString CLog;//= ui->LeeLog->toHtml();
 
     if(SoftOptions == "Maya") {
+        QString MayaPath = ui->MayaText->toPlainText();
+        if(!IsValidPath(MayaPath)){
+            CLog += MayaPath +  " file does'nt exists.";
+        }
+
         result = IsValidMaya(ui->MayaText->toPlainText());
         if(!result){
             CLog += "Maya Path is Not SoftWave";
-            AddToLog(CLog,"red");
 
-            return result;
         }
     }
 
@@ -609,19 +609,22 @@ bool MainWindow::IsValidSoft()
             return result;
         }
     }
+    else{
+        result= IsValidMaya(ui->MayaText->toPlainText()) && IsValidBlender(ui->BlenderText->toPlainText());
 
-    result= IsValidMaya(ui->MayaText->toPlainText()) && IsValidBlender(ui->BlenderText->toPlainText());
+        if(!result){
+            if(!IsValidMaya(ui->MayaText->toPlainText())){
+                CLog += "Choise mayabatch.exe ";
+            }
+            if(!IsValidBlender(ui->BlenderText->toPlainText())){
+                CLog+=" Choise blender.exe location ";
+            }
 
-    if(!result){
-        if(!IsValidMaya(ui->MayaText->toPlainText())){
-            CLog += "Choise mayabatch.exe ";
         }
-        if(!IsValidBlender(ui->BlenderText->toPlainText())){
-            CLog+=" Choise blender.exe location ";
-        }
-        AddToLog(CLog,"red");
     }
 
+    //if not Validation
+    if(!result) AddToLog(CLog,"red");
 
     return result;
 }
@@ -641,31 +644,36 @@ void MainWindow::AddToLog(QString inMessage,QString inColor)
 void MainWindow::Display(QString inReceiveFile,QString CSFile)
 {
     if(isError) return;
-    QString OutLog =ui->LeeLog->toHtml();
+    logStr =ui->LeeLog->toHtml();
     QFile fileExp(inReceiveFile);
     //<color:#ff0000=\"DeepPink\">
-    QString Message = fileExp.exists() ? "<font color=\"green\">Export Completed : </font>" : "<font color=\"red\">Export Failure : </font>";
-    QString FMessage = fileExp.exists() ? inReceiveFile : CSFile;
-    OutLog += Message + FMessage ;
+    logStr+= fileExp.exists() ? "<font color=\"green\">Export Completed : </font>" : "<font color=\"red\">Export Failure : </font>";
+    logStr+= fileExp.exists() ? inReceiveFile : CSFile;
 
     //qDebug() << "id : " << completedId << "total : " << TotalFiles;
     if(completedId == TotalFiles-1)
-        OutLog += "<br><font color=\"yellow\">MassExport Total : " +  QString::number(TotalFiles) +  " files.</font>";
+        logStr += "<br><font color=\"yellow\">MassExport Total : " +  QString::number(TotalFiles) +  " files.</font>";
 
-    ui->LeeLog->setHtml(OutLog);
+    ui->LeeLog->setHtml(logStr);
 
+    //sctorll bar update to end vertical
     ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
     LastCompletedFile = CSFile;
 }
 
 void MainWindow::DisplayErr(QString ErStr)
 {
+
     //Report Error message
     QString LogErr = "<font color=\"red\"> Error : " + ErStr +  " </font>";
     QString LogNotFound;
+
+    CommandLine* cmdLine = qobject_cast<CommandLine*>(sender());
+    if(!cmdLine) return;
+
     if(ErStr !=""){
         if(ErStr.endsWith("\"ExportCollection\" not found'\r\n")){
-            LogNotFound= "<font color=\"purple\"> Error : Collections Export is not found. </font>";
+            LogNotFound= "<font color=\"purple\"> Blender File : " + cmdLine->GetCSFile() +  " Export Collections is not found. </font>";
         }
         else if(ErStr.startsWith("Warning"))
         {
@@ -719,14 +727,18 @@ void MainWindow::OnFinish()
 {
     QProcess process = qobject_cast<QProcess>(sender());
 
-    if(process.isOpen())
-        process.deleteLater();
 
     //new Designs
     if(EpCount < EpSourceFiles.count())
     {
-
+        //return ExecuteExportFbx(EpCount);
     }
+    else{
+        process.deleteLater();
+    }
+    // if(process.isOpen())
+    //     process.deleteLater();
+
 }
 
 void MainWindow::ImplementFbxOptions()
@@ -812,9 +824,49 @@ void MainWindow::ClearScripts()
 
 }
 
-void MainWindow::ExecuteExportFbx(QString inSourceFile, QString inExportDir)
+void MainWindow::ExecuteExportFbx(const int inId)
 {
-    QString ExFile = GetExportPath(inSourceFile,inExportDir);
+    //check Path Source
+    if(!IsValidPath(EpSourceFiles[inId])){
+        AddToLog("Source Path does'nt Exists.","red");
+        return;
+    }
+
+
+    QString SFile = EpSourceFiles[inId];
+
+    //make Path file
+    QString ExFile = GetExportPath(SFile,ExportDir);
+
+    SoftwereType SType = GetSoftWareType();
+
+    //Execute Command
+    command = new CommandLine();
+    MassCmds.push_back(command);
+    command->SetMayaPro(ui->MayaText->toPlainText());
+    command->SetBlenderPro(ui->BlenderText->toPlainText());
+    command->SetCommandId(inId);
+    command->SetExportFolder(ExportDir);
+    EpCount++;
+    //debug mode
+    if(!uiOpt->DebugBox->isChecked()) command->SetClearOnComplete(true);
+
+    command->CreateProcess(SFile,ExFile,logStr,SType);
+
+    connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
+    connect(command,&CommandLine::SendCRFile,this,&MainWindow::Display);
+    connect(command,&CommandLine::SendId,this,&MainWindow::OnCompletedId);
+    connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
+    command->ExportProcess.waitForStarted();
+    if(!logStr.endsWith("<br>"))
+        logStr+="<br>";
+    logStr += "Exporting from : " + SFile + " to : " + ExFile;
+
+    qDebug() << "file " << SFile << "number : " << EpSourceFiles.count() <<  Qt::endl;
+
+    ui->LeeLog->setHtml(logStr);
+    ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
+
 
 }
 

@@ -83,12 +83,12 @@ private:
     //init Default
     void InitLocal();
 
-    //
+    //Maya Files Blender Files
     QStringList MayaFiles,BlenderFiles;
 
-    //
+    //List Source Files
     QStringList EpSourceFiles;
-    int EpCount;
+    int EpCount = 0;
 
     QList<QStringList> leeFilters;
 
@@ -140,7 +140,7 @@ protected:
     void InfoEnv();
 
     //execute Fbx Export
-    void ExecuteExportFbx(QString inSourceFile,QString inExportDir);
+    void ExecuteExportFbx(const int inId);
 
     LeeSpoiler* Spoiler;
 
