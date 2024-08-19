@@ -11,6 +11,7 @@
 #include <QPlainTextEdit>
 #include <Definitions.h>
 #include <massfbxultilities.h>
+#include <consolemaya.h>
 
 enum SoftwereType
 {

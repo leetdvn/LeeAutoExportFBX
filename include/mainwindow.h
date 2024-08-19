@@ -22,7 +22,6 @@
 
 
 
-
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -128,6 +127,7 @@ private slots:
 
 protected:
 
+    ConsoleMaya* mMaya=nullptr;
     CommandLine* command = nullptr;
     void ImplementFbxOptions();
 

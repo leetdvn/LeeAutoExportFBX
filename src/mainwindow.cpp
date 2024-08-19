@@ -345,6 +345,7 @@ void MainWindow::OnExportClicked()
     ui->ExportExecute->setEnabled(false);
 
     ExecuteExportFbx(EpCount);
+
     //execute command current test 1 file
     // #pragma omp parallel for
     // {
@@ -740,11 +741,17 @@ void MainWindow::OnFinish()
 {
     QProcess process = qobject_cast<QProcess>(sender());
 
+    qDebug() << "Count : " << EpCount << Qt::endl;
+    QString inLogFile = "C:/Users/leepl/AppData/Local/LeeMassFbx/Logs/MassMayaLog.txt";
+    mMaya = new ConsoleMaya(ui->MayaText->toPlainText(),EpSourceFiles[0],ui->ExportFolderText->toPlainText());
+    mMaya->VerifiedExported(inLogFile);
+
 
     //new Designs
     if(EpCount < EpSourceFiles.count())
     {
         //return ExecuteExportFbx(EpCount);
+
     }
     else{
         process.deleteLater();
