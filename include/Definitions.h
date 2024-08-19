@@ -25,6 +25,7 @@
 //Base Script Dir
 #define SCRIPTDIR  QDir::currentPath() + QString("/Scripts/")// "C:/Users/leepl/Documents/GitHub/LeeAutoExportFBX/Scripts/"
 
+// Mass Version
 #define MASSVERSION "LeeMassFbx Tools  Version 1.02 "
 
 #endif

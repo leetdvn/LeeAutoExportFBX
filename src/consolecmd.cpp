@@ -1,17 +1,23 @@
-#include <consolemaya.h>
+#include <consoleCmd.h>
 
-ConsoleMaya::ConsoleMaya(QString inMayaBatch,QString inSourceFile,QString inExportDir)
-    :MMayaBatch(inMayaBatch),
+ConsoleCmd::ConsoleCmd(QString inMayaBatch,QString inSourceFile,QString inExportDir)
+    :MProgram(inMayaBatch),
     MSourcePath(inSourceFile),
     MExportDir(inExportDir)
-
 {
     this->moveToThread(&mThread);
-
     qDebug() << "Maya Console .." << Qt::endl;
 }
 
-ConsoleMaya::~ConsoleMaya()
+ConsoleCmd::ConsoleCmd(const ConsoleCmd &cCmd)
+    :MProgram(cCmd.MProgram),
+    MSourcePath(cCmd.MSourcePath),
+    MExportDir(cCmd.MExportDir)
+{
+
+}
+
+ConsoleCmd::~ConsoleCmd()
 {
     if(mThread.isRunning()){
         mThread.terminate();
@@ -19,7 +25,7 @@ ConsoleMaya::~ConsoleMaya()
     }
 }
 
-void ConsoleMaya::SetProgram(const QString inProgram)
+void ConsoleCmd::SetProgram(const QString inProgram)
 {
     QFile fileProgram(inProgram);
     if(!fileProgram.exists()) return;
@@ -27,10 +33,10 @@ void ConsoleMaya::SetProgram(const QString inProgram)
     if(!inProgram.endsWith("mayabatch.exe"))
         qDebug() << inProgram << "not mayabatch file.." << Qt::endl;
 
-    MMayaBatch = inProgram;
+    MProgram = inProgram;
 }
 
-void ConsoleMaya::SetMSourcePath(const QString inSourcePath)
+void ConsoleCmd::SetMSourcePath(const QString inSourcePath)
 {
     QFile souce(inSourcePath);
     if(!souce.exists()){
@@ -41,7 +47,7 @@ void ConsoleMaya::SetMSourcePath(const QString inSourcePath)
     MSourcePath = inSourcePath;
 }
 
-void ConsoleMaya::SetMExportDir(const QString inExportDir)
+void ConsoleCmd::SetMExportDir(const QString inExportDir)
 {
     QDir ExpDir(inExportDir);
     if(!ExpDir.exists()){
@@ -51,7 +57,7 @@ void ConsoleMaya::SetMExportDir(const QString inExportDir)
     MExportDir = inExportDir;
 }
 
-bool ConsoleMaya::VerifiedExported(const QString inLogFile)
+bool ConsoleCmd::VerifiedExported(const QString inLogFile)
 {
     int Total = FilterCompleted(inLogFile,ExportResult);
 
@@ -63,7 +69,8 @@ bool ConsoleMaya::VerifiedExported(const QString inLogFile)
     return false;
 }
 
-int ConsoleMaya::FilterCompleted(const QString inLogFile,QStringList &LogResult)
+
+int ConsoleCmd::FilterCompleted(const QString inLogFile,QStringList &LogResult)
 {
 
     QFile log(inLogFile);
@@ -102,14 +109,14 @@ int ConsoleMaya::FilterCompleted(const QString inLogFile,QStringList &LogResult)
     return LogResult.count();
 }
 
-QString ConsoleMaya::InitExportScript()
+QString ConsoleCmd::InitExportScript()
 {
     return QString();
 }
 
-QString ConsoleMaya::MakeConsoleCmd()
+QString ConsoleCmd::MakeConsoleCmd(SoftwereType inType)
 {
-    if(MMayaBatch.isNull() || MMayaBatch =="") {
+    if(MProgram.isNull() || MProgram =="" || mCmd.isNull() || mCmd !="") {
 
         qDebug() << MAYACONSOLE << "MayaBatch File not found.." << Qt::endl;
         return QString();
@@ -118,7 +125,7 @@ QString ConsoleMaya::MakeConsoleCmd()
     //Init Exp Scripts
     QString ScriptPath = InitExportScript();
 
-    QString Cmd = MMayaBatch +  " -file \""  + MSourcePath + "\" -noAutoloadPlugins -script " ;
+    QString Cmd = MProgram +  " -file \""  + MSourcePath + "\" -noAutoloadPlugins -script " ;
     Cmd += "\"%1\"";
     Cmd+= " -log \"%2\"";
 

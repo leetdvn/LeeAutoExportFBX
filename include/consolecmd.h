@@ -1,5 +1,5 @@
-#ifndef CONSOLEMAYA_H
-#define CONSOLEMAYA_H
+#ifndef CONSOLECMD_H
+#define CONSOLECMD_H
 
 #include <QFile>
 #include <QDir>
@@ -12,12 +12,15 @@
 
 using namespace MassFbxUltilities;
 
-class ConsoleMaya : QObject
+class ConsoleCmd : QObject
 {
     Q_OBJECT
 public:
-    ConsoleMaya(QString inMayaBatch,QString inSourceFile,QString inExportDir);
-    ~ConsoleMaya();
+    ConsoleCmd(QString inMayaBatch,QString inSourceFile,QString inExportDir);
+
+    ConsoleCmd(const ConsoleCmd & cCmd);
+
+    ~ConsoleCmd();
 
     void SetProgram(const QString inProgram);
 
@@ -29,6 +32,8 @@ public:
 
     void SetStatus(bool inStatus) {IsRunning = inStatus;}
 
+    void SetConsoleCmd(const QString inCmd);
+
     QString GetLogs() {return LogPath;}
 
     QString GetScriptPath();
@@ -36,11 +41,12 @@ public:
     //Read Log Verifify Export
     bool VerifiedExported(const QString inLogFile);
 
+    virtual void InItProgram(const QString inProgram) = 0;
 
-private:
+protected:
 
-    //MayaBatch Program
-    QString MMayaBatch;
+    //Maya or Blender Program
+    QString MProgram;
 
     //Source File Path
     QString MSourcePath;
@@ -52,7 +58,7 @@ private:
     QThread mThread;
 
     //Console Command
-    QString ConsoleCmd;
+    QString mCmd;
 
     //Log File
     QString LogPath;
@@ -74,8 +80,9 @@ private:
     QString InitExportScript();
 
     // Create Cmd
-    QString MakeConsoleCmd();
+    QString MakeConsoleCmd(SoftwereType inType);
 
 };
 
-#endif // CONSOLEMAYA_H
+typedef ConsoleCmd Super;
+#endif // CONSOLECMD_H

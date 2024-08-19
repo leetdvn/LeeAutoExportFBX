@@ -56,7 +56,7 @@
            </size>
           </property>
           <property name="placeholderText">
-           <string>Maya Bin Folder</string>
+           <string>Select Mayabatch.exe in side bin of Maya Folder</string>
           </property>
          </widget>
         </item>
@@ -87,7 +87,7 @@
            </size>
           </property>
           <property name="placeholderText">
-           <string>Blender Folder</string>
+           <string>Select Blender.exe in Blender Folder</string>
           </property>
          </widget>
         </item>

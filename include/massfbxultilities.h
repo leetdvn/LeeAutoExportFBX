@@ -5,10 +5,16 @@
 #include <QDir>
 #include <QFile>
 
+enum SoftwereType
+{
+    Maya,
+    Blender,
+    MayaAndBlender,
+    None
+};
 
 namespace MassFbxUltilities
 {
-
 
 
 bool IsValidPath(QString inPaths);

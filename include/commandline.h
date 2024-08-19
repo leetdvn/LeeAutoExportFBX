@@ -11,15 +11,8 @@
 #include <QPlainTextEdit>
 #include <Definitions.h>
 #include <massfbxultilities.h>
-#include <consolemaya.h>
+#include <consolecmd.h>
 
-enum SoftwereType
-{
-    Maya,
-    Blender,
-    MayaAndBlender,
-    None
-};
 
 #define LOCALSCRIPTS  QString("C:/Users/%1/AppData/Local/LeeMassFbx/Scripts/").arg(qgetenv("USERNAME"))
 

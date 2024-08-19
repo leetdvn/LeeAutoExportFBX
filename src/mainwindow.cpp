@@ -163,7 +163,10 @@ void MainWindow::OnTextChanged()
     //check folder Exists message log
     if(!QDir(dir).exists()) {
         QString log = "Source Folder : " + dir + " does'nt exists.\n";
-        ui->LeeLog->setPlainText(log);
+
+        //"<font color=\"red\">Cannot use unauthorized tools</font>";
+        //ui->LeeLog->setPlainText(log);
+        AddToLog(log,"red");
         qDebug() << log << Qt::endl;
         return;
     }
@@ -457,19 +460,16 @@ bool MainWindow::ValidPaths()
         ui->ExportFolderText->toPlainText()
     };
 
-    int count;
     for(auto f: paths){
-        if(count < 2){
-            qDebug() << "Valid Path : " << paths[count] << Qt::endl;
+        if(f.endsWith(".exe")){
+            qDebug() << "Valid Path : " << f << Qt::endl;
             if(!QFile(f).exists()) return false;
         }
         else{
-            qDebug() << "Valid Path : " << paths[count] << Qt::endl;
+            qDebug() << "Valid Path : " << f << Qt::endl;
             if(!QDir(f).exists()) return false;
         }
-        count++;
     }
-
     return true;
 }
 
@@ -745,9 +745,9 @@ void MainWindow::OnFinish()
 
     qDebug() << "Count : " << EpCount << Qt::endl;
     QString inLogFile = "C:/Users/leepl/AppData/Local/LeeMassFbx/Logs/MassMayaLog.txt";
-    mMaya = new ConsoleMaya(ui->MayaText->toPlainText(),EpSourceFiles[0],ui->ExportFolderText->toPlainText());
-    mMaya->VerifiedExported(inLogFile);
-
+    //mMaya = new MayaCmd(ui->MayaText->toPlainText(),EpSourceFiles[0],ui->ExportFolderText->toPlainText());
+    // mMaya->VerifiedExported(inLogFile);
+    //mMaya.InItProgram(ui->MayaText->toPlainText());
 
     //new Designs
     if(EpCount < EpSourceFiles.count())

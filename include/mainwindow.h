@@ -19,7 +19,7 @@
 #include <QNetworkInterface>
 #include <qmessagebox.h>
 #include <massfbxultilities.h>
-
+#include <mayacmd.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -127,7 +127,7 @@ private slots:
 
 protected:
 
-    ConsoleMaya* mMaya=nullptr;
+    MayaCmd* mMaya=nullptr;
     CommandLine* command = nullptr;
     void ImplementFbxOptions();
 
