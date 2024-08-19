@@ -58,9 +58,8 @@ QString CommandLine::MakeCmdAsScript(const QString inProgram,const QString inSou
     QString Cmd;
     if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
         ScriptPath= InitMelScript(inExportFile);
-        Cmd =  inProgram + " -file \""  + inSourceFile + "\" -noAutoloadPlugins -script " ;
-        Cmd += "\"" + ScriptPath + "\"";
-        Cmd+= " -log \"C:/Users/leepl/AppData/Local/LeeMassFbx/Logs/MassMayaLog.txt\"";
+        QString logf = "C:/Users/thang/AppData/Local/LeeMassFbx/Logs/ASplitObjectLog.txt";
+        Cmd = MAYACONSOLE.arg(inProgram,inSourceFile,ScriptPath,logf);
         isSuccess=true;
     }
     else if(inSourceFile.endsWith(".blend")){
@@ -172,15 +171,6 @@ QString CommandLine::InitMelScript(const QString inExportFile)
     return ScriptFile;
 }
 
-void CommandLine::AddToLogData(QString inContentLine)
-{
-    QFile fbxlog(MASSFBXLOG);
-    inContentLine +="\n";
-    if(fbxlog.open(QIODevice::WriteOnly | QIODevice::Append)){
-        fbxlog.write(inContentLine.toLocal8Bit());
-        fbxlog.close();
-    }
-}
 
 void CommandLine::OnSentCRFile()
 {

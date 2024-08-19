@@ -41,7 +41,7 @@ void ConsoleCmd::SetMSourcePath(const QString inSourcePath)
     QFile souce(inSourcePath);
     if(!souce.exists()){
 
-        qDebug() << MAYACONSOLE << inSourcePath;
+        qDebug() << MAYALOG << inSourcePath;
     }
 
     MSourcePath = inSourcePath;
@@ -57,6 +57,25 @@ void ConsoleCmd::SetMExportDir(const QString inExportDir)
     MExportDir = inExportDir;
 }
 
+QString ConsoleCmd::GetSourceName()
+{
+    if(MSourcePath.isNull() ||
+        MSourcePath.isEmpty() ||
+        MSourcePath =="")
+    {
+        qDebug() << BASECONSOLE << "Source file is empty." << Qt::endl;
+        return QString();
+    }
+    QString PartStr = MSourcePath.replace("\\","/");
+    QStringList SplitPath = PartStr.split("/");
+    QStringList SourceF = SplitPath[SplitPath.count()-1].split(".");
+
+    QString result = SourceF[0];
+
+    qDebug() << BASECONSOLE << result << Qt::endl;
+    return SourceF[0];
+}
+
 bool ConsoleCmd::VerifiedExported(const QString inLogFile)
 {
     int Total = FilterCompleted(inLogFile,ExportResult);
@@ -68,7 +87,6 @@ bool ConsoleCmd::VerifiedExported(const QString inLogFile)
     qDebug() << "Total Fbx in File : " << Total << Qt::endl;
     return false;
 }
-
 
 int ConsoleCmd::FilterCompleted(const QString inLogFile,QStringList &LogResult)
 {

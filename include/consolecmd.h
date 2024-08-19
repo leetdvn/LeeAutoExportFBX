@@ -6,9 +6,7 @@
 #include <Definitions.h>
 #include <QThread>
 #include <massfbxultilities.h>
-
-#define MAYACONSOLE QString("MayaConsole : ")
-
+#include <Definitions.h>
 
 using namespace MassFbxUltilities;
 
@@ -38,10 +36,13 @@ public:
 
     QString GetScriptPath();
 
+    //Get Source File Name
+    QString GetSourceName();
+
     //Read Log Verifify Export
     bool VerifiedExported(const QString inLogFile);
 
-    virtual void InItProgram(const QString inProgram) = 0;
+    virtual void InItProgram() = 0;
 
 protected:
 

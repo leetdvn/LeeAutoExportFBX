@@ -34,8 +34,8 @@ public:
     bool IsRunning(){return isRunning;}
     QProcess ExportProcess;
 
-    void SetMayaPro(const QString inPath){MayaProgram = "\"" + inPath +"\" "; };
-    void SetBlenderPro(const QString inPath){BlenderProgram = "\"" + inPath +"\" "; };
+    void SetMayaPro(const QString inPath){MayaProgram = inPath ; };
+    void SetBlenderPro(const QString inPath){BlenderProgram = inPath ; };
     void SetCommandId(int inId){commandId = inId;}
     void SetExportFolder(const QString inFolder){ExpFolder = inFolder;}
 
@@ -71,8 +71,6 @@ private:
     QString InitBlenderScript(const QString inExportFile);
 
     QString InitMelScript(const QString inExportFile);
-
-    void AddToLogData(QString inContentLine);
 
     QString CRFile,CSFile;
     QString ErrorStr;

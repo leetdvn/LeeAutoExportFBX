@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QDir>
 #include <QFile>
+#include <Definitions.h>
 
 enum SoftwereType
 {
@@ -22,6 +23,11 @@ bool IsValidPath(QString inPaths);
 void MakeScript(QString inPath,QString inContent);
 
 QStringList GetFilesInDirectory(const QString inDir);
+
+
+void AddToLogData(QString inContentLine);
+
+void MakeFile(const QString inPath);
 
 };
 

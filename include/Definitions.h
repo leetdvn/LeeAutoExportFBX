@@ -8,7 +8,7 @@
 #include <QDir>
 
 //Data Dir
-#define MASSFBXDIR = "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/"
+#define MASSFBXDIR QString("C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/")
 
 //Mel Script path
 #define MELEXPORTSCRIPT  "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/MayaExportCmd.mel"
@@ -27,5 +27,22 @@
 
 // Mass Version
 #define MASSVERSION "LeeMassFbx Tools  Version 1.02 "
+
+//Log
+#define MASSLOGDIR QString("C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/Logs/")
+
+//Maya Log
+#define MAYALOG QString("MayaConsole : ")
+
+//Blender Log
+#define BLENDELOG QString("Blender Console : ")
+
+//Base Console Log
+#define BASECONSOLE QString("Base Console : ")
+
+//Maya Console commd
+#define MAYACONSOLE QString("\"%1\" -file \"%2\" -noAutoloadPlugins -script \"%3\" -log \"%4\"")
+
+#define BLENDERCONS QString("\"%1\" -b \"%2\" -P \"%3\" -log \"%4\"")
 
 #endif

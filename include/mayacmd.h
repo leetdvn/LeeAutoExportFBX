@@ -10,7 +10,7 @@ public:
     MayaCmd(QString inMayaBatch,QString inSourceFile,QString inExportDir);
     ~MayaCmd();
 
-    virtual void InItProgram(const QString inProgram);
+    virtual void InItProgram();
 };
 
 #endif // MAYACMD_H

@@ -33,3 +33,22 @@ QStringList MassFbxUltilities::GetFilesInDirectory(const QString inDir)
     }
     return Files;
 }
+
+
+void MassFbxUltilities::AddToLogData(QString inContentLine)
+{
+    QFile fbxlog(MASSFBXLOG);
+    inContentLine +="\n";
+    if(fbxlog.open(QIODevice::WriteOnly | QIODevice::Append)){
+        fbxlog.write(inContentLine.toLocal8Bit());
+        fbxlog.close();
+    }
+}
+
+void MassFbxUltilities::MakeFile(const QString inPath)
+{
+    QFile infile(inPath);
+
+    if(infile.open(QIODevice::ReadWrite | QIODevice::Truncate))
+        infile.close();
+}

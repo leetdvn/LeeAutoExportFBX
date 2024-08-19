@@ -744,9 +744,9 @@ void MainWindow::OnFinish()
     QProcess process = qobject_cast<QProcess>(sender());
 
     qDebug() << "Count : " << EpCount << Qt::endl;
-    QString inLogFile = "C:/Users/leepl/AppData/Local/LeeMassFbx/Logs/MassMayaLog.txt";
-    //mMaya = new MayaCmd(ui->MayaText->toPlainText(),EpSourceFiles[0],ui->ExportFolderText->toPlainText());
-    // mMaya->VerifiedExported(inLogFile);
+    QString inLogFile = "C:/Users/thang/AppData/Local/LeeMassFbx/Logs/ASplitObjectLog.txt";
+    mMaya = new MayaCmd(ui->MayaText->toPlainText(),EpSourceFiles[0],ui->ExportFolderText->toPlainText());
+    mMaya->VerifiedExported(inLogFile);
     //mMaya.InItProgram(ui->MayaText->toPlainText());
 
     //new Designs
