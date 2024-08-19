@@ -33,6 +33,8 @@ set(PROJECT_SOURCES
     include/commandline.h
     include/Definitions.h
     include/leespoiler.h
+    include/consolemaya.h
+    include/massfbxultilities.h
     src/main.cpp
     src/mainwindow.cpp
     src/commandline.cpp
@@ -40,8 +42,8 @@ set(PROJECT_SOURCES
     src/FbxOptions.ui
     src/leespoiler.cpp
     LeeAutoExportFBX.rc
-    include/massfbxultilities.h
     src/massfbxultilities.cpp
+    src/consolemaya.cpp
 
 )
 
