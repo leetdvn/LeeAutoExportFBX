@@ -60,7 +60,11 @@ private:
     //Status
     bool IsRunning=false;
 
-    //List Result
+    //bool Layer Not Found
+    bool IsNotFound;
+    //Total FBX in Layer
+    int NumFbx;
+    //List Result FBX
     QStringList ExportResult;
 
     //Filter Exported.

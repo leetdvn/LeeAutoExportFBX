@@ -6,6 +6,7 @@ global proc MassFbxExp(){
 	if(!`pluginInfo -q -l "fbxmaya"`)
 	   loadPlugin "fbxmaya";
 	string $MassExp[] = `editDisplayLayerMembers -q MassExport`;
+	print("MassFbxNumber  : "  + size($MassExp) + "\n");
 	for($i = 0 ; $i < size($MassExp) ; ++$i){
 		select -cl;
 		select -r $MassExp[$i];

@@ -37,26 +37,6 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_5">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item alignment="Qt::AlignmentFlag::AlignHCenter">
-       <widget class="QLabel" name="AuthorLabel">
-        <property name="maximumSize">
-         <size>
-          <width>142</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">font: 700 16pt &quot;Times New Roman&quot;;</string>
-        </property>
-        <property name="text">
-         <string>Author Leetdvn</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
      <layout class="QVBoxLayout" name="LinkPaths">
       <item>
        <layout class="QHBoxLayout" name="MayDirLayout">

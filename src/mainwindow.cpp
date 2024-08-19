@@ -50,8 +50,10 @@ MainWindow::MainWindow(QWidget *parent)
     // ui->ExportFolderText->setText("C:/Users/leepl/Documents/Exports/");
     LoadRecentData();
 
+    //filter Maya
     MayaFiles <<"*.ma" << "*.mb";
 
+    //filter Blender
     BlenderFiles << "*.blend";
 
     if(ui->LeeLog->toHtml().isEmpty()){
@@ -764,7 +766,7 @@ void MainWindow::OnFinish()
 void MainWindow::ImplementFbxOptions()
 {
 
-    Spoiler = new LeeSpoiler("LeeMassFbx Maya",100,this);
+    Spoiler = new LeeSpoiler("Settings Maya",100,this);
     uiOpt->setupUi(Spoiler);
     connect(uiOpt->comboBox,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
 
@@ -772,7 +774,6 @@ void MainWindow::ImplementFbxOptions()
     Spoiler->toggleButton->setAutoRaise(true);
     QVBoxLayout * vlayout = new QVBoxLayout();
     QHBoxLayout* hlayout = new QHBoxLayout();
-
     hlayout->addLayout(uiOpt->gridLayout);
     vlayout->addLayout(hlayout);
     Spoiler->setContentLayout(*vlayout);
@@ -895,9 +896,9 @@ void MainWindow::OnComboBoxChanged(int valuechanged)
     qDebug() << "Value Changed " << valuechanged << Qt::endl;
     QString textChanged;
     switch (valuechanged) {
-        case 0:{textChanged="LeeMassFbx Option Maya";break;}
-        case 1:{textChanged="LeeMassFbx Option Blender";break;}
-        case 2:{textChanged="LeeMassFbx Option Maya And Blender";break;}
+        case 0:{textChanged="Settings Maya";break;}
+        case 1:{textChanged="Settings Blender";break;}
+        case 2:{textChanged="Settings Maya And Blender";break;}
     }
 
     Spoiler->toggleButton->setText(textChanged);

@@ -51,8 +51,6 @@ void ConsoleMaya::SetMExportDir(const QString inExportDir)
     MExportDir = inExportDir;
 }
 
-
-
 bool ConsoleMaya::VerifiedExported(const QString inLogFile)
 {
     int Total = FilterCompleted(inLogFile,ExportResult);
@@ -82,11 +80,23 @@ int ConsoleMaya::FilterCompleted(const QString inLogFile,QStringList &LogResult)
         while(!textfile.atEnd())
         {
             QString line = textfile.readLine();
+            line.replace("\n","");
             if(line.startsWith(CompletedCase)){
                 LogResult.push_back(line);
             }
+            else if(line.startsWith("MassFbxNumber")){
+                QString lineX = line.replace("\n","");
+                NumFbx = lineX.right(1).toInt();
+                qDebug() << "Member Of Layer : " << NumFbx << Qt::endl;
+            }
+            IsNotFound  = line.endsWith("MassExport") ? 1 : 0;
+
+
         }
         log.close();
+
+        qDebug() << "Layer Not Found : " << IsNotFound << Qt::endl;
+
     }
 
     return LogResult.count();
