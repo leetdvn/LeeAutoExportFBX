@@ -10,7 +10,7 @@
 
 using namespace MassFbxUltilities;
 
-class ConsoleCmd : QObject
+class ConsoleCmd : public QObject
 {
     Q_OBJECT
 public:
@@ -32,6 +32,8 @@ public:
 
     void SetConsoleCmd(const QString inCmd);
 
+    void SetLogPath(const QString inPath){LogPath=inPath;}
+
     QString GetLogs() {return LogPath;}
 
     QString GetScriptPath();
@@ -40,9 +42,12 @@ public:
     QString GetSourceName();
 
     //Read Log Verifify Export
-    bool VerifiedExported(const QString inLogFile);
+    bool VerifiedExported();
 
     virtual void InItProgram() = 0;
+
+signals:
+    void OnLogResult(QStringList Logs);
 
 protected:
 
@@ -63,12 +68,13 @@ protected:
 
     //Log File
     QString LogPath;
-
+    //Log Export Resuitl
+    QStringList ExpLogs;
     //Status
     bool IsRunning=false;
 
     //bool Layer Not Found
-    bool IsNotFound;
+    bool IsNotFound = false;
     //Total FBX in Layer
     int NumFbx;
     //List Result FBX
@@ -78,10 +84,13 @@ protected:
     int FilterCompleted(const QString inLogFile, QStringList &LogResult);
 
     //Init Script Path
-    QString InitExportScript();
+    QString InitExportScript(const QString inBaseScript);
 
     // Create Cmd
     QString MakeConsoleCmd(SoftwereType inType);
+
+private slots:
+    void ExportLogResult();
 
 };
 

@@ -58,7 +58,7 @@ QString CommandLine::MakeCmdAsScript(const QString inProgram,const QString inSou
     QString Cmd;
     if(inSourceFile.endsWith(".ma") || inSourceFile.endsWith(".mb")){
         ScriptPath= InitMelScript(inExportFile);
-        QString logf = "C:/Users/thang/AppData/Local/LeeMassFbx/Logs/ASplitObjectLog.txt";
+        QString logf = "C:/Users/leepl/AppData/Local/LeeMassFbx/Logs/ASplitObjectLog.txt";
         Cmd = MAYACONSOLE.arg(inProgram,inSourceFile,ScriptPath,logf);
         isSuccess=true;
     }
@@ -170,7 +170,6 @@ QString CommandLine::InitMelScript(const QString inExportFile)
 
     return ScriptFile;
 }
-
 
 void CommandLine::OnSentCRFile()
 {

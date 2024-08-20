@@ -158,5 +158,7 @@ protected:
 
     bool isError=false;
 
+    void OnMayaFinish(QStringList inFbxList);
+
 };
 #endif // MAINWINDOW_H

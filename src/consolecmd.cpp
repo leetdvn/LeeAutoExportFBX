@@ -6,6 +6,7 @@ ConsoleCmd::ConsoleCmd(QString inMayaBatch,QString inSourceFile,QString inExport
     MExportDir(inExportDir)
 {
     this->moveToThread(&mThread);
+    mThread.start();
     qDebug() << "Maya Console .." << Qt::endl;
 }
 
@@ -72,26 +73,28 @@ QString ConsoleCmd::GetSourceName()
 
     QString result = SourceF[0];
 
-    qDebug() << BASECONSOLE << result << Qt::endl;
+    //qDebug() << BASECONSOLE << result << Qt::endl;
     return SourceF[0];
 }
 
-bool ConsoleCmd::VerifiedExported(const QString inLogFile)
+bool ConsoleCmd::VerifiedExported()
 {
-    int Total = FilterCompleted(inLogFile,ExportResult);
+    if(LogPath =="") return false;
 
-    for(auto Ex : ExportResult){
-        qDebug() << "Export Completed : " << Ex << Qt::endl;
-    }
+    int Total = FilterCompleted(LogPath,ExportResult);
 
-    qDebug() << "Total Fbx in File : " << Total << Qt::endl;
-    return false;
+    // for(auto Ex : ExportResult){
+    //     qDebug() << "Export Completed : " << Ex << Qt::endl;
+    // }
+
+    //qDebug() << "Total Fbx in File : " << Total << Qt::endl;
+    return ExportResult.count() > 0 ? true : false;
 }
 
 int ConsoleCmd::FilterCompleted(const QString inLogFile,QStringList &LogResult)
 {
 
-    QFile log(inLogFile);
+    QFile log(LogPath);
 
     if(!log.exists()) {
         qDebug() << MAYACONSOLE << inLogFile << "file does'nt Exists." <<  Qt::endl;
@@ -114,12 +117,11 @@ int ConsoleCmd::FilterCompleted(const QString inLogFile,QStringList &LogResult)
                 NumFbx = lineX.right(1).toInt();
                 qDebug() << "Member Of Layer : " << NumFbx << Qt::endl;
             }
-            IsNotFound  = line.endsWith("MassExport") ? 1 : 0;
-
-
+            IsNotFound = line.endsWith("MassExport") ? 1 : 0;
         }
         log.close();
 
+        ExpLogs = LogResult;
         qDebug() << "Layer Not Found : " << IsNotFound << Qt::endl;
 
     }
@@ -127,26 +129,72 @@ int ConsoleCmd::FilterCompleted(const QString inLogFile,QStringList &LogResult)
     return LogResult.count();
 }
 
-QString ConsoleCmd::InitExportScript()
+QString ConsoleCmd::InitExportScript(const QString inBaseScript)
 {
-    return QString();
+    //Get Content from Base
+    QString ScriptContent = GetContentFile(inBaseScript);
+    QString sContent = ScriptContent.arg(MExportDir);
+    //Write to Location
+    QString LocalPath = MASSFBXDIR + "Scripts/" + GetSourceName();
+    LocalPath += inBaseScript.endsWith(".py") ? ".py" : ".mel";
+    //File
+    QFile Script(LocalPath);
+    if(!Script.exists())
+    {
+        qDebug() << "Paht Does not exists" << Qt::endl;
+    }
+
+    if(Script.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        Script.write(sContent.toLocal8Bit());
+        Script.close();
+    }
+
+    return LocalPath;
 }
 
 QString ConsoleCmd::MakeConsoleCmd(SoftwereType inType)
 {
-    if(MProgram.isNull() || MProgram =="" || mCmd.isNull() || mCmd !="") {
+    if(MProgram.isNull() || MProgram =="") {
 
-        qDebug() << MAYACONSOLE << "MayaBatch File not found.." << Qt::endl;
+        qDebug() << MProgram << "MayaBatch File not found.." << Qt::endl;
         return QString();
     }
 
-    //Init Exp Scripts
-    QString ScriptPath = InitExportScript();
+    //Define Script Str and Base
+    QString ScriptStr;
+    //Script Export
+    QString Mel ;
+    //Base Script
+    QString BaseScr ;
 
-    QString Cmd = MProgram +  " -file \""  + MSourcePath + "\" -noAutoloadPlugins -script " ;
-    Cmd += "\"%1\"";
-    Cmd+= " -log \"%2\"";
+    //Log Maya Console
+    LogPath =  MASSLOGDIR + GetSourceName() + "Log.txt";
 
-    QString result = Cmd.arg(ScriptPath,LogPath);
-    return result;
+    QString Cmd;
+
+    switch (inType) {
+        case Maya:{
+            ScriptStr = MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".mel";
+            BaseScr = SCRIPTDIR + "MayaExportCmd.mel";
+            Cmd = MAYACONSOLE.arg(MProgram,MSourcePath,ScriptStr,LogPath);
+            break;
+        }
+        case Blender:{
+            ScriptStr = MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".py";
+            BaseScr = SCRIPTDIR + "BlenderExport.py";
+            Cmd = BLENDERCONS.arg(MProgram,MSourcePath,ScriptStr,LogPath);
+            break;
+        }
+    }
+    //Init Create Scripts Files;
+    InitExportScript(BaseScr);
+    qDebug() << BaseScr << Qt::endl;
+    return Cmd;
+}
+
+//private slots emit Logs
+void ConsoleCmd::ExportLogResult()
+{
+    emit OnLogResult(ExpLogs);
 }

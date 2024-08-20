@@ -24,10 +24,11 @@ void MakeScript(QString inPath,QString inContent);
 
 QStringList GetFilesInDirectory(const QString inDir);
 
-
 void AddToLogData(QString inContentLine);
 
 void MakeFile(const QString inPath);
+
+QString GetContentFile(const QString inPath);
 
 };
 

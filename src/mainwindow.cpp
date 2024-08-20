@@ -349,7 +349,10 @@ void MainWindow::OnExportClicked()
     completedId = 0;
     ui->ExportExecute->setEnabled(false);
 
-    ExecuteExportFbx(EpCount);
+    mMaya = new MayaCmd(ui->MayaText->toPlainText(),EpSourceFiles[EpCount],ui->ExportFolderText->toPlainText());
+    connect(mMaya,&MayaCmd::OnFinish,this,&MainWindow::OnMayaFinish);
+
+    //ExecuteExportFbx(EpCount);
 
     //execute command current test 1 file
     // #pragma omp parallel for
@@ -744,9 +747,6 @@ void MainWindow::OnFinish()
     QProcess process = qobject_cast<QProcess>(sender());
 
     qDebug() << "Count : " << EpCount << Qt::endl;
-    QString inLogFile = "C:/Users/thang/AppData/Local/LeeMassFbx/Logs/ASplitObjectLog.txt";
-    mMaya = new MayaCmd(ui->MayaText->toPlainText(),EpSourceFiles[0],ui->ExportFolderText->toPlainText());
-    mMaya->VerifiedExported(inLogFile);
     //mMaya.InItProgram(ui->MayaText->toPlainText());
 
     //new Designs
@@ -889,6 +889,22 @@ void MainWindow::ExecuteExportFbx(const int inId)
     ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
 
 
+}
+
+void MainWindow::OnMayaFinish(QStringList inFbxList)
+{
+    //LogFile OnFinish Command
+    mMaya->VerifiedExported();
+    if(mMaya->IsNotFound){
+        AddToLog("Error : MassExport Layer Name not found","red");
+        return;
+    }
+
+    if(!mMaya || inFbxList.count() <=0) return;
+
+    for(auto line : inFbxList){
+        qDebug() << "Maya Finish : " << line << Qt::endl;
+    }
 }
 
 void MainWindow::OnComboBoxChanged(int valuechanged)

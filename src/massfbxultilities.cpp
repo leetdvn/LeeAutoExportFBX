@@ -1,5 +1,7 @@
 #include "massfbxultilities.h"
 
+#include <QMessageBox>
+
 
 bool MassFbxUltilities::IsValidPath(QString inPaths)
 {
@@ -34,7 +36,6 @@ QStringList MassFbxUltilities::GetFilesInDirectory(const QString inDir)
     return Files;
 }
 
-
 void MassFbxUltilities::AddToLogData(QString inContentLine)
 {
     QFile fbxlog(MASSFBXLOG);
@@ -51,4 +52,18 @@ void MassFbxUltilities::MakeFile(const QString inPath)
 
     if(infile.open(QIODevice::ReadWrite | QIODevice::Truncate))
         infile.close();
+}
+
+QString MassFbxUltilities::GetContentFile(const QString inPath)
+{
+    QFile melFile(inPath);
+
+    if(!melFile.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::information(0, "error", melFile.errorString());
+    }
+
+    QTextStream melStream(&melFile);
+
+    return melStream.readAll();
 }
