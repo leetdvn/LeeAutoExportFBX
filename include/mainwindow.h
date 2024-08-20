@@ -20,6 +20,7 @@
 #include <qmessagebox.h>
 #include <massfbxultilities.h>
 #include <mayacmd.h>
+#include <Definitions.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -115,7 +116,9 @@ private:
 
     bool IsValidSoft();
 
-    void AddToLog(QString inMessage,QString inColor="black");
+    void AddToLog(QString inMessage,QString inColor="black",bool isClear=0);
+
+    void AddToLog(const LogType inLog,QString inMessage,bool isClear=0);
 
 private slots:
 
@@ -159,6 +162,12 @@ protected:
     bool isError=false;
 
     void OnMayaFinish(QStringList inFbxList);
+
+    void OnMayaStarted();
+
+    void ImplementMayaExport(int fileNumber);
+
+    void ExpNext();
 
 };
 #endif // MAINWINDOW_H

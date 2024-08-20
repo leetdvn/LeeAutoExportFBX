@@ -17,17 +17,24 @@ public:
 
     bool IsNotFound;
 
+    QString Message;
+
+    //Setting ID
+    int GetExpId() {return ExpId;}
+    void SetExpId(int newId){ ExpId = newId;}
+
 signals:
-    void OnStartExc();
+    void OnStart();
 
     void OnFinish(QStringList Logs);
 
     void OnError();
 
 private:
-    QProcess MExProcess;
 
     bool IsRuning=false;
+
+    int ExpId=0;
 
 private slots:
     void OnExpStart();
@@ -35,6 +42,8 @@ private slots:
     void OnExpFinish();
 
     void OnExpError();
+
+    void ReadLogs();
 };
 
 #endif // MAYACMD_H

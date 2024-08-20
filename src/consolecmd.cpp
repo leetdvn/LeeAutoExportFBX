@@ -110,23 +110,26 @@ int ConsoleCmd::FilterCompleted(const QString inLogFile,QStringList &LogResult)
             QString line = textfile.readLine();
             line.replace("\n","");
             if(line.startsWith(CompletedCase)){
-                LogResult.push_back(line);
+                QString result = line.replace(CompletedCase + "  : ","");
+                LogResult.push_back(result);
             }
             else if(line.startsWith("MassFbxNumber")){
                 QString lineX = line.replace("\n","");
                 NumFbx = lineX.right(1).toInt();
                 qDebug() << "Member Of Layer : " << NumFbx << Qt::endl;
             }
-            IsNotFound = line.endsWith("MassExport") ? 1 : 0;
+            if(line.endsWith("MassExport")){
+                IsNotFound = true;
+            }
+            //IsNotFound = line.endsWith("MassExport") ? 1 : 0;
         }
         log.close();
 
-        ExpLogs = LogResult;
         qDebug() << "Layer Not Found : " << IsNotFound << Qt::endl;
 
     }
 
-    return LogResult.count();
+    return NumFbx;
 }
 
 QString ConsoleCmd::InitExportScript(const QString inBaseScript)
@@ -196,5 +199,5 @@ QString ConsoleCmd::MakeConsoleCmd(SoftwereType inType)
 //private slots emit Logs
 void ConsoleCmd::ExportLogResult()
 {
-    emit OnLogResult(ExpLogs);
+    emit OnLogResult(ExportResult);
 }

@@ -13,7 +13,7 @@ global proc MassFbxExp(){
 		string $exp = "%1" + $MassExp[$i] + ".fbx" ;
 		file -force -options "v=0" -type "FBX export" -pr -es $exp;
 		if(`file -q -ex $exp`)
-			print("Exported  : " + $exp +  " " + size($MassExp) + "\n");
+			print("Exported  : " + $exp + "\n");
 	};
 }
 MassFbxExp();

@@ -39,7 +39,7 @@ public:
     void SetCommandId(int inId){commandId = inId;}
     void SetExportFolder(const QString inFolder){ExpFolder = inFolder;}
 
-    static QString GetMelCommand(const QString inMelScript);
+    //static QString GetMelCommand(const QString inMelScript);
 
 signals:
     void OnReadLine(QString Line);

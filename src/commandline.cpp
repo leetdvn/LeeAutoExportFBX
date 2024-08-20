@@ -93,19 +93,19 @@ QString CommandLine::MakeBlenderCommand(const QString inSourceFile, const QStrin
     return QString();
 }
 
-QString CommandLine::GetMelCommand(const QString inMelScript)
-{
-    QFile melFile(inMelScript);
+// QString CommandLine::GetMelCommand(const QString inMelScript)
+// {
+//     QFile melFile(inMelScript);
 
-    if(!melFile.open(QIODevice::ReadOnly))
-    {
-        QMessageBox::information(0, "error", melFile.errorString());
-    }
+//     if(!melFile.open(QIODevice::ReadOnly))
+//     {
+//         QMessageBox::information(0, "error", melFile.errorString());
+//     }
 
-    QTextStream melStream(&melFile);
+//     QTextStream melStream(&melFile);
 
-    return melStream.readAll();
-}
+//     return melStream.readAll();
+// }
 
 QString CommandLine::IsValidProgram(const QString inSourceFile)
 {
@@ -135,7 +135,7 @@ QString CommandLine::InitBlenderScript(const QString inExportFile)
     QFile blendExp(ScriptFile);
     if(blendExp.open(QIODevice::WriteOnly))
     {
-        QString Cmd =  GetMelCommand(BLENDERSMARTEXPORT); //"import bpy\nbpy.ops.export_scene.fbx(filepath='"+ inExportFile + "')";
+        QString Cmd =  GetContentFile(BLENDERSMARTEXPORT); //"import bpy\nbpy.ops.export_scene.fbx(filepath='"+ inExportFile + "')";
         blendExp.write(Cmd.toLocal8Bit());
         blendExp.close();
     }
@@ -163,7 +163,7 @@ QString CommandLine::InitMelScript(const QString inExportFile)
     QFile MelExp(ScriptFile);
     if(MelExp.open(QIODevice::ReadWrite | QIODevice::Truncate))
     {
-        QString Cmd = GetMelCommand(MELEXPORTSCRIPT).arg(ExpFolder);
+        QString Cmd = GetContentFile(MELEXPORTSCRIPT).arg(ExpFolder);
         MelExp.write(Cmd.toLocal8Bit());
         MelExp.close();
     }

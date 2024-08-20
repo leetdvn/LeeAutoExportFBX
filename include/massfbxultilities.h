@@ -14,6 +14,13 @@ enum SoftwereType
     None
 };
 
+enum LogType{
+    Log,
+    Warning,
+    Error,
+    Completed
+};
+
 namespace MassFbxUltilities
 {
 

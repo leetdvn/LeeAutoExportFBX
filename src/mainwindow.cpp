@@ -56,9 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
     //filter Blender
     BlenderFiles << "*.blend";
 
-    if(ui->LeeLog->toHtml().isEmpty()){
-        ui->LeeLog->setHtml("");
-    }
+
 }
 
 #pragma region Init
@@ -74,6 +72,16 @@ void MainWindow::InfoEnv()
 
     if(_Host !="")
         qDebug() << "Host : " << _Host << Qt::endl;
+
+
+    //Valid PC
+    bool isValidPC = StudioIsValid();
+
+    logStr = !isValidPC ? "<font color=\"red\">Cannot use unauthorized tools</font><br>" :
+                         "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font><br>";
+
+    logStr += MASSINFO.arg(_Pc,_Users,_Host ="" ? "empty" : _Host);
+    AddToLog(logStr,"black",true);
 }
 
 void MainWindow::InitLocal()
@@ -92,49 +100,6 @@ void MainWindow::InitLocal()
 
     QString localPath = "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/";
 
-    // QDir lDir(localPath);
-    // QDir LogDir(localPath + "Logs/");
-    // if(!lDir.exists()) lDir.mkdir(localPath);
-    // if(!LogDir.exists()) LogDir.mkdir(localPath + "Logs/");
-
-    QFile lfile(localfilePath);
-    if(!lfile.exists()){
-        if(lfile.open(QIODevice::ReadWrite))
-            lfile.close();
-    }
-
-    //Base Path
-    QString MelPath = QDir::currentPath() + QString("/Scripts/MayaExportCmd.mel"); // CommandLine::GetMelCommand(QString("Scripts/MayaExportCmd.mel"));
-    QString Mel = CommandLine::GetMelCommand(MelPath);
-
-
-    QFile melfile(MELEXPORTSCRIPT);
-    if(melfile.open(QIODevice::NewOnly)){
-        qDebug() << "Blender File : " << Mel << Qt::endl;
-        melfile.write(Mel.toLocal8Bit());
-        melfile.close();
-    }
-
-    QString bPythonPath = QDir::currentPath() +  QString("/Scripts/BlenderExport.py");//CommandLine::GetMelCommand(QString("Scripts/BlenderExport.py"));
-    QString bPython = CommandLine::GetMelCommand(bPythonPath);
-
-
-    //Copy Scripts
-    QFile Blender(BLENDERSMARTEXPORT);
-    if(Blender.open(QIODevice::NewOnly)){
-        qDebug() << "Blender File : " << bPython << Qt::endl;
-        Blender.write(bPython.toLocal8Bit());
-        Blender.close();
-    }
-
-    QFile fbxlog(MASSFBXLOG);
-    if(!fbxlog.exists()){
-        if(fbxlog.open(QIODevice::ReadWrite| QIODevice::NewOnly)){
-            QString info = QString("PC : %1\nUSER : %2\nDOMAIN : %3\n").arg(_Pc,_Users,_Host);
-            fbxlog.write(info.toLocal8Bit());
-            fbxlog.close();
-        }
-    }
 }
 
 #pragma endregion //
@@ -285,17 +250,7 @@ void MainWindow::OnExportClicked()
 {
 
     qDebug() << "EXTPORT File Running.." << Qt::endl;
-    QString OutLog;
 
-    if(!StudioIsValid()){
-        OutLog = "<font color=\"red\">Cannot use unauthorized tools</font>";
-        ui->LeeLog->setHtml(OutLog);
-        return;
-    }
-    else{
-        OutLog += "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font>";
-        ui->LeeLog->setHtml(OutLog);
-    }
 
     //Valid Soft Ware path name
     if(!IsValidSoft()) return;
@@ -314,11 +269,11 @@ void MainWindow::OnExportClicked()
     if(!uiOpt->DebugBox->isChecked())
         ClearScripts();
 
-    QFile melFile(MELEXPORTSCRIPT);
     QFile BlenderFile("");
     QFile LogFiles(MASSFBXLOG);
+
     //clear log
-    ui->LeeLog->setPlainText(QString());
+    //ui->LeeLog->setPlainText(QString());
 
     //qDebug() << MELEXPORTSCRIPT << Qt::endl;
     //Define Log Str
@@ -330,12 +285,10 @@ void MainWindow::OnExportClicked()
     QStringList filters= InitFillters();
 
     //Debug Filters
-    QString FilLog =QString("PC : %1 <br>USERS : %2 <br>DOMAIN : %3").arg(_Pc,_Users,_Host);
-    FilLog+= "<br>Export Type : ";
+    QString FilLog = "Export Type : ";
     for(auto ff : filters)
         FilLog+= ff;
-    qDebug() << FilLog << Qt::endl;
-    logStr += FilLog + "<br>";
+    AddToLog(Warning,FilLog);
     //Get Source Files
     GetFilesInDir(ipSourceDir,EpSourceFiles,filters);
 
@@ -349,9 +302,7 @@ void MainWindow::OnExportClicked()
     completedId = 0;
     ui->ExportExecute->setEnabled(false);
 
-    mMaya = new MayaCmd(ui->MayaText->toPlainText(),EpSourceFiles[EpCount],ui->ExportFolderText->toPlainText());
-    connect(mMaya,&MayaCmd::OnFinish,this,&MainWindow::OnMayaFinish);
-
+    ImplementMayaExport(EpCount);
     //ExecuteExportFbx(EpCount);
 
     //execute command current test 1 file
@@ -594,9 +545,9 @@ bool MainWindow::StudioIsValid()
     //Studio PC Domain Name
     if(_Host == "giaoduc.edu") return true;
 
-    QString LogAuthor = "<font color=\"red\"> Error : You cannot use the software without the consent of Plus Studio. </font>";
+    QString LogAuthor =  "Error : You cannot use the software without the consent of Plus Studio.";
 
-    AddToLog(LogAuthor);
+    AddToLog(LogAuthor,"red");
 
     return false;
 }
@@ -648,13 +599,47 @@ bool MainWindow::IsValidSoft()
     return result;
 }
 
-void MainWindow::AddToLog(QString inMessage,QString inColor)
+void MainWindow::AddToLog(QString inMessage,QString inColor,bool isClear)
 {
     if(inMessage =="") return;
+    QString CLog = !isClear ? ui->LeeLog->toHtml() : "";
+    CLog += QString("<font color=\"%1\">%2</font>").arg(inColor,inMessage);
+    ui->LeeLog->setHtml(CLog);
+    ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
+}
 
-    QString CLog = ui->LeeLog->toHtml();
+void MainWindow::AddToLog(const LogType inLog, QString inMessage, bool isClear)
+{
+    if(inMessage =="") return;
+    QStringList splitMes =  inMessage.split(" : ");
+    QString title = splitMes[0];
+    QString mess = splitMes.count() > 0 ? splitMes[1] : splitMes[0];
+    qDebug() << "Num " << splitMes.count() << Qt::endl;
+    QString result;
+    switch (inLog) {
+        case Log:{
+            result = QString("<font color=\"black\">%1 : </font>").arg(mess);
+            break;
+        }
+        case Warning:{
+            result = QString("<font color=\"yellow\">%1 : </font>").arg(title);
+            result += mess;
+            break;
+        }
+        case Error:{
+            result = QString("<font color=\"red\">%1 : </font>").arg(title);
+            result += mess;
+            break;
+        }
+        case Completed:{
+            result = QString("<font color=\"green\">%1 : </font>").arg(title);
+            result += mess;
+            break;
+        }
+    };
 
-    CLog += "<font color=\"" + inColor + "\"> " +  inMessage +  "</font>";
+    QString CLog = !isClear ? ui->LeeLog->toHtml() : "";
+    CLog += result;
     ui->LeeLog->setHtml(CLog);
     ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
 
@@ -891,19 +876,67 @@ void MainWindow::ExecuteExportFbx(const int inId)
 
 }
 
-void MainWindow::OnMayaFinish(QStringList inFbxList)
-{
-    //LogFile OnFinish Command
-    mMaya->VerifiedExported();
-    if(mMaya->IsNotFound){
-        AddToLog("Error : MassExport Layer Name not found","red");
+void MainWindow::OnMayaFinish(QStringList inFbxList) {
+
+    // LogFile OnFinish Command
+    if (!mMaya)
         return;
+
+    mMaya->VerifiedExported();
+
+    completedId+=1;
+    int value = (100.0/TotalFiles) * completedId;
+    ui->progressBar->setValue(value);
+    if(value >=99){
+        ui->progressBar->setValue(100);
     }
 
-    if(!mMaya || inFbxList.count() <=0) return;
+    qDebug() << "Layer Info : " << mMaya->GetLayerInfo() << Qt::endl;
+    if (mMaya->GetLayerInfo()) {
+        AddToLog("Error : MassExport Layer Name not found", "red");
+        return ExpNext();
+    }
 
-    for(auto line : inFbxList){
-        qDebug() << "Maya Finish : " << line << Qt::endl;
+    QStringList FbxResult= mMaya->GetExpResults();
+    for(auto f : FbxResult){
+        QString CompleteText = QString("Export Completed : %1").arg(f);
+        AddToLog(Completed,CompleteText);
+    }
+
+    return ExpNext();
+}
+
+void MainWindow::OnMayaStarted()
+{
+    qDebug() << "Started.. "  << Qt::endl;
+    if(!mMaya) return;
+    QString currentfile = QString("Exrporting : %1..").arg(mMaya->GetSourceFile());
+    AddToLog(currentfile);
+
+}
+
+void MainWindow::ImplementMayaExport(int fileNumber)
+{
+    //Maya Exp Refactored..
+    mMaya = new MayaCmd(ui->MayaText->toPlainText(),EpSourceFiles[fileNumber],ui->ExportFolderText->toPlainText());
+    mMaya->SetExpId(EpCount+1);
+    connect(mMaya,&MayaCmd::OnStart,this,&MainWindow::OnMayaStarted);
+    connect(mMaya,&MayaCmd::OnFinish,this,&MainWindow::OnMayaFinish);
+    mMaya->GetProcess()->waitForStarted();
+    if(!mMaya->Message.isEmpty())
+        AddToLog(mMaya->Message);
+    EpCount++;
+}
+
+void MainWindow::ExpNext()
+{
+    if(EpCount < EpSourceFiles.count()){
+        //Single Threading
+        return ImplementMayaExport(EpCount);
+    }
+    else{
+        ui->ExportExecute->setEnabled(true);
+        return;
     }
 }
 

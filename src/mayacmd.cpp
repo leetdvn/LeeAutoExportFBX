@@ -4,7 +4,6 @@ MayaCmd::MayaCmd(QString inMayaBatch,QString inSourceFile,QString inExportDir)
     :Super(inMayaBatch,inSourceFile,inExportDir)
 {
     InItProgram();
-
 }
 
 MayaCmd::~MayaCmd()
@@ -14,27 +13,26 @@ MayaCmd::~MayaCmd()
 
 void MayaCmd::InItProgram()
 {
+    return MayExecuteExp();
+}
+
+void MayaCmd::MayExecuteExp()
+{
     QFile programF(MProgram);
     if(!programF.exists()){
 
         qDebug() << MAYALOG << "does'nt exists.."  << Qt::endl;
     }
 
-    //Script Files Path;
-    //QString Script = MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".mel";
-
-    //Log Maya Console
-    //QString LogF =  MASSFBXDIR +  "Logs/"+  GetSourceName() + "Log.txt";
-    //Cmd
-    //QString Cmd = MAYACONSOLE.arg(MProgram,MSourcePath,Script,LogF);
-
     QString Cmd= MakeConsoleCmd(Maya);
+    MExProcess = new QProcess();
+    connect(MExProcess,&QProcess::readyReadStandardOutput,this,&MayaCmd::ReadLogs);
+    connect(MExProcess,&QProcess::errorOccurred,this,&MayaCmd::OnError);
+    connect(MExProcess,&QProcess::finished,this,&MayaCmd::OnExpFinish);
 
-    connect(&MExProcess,&QProcess::started,this,&MayaCmd::OnExpStart);
-    connect(&MExProcess,&QProcess::errorOccurred,this,&MayaCmd::OnError);
-    connect(&MExProcess,&QProcess::finished,this,&MayaCmd::OnExpFinish);
-    MExProcess.start(Cmd);
-    MExProcess.waitForStarted();
+    MExProcess->start(Cmd);
+    MExProcess->waitForStarted();
+    Message = QString("Exporting : %1").arg(MSourcePath);
     IsRuning=true;
 
     //Check Log Cmd
@@ -44,28 +42,28 @@ void MayaCmd::InItProgram()
 
     //Debug
     qDebug() << MAYALOG << Cmd << Qt::endl;
-}
-
-void MayaCmd::MayExecuteExp()
-{
-    // MExProcess.start(Cmd);
-    // ExportProcess.waitForStarted();
-    // IsRuning=true;
 
 }
 
 
 void MayaCmd::OnExpStart()
 {
-    emit OnStartExc();
+    emit OnStart();
 }
 
 void MayaCmd::OnExpFinish()
 {
-    emit OnFinish(ExpLogs);
+
+    emit OnFinish(ExportResult);
 }
 
 void MayaCmd::OnExpError()
 {
     emit OnError();
+}
+
+void MayaCmd::ReadLogs()
+{
+    QString line = MExProcess->readLine();
+    qDebug() << line << Qt::endl;
 }

@@ -7,6 +7,7 @@
 #include <QThread>
 #include <massfbxultilities.h>
 #include <Definitions.h>
+#include <QProcess>
 
 using namespace MassFbxUltilities;
 
@@ -36,20 +37,30 @@ public:
 
     QString GetLogs() {return LogPath;}
 
+    QProcess* GetProcess(){return MExProcess;}
+    //get Script Path
     QString GetScriptPath();
-
+    //Get inSourceFile
+    QString GetSourceFile(){return MSourcePath;}
     //Get Source File Name
     QString GetSourceName();
+    //Get ExpResult;
+    QStringList GetExpResults(){return ExportResult;}
 
+    bool GetLayerInfo(){return IsNotFound;}
     //Read Log Verifify Export
     bool VerifiedExported();
 
     virtual void InItProgram() = 0;
 
+
 signals:
     void OnLogResult(QStringList Logs);
 
 protected:
+
+    //
+    QProcess* MExProcess=nullptr;
 
     //Maya or Blender Program
     QString MProgram;
@@ -68,8 +79,6 @@ protected:
 
     //Log File
     QString LogPath;
-    //Log Export Resuitl
-    QStringList ExpLogs;
     //Status
     bool IsRunning=false;
 
