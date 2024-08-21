@@ -78,13 +78,31 @@ void ImpCmd::OnExpError()
 void ImpCmd::ReadLogs()
 {
     QString line = MExProcess->readAll();
+    line += MExProcess->readAllStandardError();
     QFile log(LogPath);
     if(log.exists()){
-        if(log.open(QIODevice::WriteOnly | QIODevice::Append))
+        if(log.open(QIODevice::WriteOnly | QIODevice::Truncate))
         {
             log.write(line.toLocal8Bit());
             log.close();
         }
     }
     qDebug() << line << Qt::endl;
+
+}
+
+
+void ImpCmd::SetProgram(const QString inMayaPath,const QString inBlenderPath)
+{
+    if(!IsValidPath(inMayaPath))
+    {
+        //Debug
+        return;
+    }
+    if(!IsValidPath(inBlenderPath)){
+        //Debug
+        return;
+    }
+    MProgram = inMayaPath;
+    BProgram = inBlenderPath;
 }

@@ -49,21 +49,6 @@ void ConsoleCmd::SetProgram(const QString inProgram)
     MProgram = inProgram;
 }
 
-void ConsoleCmd::SetProgram(const QString inMayaPath,const QString inBlenderPath)
-{
-    if(!IsValidPath(inMayaPath))
-    {
-        //Debug
-        return;
-    }
-    if(!IsValidPath(inBlenderPath)){
-        //Debug
-        return;
-    }
-    MProgram = inMayaPath;
-    BProgram = inBlenderPath;
-}
-
 void ConsoleCmd::SetMSourcePath(const QString inSourcePath)
 {
     QFile souce(inSourcePath);
@@ -83,6 +68,8 @@ void ConsoleCmd::SetMExportDir(const QString inExportDir)
     }
 
     MExportDir = inExportDir;
+
+
 }
 
 QString ConsoleCmd::GetSourceName()
@@ -168,6 +155,11 @@ QString ConsoleCmd::InitExportScript(const QString inBaseScript)
     QString sContent = ScriptContent.arg(MExportDir);
     //Write to Location
     QString LocalPath = MASSFBXDIR + "Scripts/" + GetSourceName();
+
+    //QString BaseScrDir = SCRIPTDIR + "MayaExportCmd.mel";;
+    //QString nFol = DetachSourceFolder(MSourcePath,MASSFBXDIR);
+    //qDebug() << "Tree : " << nFol << Qt::endl;
+
     LocalPath += inBaseScript.endsWith(".py") ? ".py" : ".mel";
     //File
     QFile Script(LocalPath);
@@ -222,6 +214,7 @@ QString ConsoleCmd::MakeConsoleCmd(SoftwereType inType)
     mCSoft = inType;
     //Init Create Scripts Files;
     InitExportScript(BaseScr);
+    qDebug() << "Tree : " << BaseScr << Qt::endl;
 
     //Debug
 

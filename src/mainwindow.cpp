@@ -75,9 +75,9 @@ void MainWindow::InfoEnv()
 
 
     //Valid PC
-    bool isValidPC = StudioIsValid();
+    IsAuthored = StudioIsValid();
 
-    logStr = !isValidPC ? "<font color=\"red\">Cannot use unauthorized tools</font><br>" :
+    logStr = !IsAuthored ? "<font color=\"red\">Cannot use unauthorized tools</font><br>" :
                          "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font><br>";
 
     logStr += MASSINFO.arg(_Pc,_Users,_Host ="" ? "empty" : _Host);
@@ -106,13 +106,6 @@ void MainWindow::InitLocal()
 
 MainWindow::~MainWindow()
 {
-    if(MassCmds.length() > 0)
-    {
-        for(auto* cmd : MassCmds){
-            cmd->deleteLater();
-        }
-    }
-    command->StopThread();
     delete ui;
 }
 
@@ -253,30 +246,8 @@ void MainWindow::OnExportClicked()
 
 
     //Valid Soft Ware path name
-    if(!IsValidSoft()) return;
+    if(!IsValidSoft() || !IsAuthored) return;
 
-
-    //check Running status
-    if(command){
-        if(command->IsRunning() || !isRunning){
-            QString OutLog =ui->LeeLog->toHtml();
-            OutLog += "Running File : " + command->GetCSFile();
-            ui->LeeLog->setHtml(OutLog);
-            return;
-        }
-    }
-
-    if(!uiOpt->DebugBox->isChecked())
-        ClearScripts();
-
-    QFile BlenderFile("");
-    QFile LogFiles(MASSFBXLOG);
-
-    //clear log
-    //ui->LeeLog->setPlainText(QString());
-
-    //qDebug() << MELEXPORTSCRIPT << Qt::endl;
-    //Define Log Str
 
 
     SoftwereType SType = GetSoftWareType();
@@ -302,79 +273,9 @@ void MainWindow::OnExportClicked()
     completedId = 0;
     ui->ExportExecute->setEnabled(false);
 
+
     ImplementExport(EpCount);
-    //ExecuteExportFbx(EpCount);
 
-    //execute command current test 1 file
-    // #pragma omp parallel for
-    // {
-    //     for(int i=0;i<EpSourceFiles.count();++i)
-    //     {
-    //         QString SFile = EpSourceFiles[i];
-
-    //         //make Path file
-    //         QString ExFile = GetExportPath(SFile,ExportDir);
-
-    //         //Execute Command
-    //         command = new CommandLine();
-    //         MassCmds.push_back(command);
-    //         command->SetMayaPro(ui->MayaText->toPlainText());
-    //         command->SetBlenderPro(ui->BlenderText->toPlainText());
-    //         command->SetCommandId(i +1);
-    //         EpCount++;
-    //         //debug mode
-    //         if(!uiOpt->DebugBox->isChecked()) command->SetClearOnComplete(true);
-
-    //         command->CreateProcess(SFile,ExFile,OutLog,SType);
-
-    //         connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
-    //         connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
-    //         connect(command,&CommandLine::SendCRFile,this,&MainWindow::Display);
-    //         connect(command,&CommandLine::SendId,this,&MainWindow::OnCompletedId);
-    //         command->ExportProcess.waitForStarted();
-    //         OutLog += "Exporting from : " + SFile + " to : " + ExFile;
-
-    //         if(i !=EpSourceFiles.count()) OutLog +="<br>";
-    //         qDebug() << "file " << SFile << "number : " << EpSourceFiles.count() <<  Qt::endl;
-
-    //         //ui->MayaText->setHtml("<font color=\"red\">Red text</font>");
-    //         ui->LeeLog->setHtml(OutLog);
-    //         ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
-
-    //         // command->ExportProcess.waitForFinished(-1);
-    //         // OutLog += command->ExportProcess.readAllStandardOutput() + "\n";
-    //         // OutLog += "Export Completed : " + SFile + "\n";
-    //         // ui->LeeLog->setPlainText(OutLog);
-
-    //     }
-    // }
-
-    command=nullptr;
-
-}
-
-QString MainWindow::GeneratedCommand(const QString inSourceFile, const QString inExportFile)
-{
-    if(inSourceFile.isEmpty() || inExportFile.isNull()) return QString();
-
-    //Maya 2019 Working
-    QString cmd = inSourceFile + "\" ;\n" ;
-
-    //File
-    QString fpath = "";
-    //Base Script  Source
-    QFile melFile("Scripts/MayaExportCmd.mel");
-    if(!melFile.open(QIODevice::ReadOnly))
-    {
-        QMessageBox::information(0, "error", melFile.errorString());
-    }
-
-    QTextStream melStream(&melFile);
-
-    cmd += melStream.readAll();//"file -force -options \"v=0\" -type \"FBX export\" -pr -ea \"C:/Users/thang/Documents/Exports/abc";
-
-
-    return cmd;
 }
 
 QStringList MainWindow::InitFillters()
@@ -644,67 +545,6 @@ void MainWindow::AddToLog(const LogType inLog, QString inMessage, bool isClear)
 
 }
 
-void MainWindow::Display(QString inReceiveFile,QString CSFile)
-{
-    if(isError) return;
-    logStr =ui->LeeLog->toHtml();
-    QFile fileExp(inReceiveFile);
-    //<color:#ff0000=\"DeepPink\">
-    logStr+= fileExp.exists() ? "<font color=\"green\">Export Completed : </font>" : "<font color=\"red\">Export Failure : </font>";
-    logStr+= fileExp.exists() ? inReceiveFile : CSFile;
-
-    //qDebug() << "id : " << completedId << "total : " << TotalFiles;
-    if(completedId == TotalFiles-1)
-        logStr += "<br><font color=\"yellow\">MassExport Total : " +  QString::number(TotalFiles) +  " files.</font>";
-
-    ui->LeeLog->setHtml(logStr);
-
-    //sctorll bar update to end vertical
-    ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
-    LastCompletedFile = CSFile;
-}
-
-void MainWindow::DisplayErr(QString ErStr)
-{
-
-    //Report Error message
-    QString LogErr = "<font color=\"red\"> Error : " + ErStr +  " </font>";
-    QString LogNotFound;
-
-    CommandLine* cmdLine = qobject_cast<CommandLine*>(sender());
-    if(!cmdLine) return;
-
-    if(ErStr !=""){
-        if(ErStr.endsWith("\"ExportCollection\" not found'\r\n")){
-            LogNotFound= "<font color=\"purple\"> Blender File : " + cmdLine->GetCSFile() +  " Export Collections is not found. </font>";
-        }
-        else if(ErStr.startsWith("Warning"))
-        {
-            LogNotFound = "<font color=\"yellow\"> Warning </font>";
-        }
-
-        isError = ErStr.endsWith("\"ExportCollection\" not found'\r\n") ? true : false;
-        AddToLog(LogNotFound);
-    }
-    qDebug() << "Err : " << ErStr << Qt::endl;
-}
-
-void MainWindow::OnCompletedId(int Id)
-{
-    completedId+=1;
-    int value = (100.0/TotalFiles) * completedId;
-    ui->progressBar->setValue(value);
-    if(value >=99){
-        ui->progressBar->setValue(100);
-    }
-
-    isRunning = completedId == TotalFiles ? false : true;
-
-    //qDebug() << "id  : " << completedId << "total : " << TotalFiles;
-
-    ui->ExportExecute->setEnabled(!isRunning);
-}
-
 void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters)
 {
     QDir dir(inDir);
@@ -724,27 +564,6 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QString
         QString dirPath = inDir + fo + "/";
         GetFilesInDir(dirPath,OutFiles,inFilters);
     }
-}
-
-void MainWindow::OnFinish()
-{
-    QProcess process = qobject_cast<QProcess>(sender());
-
-    qDebug() << "Count : " << EpCount << Qt::endl;
-    //mMaya.InItProgram(ui->MayaText->toPlainText());
-
-    //new Designs
-    if(EpCount < EpSourceFiles.count())
-    {
-        //return ExecuteExportFbx(EpCount);
-
-    }
-    else{
-        process.deleteLater();
-    }
-    // if(process.isOpen())
-    //     process.deleteLater();
-
 }
 
 void MainWindow::ImplementFbxOptions()
@@ -813,68 +632,6 @@ SoftwereType MainWindow::GetSoftWareType()
     return None;
 }
 
-void MainWindow::ClearScripts()
-{
-    QStringList scripts = QStringList() << "*.mel" << "*.py";
-
-    QDir SDir(LOCALSCRIPTS);
-
-    QStringList files = SDir.entryList(scripts);
-
-    if(files.count() <=0) return;
-
-    for(auto s : files) {
-        SDir.remove(s);
-    }
-
-}
-
-void MainWindow::ExecuteExportFbx(const int inId)
-{
-    //check Path Source
-    if(!IsValidPath(EpSourceFiles[inId])){
-        AddToLog("Source Path does'nt Exists.","red");
-        return;
-    }
-
-
-    QString SFile = EpSourceFiles[inId];
-
-    //make Path file
-    QString ExFile = GetExportPath(SFile,ExportDir);
-
-    SoftwereType SType = GetSoftWareType();
-
-    //Execute Command
-    command = new CommandLine();
-    MassCmds.push_back(command);
-    command->SetMayaPro(ui->MayaText->toPlainText());
-    command->SetBlenderPro(ui->BlenderText->toPlainText());
-    command->SetCommandId(inId);
-    command->SetExportFolder(ExportDir);
-    EpCount++;
-    //debug mode
-    if(!uiOpt->DebugBox->isChecked()) command->SetClearOnComplete(true);
-
-    command->CreateProcess(SFile,ExFile,logStr,SType);
-
-    connect(command,&CommandLine::SendErrorStr,this,&MainWindow::DisplayErr);
-    connect(command,&CommandLine::SendCRFile,this,&MainWindow::Display);
-    connect(command,&CommandLine::SendId,this,&MainWindow::OnCompletedId);
-    connect(&command->ExportProcess,&QProcess::finished,this,&MainWindow::OnFinish);
-    command->ExportProcess.waitForStarted();
-    if(!logStr.endsWith("<br>"))
-        logStr+="<br>";
-    logStr += "Exporting from : " + SFile + " to : " + ExFile;
-
-    qDebug() << "file " << SFile << "number : " << EpSourceFiles.count() <<  Qt::endl;
-
-    ui->LeeLog->setHtml(logStr);
-    ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
-
-
-}
-
 void MainWindow::OnCmdFinish(QStringList inFbxList) {
 
     // LogFile OnFinish Command
@@ -918,8 +675,15 @@ void MainWindow::OnCmdStarted()
 
 void MainWindow::ImplementExport(int fileNumber)
 {
+    bool isMakeDir = uiOpt->makedirBox->isChecked();
+    QString finalExpDir = isMakeDir ?
+        MakeTreeDirectory(EpSourceFiles[fileNumber],
+                        ui->SourceFolderText->toPlainText(),
+                        ui->ExportFolderText->toPlainText()):
+                              ui->ExportFolderText->toPlainText();
     //Maya Exp Refactored..
-    mImpCmd = new ImpCmd(EpSourceFiles[fileNumber],ui->ExportFolderText->toPlainText());
+    mImpCmd = new ImpCmd(EpSourceFiles[fileNumber],finalExpDir);
+    //mImpCmd->SetMExportDir(finalExpDir);
     mImpCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
     mImpCmd->InItProgram();
     mImpCmd->SetExpId(EpCount+1);

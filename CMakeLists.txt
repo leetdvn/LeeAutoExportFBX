@@ -30,7 +30,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(PROJECT_SOURCES
     include/mainwindow.h
-    include/commandline.h
+
     include/Definitions.h
     include/leespoiler.h
     include/consolecmd.h
@@ -39,7 +39,7 @@ set(PROJECT_SOURCES
 
     src/main.cpp
     src/mainwindow.cpp
-    src/commandline.cpp
+
     src/mainwindow.ui
     src/FbxOptions.ui
     src/leespoiler.cpp

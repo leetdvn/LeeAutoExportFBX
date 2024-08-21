@@ -14,6 +14,7 @@ import bpy
 def LeeMassExport():
     Export = "MassExport"
     col = bpy.data.collections[Export]
+    print(col)
     for o in col.objects:
         bpy.ops.object.select_all(action='DESELECT')
         bpy.context.scene.objects[o.name]

@@ -25,6 +25,8 @@ public:
 
     void ClearOnFinish();
 
+    void SetProgram(const QString inMayaPath,const QString inBlenderPath);
+
 signals:
     void OnStart();
 

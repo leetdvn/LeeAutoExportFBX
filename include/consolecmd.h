@@ -25,11 +25,13 @@ public:
 
     void SetProgram(const QString inProgram);
 
-    void SetProgram(const QString inMayaPath,const QString inBlenderPath);
+    //void SetProgram(const QString inMayaPath,const QString inBlenderPath);
 
     void SetMSourcePath(const QString inSourcePath);
 
     void SetMExportDir(const QString inExportDir);
+
+    void SetSourceDir(const QString inSourceDir){MSourceDir = inSourceDir;}
 
     bool Status(){return IsRunning;}
 
@@ -76,7 +78,8 @@ protected:
 
     //Source File Path
     QString MSourcePath;
-
+    //Source Dir
+    QString MSourceDir;
     //Export Dir
     QString MExportDir;
 

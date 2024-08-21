@@ -67,3 +67,52 @@ QString MassFbxUltilities::GetContentFile(const QString inPath)
 
     return melStream.readAll();
 }
+
+QString MassFbxUltilities::MakeTreeDirectory(const QString inSourceF, const QString inSourceFol,const QString inExpFol)
+{
+    if(inSourceF =="") return QString();
+
+    QString detach = inSourceF;
+
+
+    QStringList sPlit = detach.split("/");
+
+    detach = detach.remove(inSourceFol);
+    detach = detach.replace(sPlit[sPlit.count()-1],"");
+
+    QStringList SplitF = sPlit[sPlit.count()-1].split(".");
+
+    QString Result = inExpFol + detach + SplitF[0] + "/";
+
+    QDir nDir(Result);
+
+    if(!IsValidPath(Result)){
+        //qDebug() << " Final 1: " << Result << Qt::endl;
+        nDir.mkpath(Result);
+    }
+
+    //qDebug() << "Final 2 : " << detach << Qt::endl;
+
+    return Result;
+}
+
+QString MassFbxUltilities::DetachSourceFolder(const QString inSourceFile, const QString inSourceFol, bool includeFile)
+{
+    if(inSourceFile =="") return QString();
+
+    QString detach = inSourceFile;
+
+
+    QStringList sPlit = detach.split("/");
+
+    detach = detach.remove(inSourceFol);
+    detach = detach.replace(sPlit[sPlit.count()-1],"");
+
+    QStringList SplitF = sPlit[sPlit.count()-1].split(".");
+
+    QString Result = includeFile ?  detach + SplitF[0] + "/" : detach ;
+
+    qDebug() << "Detach : " << Result << Qt::endl;
+
+    return Result;
+}

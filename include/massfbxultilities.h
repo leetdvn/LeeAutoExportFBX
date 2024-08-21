@@ -37,6 +37,10 @@ void MakeFile(const QString inPath);
 
 QString GetContentFile(const QString inPath);
 
+QString MakeTreeDirectory(const QString inSourceF, const QString inSourceFol,const QString inExpFol);
+
+QString DetachSourceFolder(const QString inSourceFile,const QString inSourceFol,bool includeFile=false);
+
 };
 
 #endif // MASSFBXULTILITIES_H

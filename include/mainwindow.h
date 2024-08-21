@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QUndoStack>
-#include "commandline.h"
 #include <QProcess>
 #include "leespoiler.h"
 #include <QColorDialog>
@@ -64,7 +63,6 @@ public slots:
 
     void GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters);
 
-    void OnFinish();
 private:
     Ui::MainWindow *ui;
     Ui::FbxOptions *uiOpt;
@@ -75,8 +73,6 @@ private:
     QString ipSourceDir;
     QString ExportDir;
     QProcess* mProcess=nullptr;
-
-    QString GeneratedCommand(const QString inSourceFile, const QString inExportFile);
 
     QStringList InitFillters();
 
@@ -91,8 +87,6 @@ private:
     int EpCount = 0;
 
     QList<QStringList> leeFilters;
-
-    QList<CommandLine*> MassCmds;
 
     bool ValidPaths();
 
@@ -120,30 +114,17 @@ private:
 
     void AddToLog(const LogType inLog,QString inMessage,bool isClear=0);
 
-private slots:
-
-    void Display(QString inReceiveFile,QString CSFile);
-
-    void DisplayErr(QString ErStr);
-
-    void OnCompletedId(int Id);
-
 protected:
 
     ImpCmd* mImpCmd=nullptr;
-    CommandLine* command = nullptr;
     void ImplementFbxOptions();
 
     QString GetExportPath(const QString inSourceFile,const QString inExportDir);
 
     SoftwereType GetSoftWareType();
 
-    void ClearScripts();
     //info Env
     void InfoEnv();
-
-    //execute Fbx Export
-    void ExecuteExportFbx(const int inId);
 
     LeeSpoiler* Spoiler;
 
@@ -169,6 +150,9 @@ protected:
     void ImplementExport(int fileNumber);
 
     void ExpNext();
+
+private:
+    bool IsAuthored;
 
 };
 #endif // MAINWINDOW_H
