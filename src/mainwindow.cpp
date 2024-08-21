@@ -98,7 +98,7 @@ void MainWindow::InitLocal()
             dir.mkdir(nDir);
     }
 
-    QString localPath = "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/";
+    //QString localPath = "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/";
 
 }
 
@@ -302,7 +302,7 @@ void MainWindow::OnExportClicked()
     completedId = 0;
     ui->ExportExecute->setEnabled(false);
 
-    ImplementMayaExport(EpCount);
+    ImplementExport(EpCount);
     //ExecuteExportFbx(EpCount);
 
     //execute command current test 1 file
@@ -614,7 +614,6 @@ void MainWindow::AddToLog(const LogType inLog, QString inMessage, bool isClear)
     QStringList splitMes =  inMessage.split(" : ");
     QString title = splitMes[0];
     QString mess = splitMes.count() > 0 ? splitMes[1] : splitMes[0];
-    qDebug() << "Num " << splitMes.count() << Qt::endl;
     QString result;
     switch (inLog) {
         case Log:{
@@ -876,13 +875,13 @@ void MainWindow::ExecuteExportFbx(const int inId)
 
 }
 
-void MainWindow::OnMayaFinish(QStringList inFbxList) {
+void MainWindow::OnCmdFinish(QStringList inFbxList) {
 
     // LogFile OnFinish Command
-    if (!mMaya)
+    if (!mImpCmd)
         return;
 
-    mMaya->VerifiedExported();
+    mImpCmd->VerifiedExported();
 
     completedId+=1;
     int value = (100.0/TotalFiles) * completedId;
@@ -891,48 +890,54 @@ void MainWindow::OnMayaFinish(QStringList inFbxList) {
         ui->progressBar->setValue(100);
     }
 
-    qDebug() << "Layer Info : " << mMaya->GetLayerInfo() << Qt::endl;
-    if (mMaya->GetLayerInfo()) {
+    qDebug() << "Layer Info : " << mImpCmd->GetLayerInfo() << Qt::endl;
+    if (mImpCmd->GetLayerInfo()) {
         AddToLog("Error : MassExport Layer Name not found", "red");
         return ExpNext();
     }
 
-    QStringList FbxResult= mMaya->GetExpResults();
+    QStringList FbxResult= mImpCmd->GetExpResults();
     for(auto f : FbxResult){
         QString CompleteText = QString("Export Completed : %1").arg(f);
         AddToLog(Completed,CompleteText);
     }
 
+    if(!uiOpt->DebugBox->isChecked())
+        mImpCmd->ClearOnFinish();
     return ExpNext();
 }
 
-void MainWindow::OnMayaStarted()
+void MainWindow::OnCmdStarted()
 {
     qDebug() << "Started.. "  << Qt::endl;
-    if(!mMaya) return;
-    QString currentfile = QString("Exrporting : %1..").arg(mMaya->GetSourceFile());
+    if(!mImpCmd) return;
+    QString currentfile = QString("Exrporting : %1..").arg(mImpCmd->GetSourceFile());
     AddToLog(currentfile);
 
 }
 
-void MainWindow::ImplementMayaExport(int fileNumber)
+void MainWindow::ImplementExport(int fileNumber)
 {
     //Maya Exp Refactored..
-    mMaya = new MayaCmd(ui->MayaText->toPlainText(),EpSourceFiles[fileNumber],ui->ExportFolderText->toPlainText());
-    mMaya->SetExpId(EpCount+1);
-    connect(mMaya,&MayaCmd::OnStart,this,&MainWindow::OnMayaStarted);
-    connect(mMaya,&MayaCmd::OnFinish,this,&MainWindow::OnMayaFinish);
-    mMaya->GetProcess()->waitForStarted();
-    if(!mMaya->Message.isEmpty())
-        AddToLog(mMaya->Message);
+    mImpCmd = new ImpCmd(EpSourceFiles[fileNumber],ui->ExportFolderText->toPlainText());
+    mImpCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
+    mImpCmd->InItProgram();
+    mImpCmd->SetExpId(EpCount+1);
+    connect(mImpCmd,&ImpCmd::OnStart,this,&MainWindow::OnCmdStarted);
+    connect(mImpCmd,&ImpCmd::OnFinish,this,&MainWindow::OnCmdFinish);
+    mImpCmd->GetProcess()->waitForStarted();
+    if(!mImpCmd->Message.isEmpty())
+        AddToLog(mImpCmd->Message);
     EpCount++;
 }
 
 void MainWindow::ExpNext()
 {
+    if(isMultiThread) return;
+
     if(EpCount < EpSourceFiles.count()){
         //Single Threading
-        return ImplementMayaExport(EpCount);
+        return ImplementExport(EpCount);
     }
     else{
         ui->ExportExecute->setEnabled(true);

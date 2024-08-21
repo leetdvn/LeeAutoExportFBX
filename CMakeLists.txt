@@ -35,7 +35,8 @@ set(PROJECT_SOURCES
     include/leespoiler.h
     include/consolecmd.h
     include/massfbxultilities.h
-    include/mayacmd.h
+    include/impcmd.h
+
     src/main.cpp
     src/mainwindow.cpp
     src/commandline.cpp
@@ -45,7 +46,9 @@ set(PROJECT_SOURCES
     LeeAutoExportFBX.rc
     src/massfbxultilities.cpp
     src/consolecmd.cpp
-    src/mayacmd.cpp
+    src/impcmd.cpp
+
+
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

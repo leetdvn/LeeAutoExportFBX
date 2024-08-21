@@ -1,15 +1,15 @@
-#ifndef MAYACMD_H
-#define MAYACMD_H
+#ifndef IMPCMD_H
+#define IMPCMD_H
 
 #include <QProcess>
 #include <consolecmd.h>
 
-class MayaCmd : public ConsoleCmd
+class ImpCmd : public ConsoleCmd
 {
     Q_OBJECT
 public:
-    MayaCmd(QString inMayaBatch,QString inSourceFile,QString inExportDir);
-    ~MayaCmd();
+    ImpCmd(QString inSourceFile,QString inExportDir);
+    ~ImpCmd();
 
     virtual void InItProgram();
 
@@ -22,6 +22,8 @@ public:
     //Setting ID
     int GetExpId() {return ExpId;}
     void SetExpId(int newId){ ExpId = newId;}
+
+    void ClearOnFinish();
 
 signals:
     void OnStart();
@@ -46,4 +48,4 @@ private slots:
     void ReadLogs();
 };
 
-#endif // MAYACMD_H
+#endif // IMPCMD_H

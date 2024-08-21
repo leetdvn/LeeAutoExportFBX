@@ -1,10 +1,12 @@
+//Check Plugins
+if(!`pluginInfo -q -l "fbxmaya"`)
+	loadPlugin "fbxmaya";
+
 global proc MassFbxExp(){
 	if(!`objExists "MassExport"`){
 		print("not found MassExport\n");
 		return;
 	}
-	if(!`pluginInfo -q -l "fbxmaya"`)
-	   loadPlugin "fbxmaya";
 	string $MassExp[] = `editDisplayLayerMembers -q MassExport`;
 	print("MassFbxNumber  : "  + size($MassExp) + "\n");
 	for($i = 0 ; $i < size($MassExp) ; ++$i){

@@ -1,13 +1,14 @@
 #include <consoleCmd.h>
 
-ConsoleCmd::ConsoleCmd(QString inMayaBatch,QString inSourceFile,QString inExportDir)
-    :MProgram(inMayaBatch),
-    MSourcePath(inSourceFile),
+ConsoleCmd::ConsoleCmd(QString inSourceFile,QString inExportDir)
+    :MSourcePath(inSourceFile),
     MExportDir(inExportDir)
 {
     this->moveToThread(&mThread);
     mThread.start();
-    qDebug() << "Maya Console .." << Qt::endl;
+
+   // MProgram =
+
 }
 
 ConsoleCmd::ConsoleCmd(const ConsoleCmd &cCmd)
@@ -15,6 +16,17 @@ ConsoleCmd::ConsoleCmd(const ConsoleCmd &cCmd)
     MSourcePath(cCmd.MSourcePath),
     MExportDir(cCmd.MExportDir)
 {
+
+}
+
+ConsoleCmd::ConsoleCmd(const QString inMaya, const QString inBlend, QString inSourceFile, QString inExportDir)
+    :MProgram(inMaya),
+    BProgram(inBlend),
+    MSourcePath(inSourceFile),
+    MExportDir(inExportDir)
+{
+    // this->moveToThread(&mThread);
+    // mThread.start();
 
 }
 
@@ -35,6 +47,21 @@ void ConsoleCmd::SetProgram(const QString inProgram)
         qDebug() << inProgram << "not mayabatch file.." << Qt::endl;
 
     MProgram = inProgram;
+}
+
+void ConsoleCmd::SetProgram(const QString inMayaPath,const QString inBlenderPath)
+{
+    if(!IsValidPath(inMayaPath))
+    {
+        //Debug
+        return;
+    }
+    if(!IsValidPath(inBlenderPath)){
+        //Debug
+        return;
+    }
+    MProgram = inMayaPath;
+    BProgram = inBlenderPath;
 }
 
 void ConsoleCmd::SetMSourcePath(const QString inSourcePath)
@@ -102,15 +129,17 @@ int ConsoleCmd::FilterCompleted(const QString inLogFile,QStringList &LogResult)
     }
 
 
-    QString CompletedCase = "Exported";
+    QString CompletedCase = mCSoft ==Maya?  "Exported" : "FBX export starting... ";
     if(log.open(QIODevice::ReadOnly)){
         QTextStream textfile(&log);
         while(!textfile.atEnd())
         {
             QString line = textfile.readLine();
             line.replace("\n","");
+            line.replace("\r","");
             if(line.startsWith(CompletedCase)){
                 QString result = line.replace(CompletedCase + "  : ","");
+                result.replace(CompletedCase,"");
                 LogResult.push_back(result);
             }
             else if(line.startsWith("MassFbxNumber")){
@@ -164,12 +193,12 @@ QString ConsoleCmd::MakeConsoleCmd(SoftwereType inType)
         return QString();
     }
 
-    //Define Script Str and Base
-    QString ScriptStr;
     //Script Export
     QString Mel ;
     //Base Script
     QString BaseScr ;
+    //Program
+    QString inProg;
 
     //Log Maya Console
     LogPath =  MASSLOGDIR + GetSourceName() + "Log.txt";
@@ -178,21 +207,26 @@ QString ConsoleCmd::MakeConsoleCmd(SoftwereType inType)
 
     switch (inType) {
         case Maya:{
-            ScriptStr = MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".mel";
+            ScriptPath = MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".mel";
             BaseScr = SCRIPTDIR + "MayaExportCmd.mel";
-            Cmd = MAYACONSOLE.arg(MProgram,MSourcePath,ScriptStr,LogPath);
+            Cmd = MAYACONSOLE.arg(MProgram,MSourcePath,ScriptPath,LogPath);
             break;
         }
         case Blender:{
-            ScriptStr = MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".py";
+            ScriptPath = MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".py";
             BaseScr = SCRIPTDIR + "BlenderExport.py";
-            Cmd = BLENDERCONS.arg(MProgram,MSourcePath,ScriptStr,LogPath);
+            Cmd = BLENDERCONS.arg(BProgram,MSourcePath,ScriptPath,LogPath);
             break;
         }
     }
+    mCSoft = inType;
     //Init Create Scripts Files;
     InitExportScript(BaseScr);
-    qDebug() << BaseScr << Qt::endl;
+
+    //Debug
+
+    //AddToLogData(Cmd);
+    qDebug() << Cmd << Qt::endl;
     return Cmd;
 }
 

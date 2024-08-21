@@ -19,7 +19,7 @@
 #include <QNetworkInterface>
 #include <qmessagebox.h>
 #include <massfbxultilities.h>
-#include <mayacmd.h>
+#include <impcmd.h>
 #include <Definitions.h>
 
 
@@ -130,7 +130,7 @@ private slots:
 
 protected:
 
-    MayaCmd* mMaya=nullptr;
+    ImpCmd* mImpCmd=nullptr;
     CommandLine* command = nullptr;
     void ImplementFbxOptions();
 
@@ -158,14 +158,15 @@ protected:
 
     int TotalFiles;
     int completedId=0;
+    bool isMultiThread=false;
 
     bool isError=false;
 
-    void OnMayaFinish(QStringList inFbxList);
+    void OnCmdFinish(QStringList inFbxList);
 
-    void OnMayaStarted();
+    void OnCmdStarted();
 
-    void ImplementMayaExport(int fileNumber);
+    void ImplementExport(int fileNumber);
 
     void ExpNext();
 

@@ -15,13 +15,17 @@ class ConsoleCmd : public QObject
 {
     Q_OBJECT
 public:
-    ConsoleCmd(QString inMayaBatch,QString inSourceFile,QString inExportDir);
+    ConsoleCmd(QString inSourceFile,QString inExportDir);
 
     ConsoleCmd(const ConsoleCmd & cCmd);
+
+    ConsoleCmd(const QString inMaya,const QString inBlend,QString inSourceFile,QString inExportDir);
 
     ~ConsoleCmd();
 
     void SetProgram(const QString inProgram);
+
+    void SetProgram(const QString inMayaPath,const QString inBlenderPath);
 
     void SetMSourcePath(const QString inSourcePath);
 
@@ -59,11 +63,16 @@ signals:
 
 protected:
 
-    //
+    //Process
     QProcess* MExProcess=nullptr;
 
+    //Current SoftWare;
+    SoftwereType mCSoft;
     //Maya or Blender Program
     QString MProgram;
+
+    // Blender Program
+    QString BProgram;
 
     //Source File Path
     QString MSourcePath;
@@ -79,6 +88,8 @@ protected:
 
     //Log File
     QString LogPath;
+    //Script File
+    QString ScriptPath;
     //Status
     bool IsRunning=false;
 
