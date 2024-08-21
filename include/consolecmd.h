@@ -31,7 +31,7 @@ public:
 
     void SetMExportDir(const QString inExportDir);
 
-    void SetSourceDir(const QString inSourceDir){MSourceDir = inSourceDir;}
+    void SetSourceDir(const QString inSourceDir);
 
     bool Status(){return IsRunning;}
 
@@ -68,6 +68,8 @@ protected:
     //Process
     QProcess* MExProcess=nullptr;
 
+    //Detach Dir
+    QString DetachDir;
     //Current SoftWare;
     SoftwereType mCSoft;
     //Maya or Blender Program
@@ -112,6 +114,7 @@ protected:
     // Create Cmd
     QString MakeConsoleCmd(SoftwereType inType);
 
+    void InitDirectories();
 private slots:
     void ExportLogResult();
 

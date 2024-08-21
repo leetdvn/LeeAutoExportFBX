@@ -36,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->ExportExecute,&QPushButton::clicked,this,&MainWindow::OnExportClicked);
 
+    connect(uiOpt->makedirBox,&QCheckBox::stateChanged,this,&MainWindow::OnMakeDirChanged);
+
     mProcess = new QProcess();
 
     //Info Env
@@ -270,11 +272,28 @@ void MainWindow::OnExportClicked()
     TotalFiles = EpSourceFiles.count();
 
     isRunning = true;
-    completedId = 0;
     ui->ExportExecute->setEnabled(false);
 
+    //Reset On Click;
+    completedId = 0;
+    TotalFbx = 0;
+    TotalFiles = 0;
+    //check Multi Threading
+    isMultiThread = uiOpt->MultiThreadBox->isChecked();
 
-    ImplementExport(EpCount);
+    if(isMultiThread){
+        #pragma omp parallel
+        {
+            #pragma omp parallel for
+            for(int i = 0 ; i < EpSourceFiles.count() ; ++i)
+                ImplementExport(i);
+
+        }
+
+    }
+    else{
+        ImplementExport(EpCount);
+    }
 
 }
 
@@ -371,6 +390,10 @@ void MainWindow::SaveToLocal(DataPath inType,const QString inContent)
             Session="ExportPath";
             break;
         }
+        case LMakeDir:{
+            Session="Makedir";
+            break;
+        }
     }
 
     qDebug() << "ip : " << inType << "Sess : " << Session << "path : " << inContent <<  Qt::endl;
@@ -405,10 +428,14 @@ void MainWindow::LoadRecentData()
     QJsonValue blender = jobj.value("Blender");
     QJsonValue source = jobj.value("SourcePath");
     QJsonValue exp = jobj.value("ExportPath");
+    QJsonValue mDir = jobj.value("Makedir");
     ui->MayaText->setText(maya.toString());
     ui->BlenderText->setText(blender.toString());
     ui->SourceFolderText->setText(source.toString());
     ui->ExportFolderText->setText(exp.toString());
+
+    bool checked = mDir.toString() == "2" ? true : false;
+    uiOpt->makedirBox->setChecked(checked);
 }
 
 QJsonObject MainWindow::LoadObjectFromFile(const QString infile)
@@ -638,9 +665,10 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
     if (!mImpCmd)
         return;
 
-    mImpCmd->VerifiedExported();
 
     completedId+=1;
+    ListCmds[completedId-1]->VerifiedExported();
+
     int value = (100.0/TotalFiles) * completedId;
     ui->progressBar->setValue(value);
     if(value >=99){
@@ -648,19 +676,34 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
     }
 
     qDebug() << "Layer Info : " << mImpCmd->GetLayerInfo() << Qt::endl;
-    if (mImpCmd->GetLayerInfo()) {
-        AddToLog("Error : MassExport Layer Name not found", "red");
-        return ExpNext();
+    if (ListCmds[completedId-1]->GetLayerInfo()) {
+        QString Message = "MassExport Layer Name not found : %1";
+        Message = Message.arg(EpSourceFiles[completedId-1]);
+        AddToLog(Error,Message);
+
+        //if(isMultiThread) return;
+        //return ExpNext();
     }
 
-    QStringList FbxResult= mImpCmd->GetExpResults();
+    QStringList FbxResult= ListCmds[completedId-1]->GetExpResults();
     for(auto f : FbxResult){
         QString CompleteText = QString("Export Completed : %1").arg(f);
         AddToLog(Completed,CompleteText);
     }
 
     if(!uiOpt->DebugBox->isChecked())
-        mImpCmd->ClearOnFinish();
+        ListCmds[completedId-1]->ClearOnFinish();
+
+    if(completedId == TotalFiles)
+    {
+        TotalFbx = FbxCompletedCount();
+        //enable Export Btn
+        ui->ExportExecute->setEnabled(true);
+        AddToLog(Warning,QString("Total Export Files : %1").arg(TotalFiles));
+        AddToLog(Warning,QString("Total Fbx : %1").arg(TotalFbx));
+        //FbxCompletedCount();
+    }
+    if(isMultiThread) return;
     return ExpNext();
 }
 
@@ -682,17 +725,29 @@ void MainWindow::ImplementExport(int fileNumber)
                         ui->ExportFolderText->toPlainText()):
                               ui->ExportFolderText->toPlainText();
     //Maya Exp Refactored..
-    mImpCmd = new ImpCmd(EpSourceFiles[fileNumber],finalExpDir);
-    //mImpCmd->SetMExportDir(finalExpDir);
-    mImpCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
-    mImpCmd->InItProgram();
-    mImpCmd->SetExpId(EpCount+1);
-    connect(mImpCmd,&ImpCmd::OnStart,this,&MainWindow::OnCmdStarted);
-    connect(mImpCmd,&ImpCmd::OnFinish,this,&MainWindow::OnCmdFinish);
-    mImpCmd->GetProcess()->waitForStarted();
-    if(!mImpCmd->Message.isEmpty())
-        AddToLog(mImpCmd->Message);
+    ImpCmd* mCmd = new ImpCmd(EpSourceFiles[fileNumber],finalExpDir);
+    mCmd->SetExpId(fileNumber);
+    //Set Source Dir
+    mCmd->SetSourceDir(ui->SourceFolderText->toPlainText());
+    //Set Program
+    mCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
+    //Set Id
+    mCmd->SetExpId(EpCount+1);
+
+    ///Connecttion
+    connect(mCmd,&ImpCmd::OnStart,this,&MainWindow::OnCmdStarted);
+    connect(mCmd,&ImpCmd::OnFinish,this,&MainWindow::OnCmdFinish);
+    mCmd->GetProcess()->waitForStarted();
+    if(!mCmd->Message.isEmpty())
+        AddToLog(mCmd->Message);
     EpCount++;
+
+    mImpCmd = mCmd;
+
+    //list Threding
+    if(isMultiThread)
+        ListCmds.push_back(mCmd);
+
 }
 
 void MainWindow::ExpNext()
@@ -709,6 +764,20 @@ void MainWindow::ExpNext()
     }
 }
 
+int MainWindow::FbxCompletedCount()
+{
+    if(ListCmds.count() <=0) return 0;
+    int total = 0;
+
+    for(auto cmd : ListCmds){
+        for(auto fbx : cmd->GetExpResults()){
+            total++;
+        }
+    }
+    //qDebug() << "FBX : " << total << Qt::endl;
+    return total;
+}
+
 void MainWindow::OnComboBoxChanged(int valuechanged)
 {
     qDebug() << "Value Changed " << valuechanged << Qt::endl;
@@ -720,5 +789,11 @@ void MainWindow::OnComboBoxChanged(int valuechanged)
     }
 
     Spoiler->toggleButton->setText(textChanged);
+}
+
+void MainWindow::OnMakeDirChanged(int value)
+{
+    qDebug() << "Make Dir " << value <<  Qt::endl;
+    SaveToLocal(LMakeDir,QString::number(value));
 }
 

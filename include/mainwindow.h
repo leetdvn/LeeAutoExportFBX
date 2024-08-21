@@ -34,7 +34,8 @@ enum DataPath
     LBatchMaya,
     LBlender,
     LSource,
-    LExport
+    LExport,
+    LMakeDir
 };
 
 using namespace MassFbxUltilities;
@@ -60,6 +61,8 @@ public slots:
     void OnExportClicked();
 
     void OnComboBoxChanged(int valuechanged);
+
+    void OnMakeDirChanged(int value);
 
     void GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters);
 
@@ -117,6 +120,9 @@ private:
 protected:
 
     ImpCmd* mImpCmd=nullptr;
+
+    QList<ImpCmd*> ListCmds;
+
     void ImplementFbxOptions();
 
     QString GetExportPath(const QString inSourceFile,const QString inExportDir);
@@ -138,6 +144,7 @@ protected:
     bool isRunning=false;
 
     int TotalFiles;
+    int TotalFbx;
     int completedId=0;
     bool isMultiThread=false;
 
@@ -150,6 +157,8 @@ protected:
     void ImplementExport(int fileNumber);
 
     void ExpNext();
+
+    int FbxCompletedCount();
 
 private:
     bool IsAuthored;

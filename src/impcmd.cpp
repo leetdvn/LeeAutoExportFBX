@@ -7,7 +7,7 @@ ImpCmd::ImpCmd(QString inSourceFile,QString inExportDir)
 
 ImpCmd::~ImpCmd()
 {
-
+    this->deleteLater();
 }
 
 void ImpCmd::InItProgram()
@@ -58,7 +58,6 @@ void ImpCmd::ClearOnFinish()
     if(ScriptF.exists()) ScriptF.remove();
 }
 
-
 void ImpCmd::OnExpStart()
 {
     emit OnStart();
@@ -77,11 +76,11 @@ void ImpCmd::OnExpError()
 
 void ImpCmd::ReadLogs()
 {
-    QString line = MExProcess->readAll();
+    QString line = MExProcess->readAllStandardOutput();
     line += MExProcess->readAllStandardError();
     QFile log(LogPath);
     if(log.exists()){
-        if(log.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        if(log.open(QIODevice::WriteOnly | QIODevice::Append))
         {
             log.write(line.toLocal8Bit());
             log.close();
@@ -90,7 +89,6 @@ void ImpCmd::ReadLogs()
     qDebug() << line << Qt::endl;
 
 }
-
 
 void ImpCmd::SetProgram(const QString inMayaPath,const QString inBlenderPath)
 {
@@ -105,4 +103,6 @@ void ImpCmd::SetProgram(const QString inMayaPath,const QString inBlenderPath)
     }
     MProgram = inMayaPath;
     BProgram = inBlenderPath;
+
+    InItProgram();
 }

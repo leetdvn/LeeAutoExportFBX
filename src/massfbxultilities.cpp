@@ -102,7 +102,6 @@ QString MassFbxUltilities::DetachSourceFolder(const QString inSourceFile, const 
 
     QString detach = inSourceFile;
 
-
     QStringList sPlit = detach.split("/");
 
     detach = detach.remove(inSourceFol);

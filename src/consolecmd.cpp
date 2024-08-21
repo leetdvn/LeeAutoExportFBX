@@ -47,6 +47,8 @@ void ConsoleCmd::SetProgram(const QString inProgram)
         qDebug() << inProgram << "not mayabatch file.." << Qt::endl;
 
     MProgram = inProgram;
+
+
 }
 
 void ConsoleCmd::SetMSourcePath(const QString inSourcePath)
@@ -69,7 +71,12 @@ void ConsoleCmd::SetMExportDir(const QString inExportDir)
 
     MExportDir = inExportDir;
 
+}
 
+void ConsoleCmd::SetSourceDir(const QString inSourceDir)
+{
+    MSourceDir = inSourceDir;
+    DetachDir = DetachSourceFolder(MSourcePath,MSourceDir);
 }
 
 QString ConsoleCmd::GetSourceName()
@@ -153,12 +160,17 @@ QString ConsoleCmd::InitExportScript(const QString inBaseScript)
     //Get Content from Base
     QString ScriptContent = GetContentFile(inBaseScript);
     QString sContent = ScriptContent.arg(MExportDir);
-    //Write to Location
-    QString LocalPath = MASSFBXDIR + "Scripts/" + GetSourceName();
 
     //QString BaseScrDir = SCRIPTDIR + "MayaExportCmd.mel";;
-    //QString nFol = DetachSourceFolder(MSourcePath,MASSFBXDIR);
-    //qDebug() << "Tree : " << nFol << Qt::endl;
+    qDebug() << "SDir : " << MSourceDir << "Result : " << DetachDir << Qt::endl;
+
+    //Write to Location
+    QString LocalDir = MASSFBXDIR + "Scripts/" + DetachDir ;
+    QString LocalPath = LocalDir  + GetSourceName();
+
+    QDir mDir(LocalDir);
+    if(!mDir.exists())
+        mDir.mkpath(LocalDir);
 
     LocalPath += inBaseScript.endsWith(".py") ? ".py" : ".mel";
     //File
@@ -185,6 +197,9 @@ QString ConsoleCmd::MakeConsoleCmd(SoftwereType inType)
         return QString();
     }
 
+    //init Dir
+    InitDirectories();
+
     //Script Export
     QString Mel ;
     //Base Script
@@ -193,34 +208,45 @@ QString ConsoleCmd::MakeConsoleCmd(SoftwereType inType)
     QString inProg;
 
     //Log Maya Console
-    LogPath =  MASSLOGDIR + GetSourceName() + "Log.txt";
+    LogPath =  MASSLOGDIR +  DetachDir  + GetSourceName() + "Log.txt";
 
     QString Cmd;
 
     switch (inType) {
         case Maya:{
-            ScriptPath = MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".mel";
             BaseScr = SCRIPTDIR + "MayaExportCmd.mel";
+            ScriptPath = InitExportScript(BaseScr);//MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".mel";
+
             Cmd = MAYACONSOLE.arg(MProgram,MSourcePath,ScriptPath,LogPath);
             break;
         }
         case Blender:{
-            ScriptPath = MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".py";
             BaseScr = SCRIPTDIR + "BlenderExport.py";
+            ScriptPath = InitExportScript(BaseScr);//MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".py";
+
             Cmd = BLENDERCONS.arg(BProgram,MSourcePath,ScriptPath,LogPath);
             break;
         }
     }
     mCSoft = inType;
-    //Init Create Scripts Files;
-    InitExportScript(BaseScr);
-    qDebug() << "Tree : " << BaseScr << Qt::endl;
 
-    //Debug
-
-    //AddToLogData(Cmd);
-    qDebug() << Cmd << Qt::endl;
     return Cmd;
+}
+
+void ConsoleCmd::InitDirectories()
+{
+    //init Dir
+    QStringList listDir =
+        {
+            MASSLOGDIR + DetachDir ,
+            MASSFBXDIR + "Scripts/" + DetachDir
+        };
+
+    for(auto d : listDir){
+        QDir mDir(d);
+        if(!mDir.exists())
+            mDir.mkpath(d);
+    }
 }
 
 //private slots emit Logs
