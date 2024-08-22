@@ -1,6 +1,5 @@
 #include "massfbxultilities.h"
 
-#include <QMessageBox>
 
 
 bool MassFbxUltilities::IsValidPath(QString inPaths)
