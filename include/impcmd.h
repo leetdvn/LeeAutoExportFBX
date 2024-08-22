@@ -29,6 +29,7 @@ public:
 
     bool ConsoleExists(QList<ImpCmd*> inList);
 
+    QStringList ListFbxs;
 signals:
     void OnStart();
 

@@ -52,10 +52,25 @@ void ImpCmd::ClearOnFinish()
     QFile logf(LogPath);
     QFile ScriptF(ScriptPath);
 
-    qDebug() << "Cleanup Script " << ScriptPath;
 
     if(logf.exists()) logf.remove();
     if(ScriptF.exists()) ScriptF.remove();
+
+    for(auto dir : TransientDir){
+        QDir mDir(dir);
+        if(mDir.exists()){
+            bool isSuccess = mDir.removeRecursively();
+
+            //QString delCmd = "rm -R %1";
+            // QProcess delFol;
+            // delFol.start(delCmd);
+            qDebug() << " Removed : " << isSuccess  <<" " + dir << Qt::endl;
+
+        }
+    }
+
+
+    //if(LocalSDir.exists()) LocalSDir.remove();
 }
 
 void ImpCmd::OnExpStart()
@@ -78,6 +93,18 @@ void ImpCmd::ReadLogs()
 {
     QString line = MExProcess->readAllStandardOutput();
     line += MExProcess->readAllStandardError();
+
+    QStringList Lines = line.split("\r\n");
+    for(auto l : Lines){
+        if(l.startsWith("Exported")){
+            qDebug() << l <<  Qt::endl;
+            QStringList fbxResult = l.split(" : ");
+            ListFbxs.push_back(fbxResult[1]);
+        }
+    }
+
+    ListFbxs.removeDuplicates();
+    //Debug Log
     QFile log(LogPath);
     if(log.exists()){
         if(log.open(QIODevice::WriteOnly | QIODevice::Append))

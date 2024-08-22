@@ -116,10 +116,14 @@ private:
     void AddToLog(QString inMessage,QString inColor="black",bool isClear=0);
 
     void AddToLog(const LogType inLog,QString inMessage,bool isClear=0);
+
+    void ScrollToNewLog();
+
     void ResetMem();
 protected:
 
-    ImpCmd* mImpCmd=nullptr;
+
+    //ImpCmd* mImpCmd=nullptr;
 
     QList<ImpCmd*> ListCmds;
 

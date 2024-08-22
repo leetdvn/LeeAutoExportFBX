@@ -52,6 +52,8 @@ public:
     QString GetSourceName();
     //Get ExpResult;
     QStringList GetExpResults(){return ExportResult;}
+    //Get Transient Dir;
+    QStringList GetTransientDir() {return TransientDir;}
 
     bool GetLayerInfo(){return IsNotFound;}
     //Read Log Verifify Export
@@ -82,6 +84,9 @@ protected:
     QString MSourcePath;
     //Source Dir
     QString MSourceDir;
+    //QDir
+    QStringList TransientDir;
+
     //Export Dir
     QString MExportDir;
 

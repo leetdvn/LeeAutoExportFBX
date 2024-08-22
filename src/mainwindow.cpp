@@ -159,8 +159,7 @@ void MainWindow::OnSoftWareChanged()
 
     AddToLog(Wrongsoftlog,"yellow");
     //Set Vertical Scroll to end value
-    ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
-
+    ScrollToNewLog();
 }
 
 void MainWindow::OnBrowserFolder()
@@ -541,7 +540,7 @@ void MainWindow::AddToLog(QString inMessage,QString inColor,bool isClear)
     QString CLog = !isClear ? ui->LeeLog->toHtml() : "";
     CLog += QString("<font color=\"%1\">%2</font>").arg(inColor,inMessage);
     ui->LeeLog->setHtml(CLog);
-    ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
+    ScrollToNewLog();
 }
 
 void MainWindow::AddToLog(const LogType inLog, QString inMessage, bool isClear)
@@ -576,20 +575,30 @@ void MainWindow::AddToLog(const LogType inLog, QString inMessage, bool isClear)
     QString CLog = !isClear ? ui->LeeLog->toHtml() : "";
     CLog += result;
     ui->LeeLog->setHtml(CLog);
-    ui->LeeLog->verticalScrollBar()->setValue(ui->LeeLog->verticalScrollBar()->maximum());
 
+    //new Logs
+    ScrollToNewLog();
+}
+
+void MainWindow::ScrollToNewLog(){
+
+    //set value max down to new Log
+    int valueMax = ui->LeeLog->verticalScrollBar()->maximum();
+    ui->LeeLog->verticalScrollBar()->setValue(valueMax);
 }
 
 void MainWindow::ResetMem()
 {
+    //Clear Completed Id
     completedId = 0;
+    //Clear FBx Total
     TotalFbx = 0;
+    //Clear Export Count
     EpCount=0;
+    //Clear List console
     ListCmds = QList<ImpCmd*>();
+    //Clear Source Files
     EpSourceFiles.clear();
-    // for(auto f : EpSourceFiles)
-    //     qDebug() << " CheckSource : " << f << Qt::endl;
-
 }
 
 void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters)
@@ -677,7 +686,8 @@ SoftwereType MainWindow::GetSoftWareType()
     switch (SType) {
         case 0: return Maya;
         case 1: return Blender;
-        case 2: return MayaAndBlender;
+        case 2: return Max3D;
+        case 3: return None;
     }
     return None;
 }
@@ -717,7 +727,7 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
         //return ExpNext();
     }
 
-    QStringList FbxResult= ListCmds[completedId-1]->GetExpResults();
+    QStringList FbxResult= ListCmds[completedId-1]->ListFbxs;
     for(auto f : FbxResult){
         QString CompleteText = QString("Export Completed : %1").arg(f);
         AddToLog(Completed,CompleteText);
@@ -726,7 +736,7 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
     if(!uiOpt->DebugBox->isChecked()){
         ImpCmd* iCmd = ListCmds[completedId-1];
         iCmd->ClearOnFinish();
-        ListCmds.removeOne(iCmd);
+        //ListCmds.removeOne(iCmd);
     }
 
 
@@ -746,9 +756,9 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
 void MainWindow::OnCmdStarted()
 {
     qDebug() << "Started.. "  << Qt::endl;
-    if(!mImpCmd) return;
-    QString currentfile = QString("Exrporting : %1..").arg(mImpCmd->GetSourceFile());
-    AddToLog(currentfile);
+    // if(!mImpCmd) return;
+    // QString currentfile = QString("Exrporting : %1..").arg(mImpCmd->GetSourceFile());
+    // AddToLog(currentfile);
 
 }
 
@@ -782,11 +792,12 @@ void MainWindow::ImplementExport(int fileNumber)
     mCmd->GetProcess()->waitForStarted();
     if(!mCmd->Message.isEmpty())
         AddToLog(mCmd->Message);
+
     EpCount++;
 
    // mImpCmd = mCmd;
 
-    //list Threding
+    //list Threding Add to List
     if(!mCmd->ConsoleExists(ListCmds))
         ListCmds.push_back(mCmd);
 

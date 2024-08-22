@@ -10,7 +10,7 @@ enum SoftwereType
 {
     Maya,
     Blender,
-    MayaAndBlender,
+    Max3D,
     None
 };
 

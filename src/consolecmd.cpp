@@ -169,15 +169,21 @@ QString ConsoleCmd::InitExportScript(const QString inBaseScript)
     QString LocalPath = LocalDir  + GetSourceName();
 
     QDir mDir(LocalDir);
-    if(!mDir.exists())
+
+    if(!mDir.exists()){
         mDir.mkpath(LocalDir);
+    }
+
+    //transient Dir;
+    QStringList split = DetachDir.split("/");
+    TransientDir.push_back(MASSFBXDIR + "Scripts/" + split[0] + "/");
 
     LocalPath += inBaseScript.endsWith(".py") ? ".py" : ".mel";
     //File
     QFile Script(LocalPath);
     if(!Script.exists())
     {
-        qDebug() << "Paht Does not exists" << Qt::endl;
+        //qDebug() << "Paht Does not exists" << Qt::endl;
     }
 
     if(Script.open(QIODevice::WriteOnly | QIODevice::Truncate))
@@ -244,8 +250,15 @@ void ConsoleCmd::InitDirectories()
 
     for(auto d : listDir){
         QDir mDir(d);
-        if(!mDir.exists())
+        if(!mDir.exists()){
             mDir.mkpath(d);
+
+        }
+
+        //transient Dir;
+        QStringList split = DetachDir.split("/");
+        QString transDir = d.remove(DetachDir);
+        TransientDir.push_back(transDir + split[0] +"/");
     }
 }
 
