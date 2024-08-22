@@ -41,6 +41,8 @@ QString MakeTreeDirectory(const QString inSourceF, const QString inSourceFol,con
 
 QString DetachSourceFolder(const QString inSourceFile,const QString inSourceFol,bool includeFile=false);
 
+bool CheckSourceExists(QStringList inList,const QString inData);
+
 };
 
 #endif // MASSFBXULTILITIES_H

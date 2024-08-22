@@ -27,12 +27,16 @@ public:
 
     void SetProgram(const QString inMayaPath,const QString inBlenderPath);
 
+    bool ConsoleExists(QList<ImpCmd*> inList);
+
 signals:
     void OnStart();
 
     void OnFinish(QStringList Logs);
 
     void OnError();
+
+    void OnReadLogs(QString&Logs);
 
 private:
 

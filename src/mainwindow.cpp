@@ -261,23 +261,31 @@ void MainWindow::OnExportClicked()
     QString FilLog = "Export Type : ";
     for(auto ff : filters)
         FilLog+= ff;
-    AddToLog(Warning,FilLog);
+
+    QString ShowType = "Export Type : " + uiOpt->comboBox->currentText();
+    AddToLog(Warning,ShowType);
+    qDebug() << FilLog << Qt::endl;
+
     //Get Source Files
+
+
+
+    //Reset On Click;
+    // completedId = 0;
+    // TotalFbx = 0;
+    ResetMem();
+
     GetFilesInDir(ipSourceDir,EpSourceFiles,filters);
+
+    TotalFiles = EpSourceFiles.count();
+    ui->progressBar->setValue(0);
+    isRunning = true;
+    ui->ExportExecute->setEnabled(false);
 
     //Log Files Searching
     qDebug() << "Files Count " << EpSourceFiles.count() << Qt::endl;
     qDebug() << "ip Source " << ipSourceDir << Qt::endl;
-    ui->progressBar->setValue(0);
-    TotalFiles = EpSourceFiles.count();
 
-    isRunning = true;
-    ui->ExportExecute->setEnabled(false);
-
-    //Reset On Click;
-    completedId = 0;
-    TotalFbx = 0;
-    TotalFiles = 0;
     //check Multi Threading
     isMultiThread = uiOpt->MultiThreadBox->isChecked();
 
@@ -572,6 +580,18 @@ void MainWindow::AddToLog(const LogType inLog, QString inMessage, bool isClear)
 
 }
 
+void MainWindow::ResetMem()
+{
+    completedId = 0;
+    TotalFbx = 0;
+    EpCount=0;
+    ListCmds = QList<ImpCmd*>();
+    EpSourceFiles.clear();
+    // for(auto f : EpSourceFiles)
+    //     qDebug() << " CheckSource : " << f << Qt::endl;
+
+}
+
 void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters)
 {
     QDir dir(inDir);
@@ -583,7 +603,8 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QString
 
 
     for(auto f : files){
-        OutFiles.push_back(inDir + f);
+        QString sFile = inDir + f;
+        OutFiles.push_back(sFile);
     }
 
     for(auto fo : folders){
@@ -591,6 +612,8 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QString
         QString dirPath = inDir + fo + "/";
         GetFilesInDir(dirPath,OutFiles,inFilters);
     }
+
+    OutFiles.removeDuplicates();
 }
 
 void MainWindow::ImplementFbxOptions()
@@ -661,13 +684,23 @@ SoftwereType MainWindow::GetSoftWareType()
 
 void MainWindow::OnCmdFinish(QStringList inFbxList) {
 
-    // LogFile OnFinish Command
-    if (!mImpCmd)
-        return;
 
-
+    int idx = completedId;
     completedId+=1;
-    ListCmds[completedId-1]->VerifiedExported();
+    // LogFile OnFinish Command
+    // if (!mImpCmd ){
+    //     qDebug()  << "ListCmds Zero.." << Qt::endl;
+    //     return;
+    // }
+    //qDebug() << "ID : " << completedId -1 << "Total : " << ListCmds.count() << Qt::endl;
+    for(auto x : ListCmds)
+        qDebug() << "ID : " << x->GetSourceFile() << "Total : " << ListCmds.count() << Qt::endl;
+
+    if(!completedId-1 >= ListCmds.count() || completedId-1 < 0) return;
+
+    ImpCmd* iCmd = ListCmds[completedId-1];
+
+    iCmd->VerifiedExported();
 
     int value = (100.0/TotalFiles) * completedId;
     ui->progressBar->setValue(value);
@@ -675,7 +708,6 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
         ui->progressBar->setValue(100);
     }
 
-    qDebug() << "Layer Info : " << mImpCmd->GetLayerInfo() << Qt::endl;
     if (ListCmds[completedId-1]->GetLayerInfo()) {
         QString Message = "MassExport Layer Name not found : %1";
         Message = Message.arg(EpSourceFiles[completedId-1]);
@@ -691,8 +723,12 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
         AddToLog(Completed,CompleteText);
     }
 
-    if(!uiOpt->DebugBox->isChecked())
-        ListCmds[completedId-1]->ClearOnFinish();
+    if(!uiOpt->DebugBox->isChecked()){
+        ImpCmd* iCmd = ListCmds[completedId-1];
+        iCmd->ClearOnFinish();
+        ListCmds.removeOne(iCmd);
+    }
+
 
     if(completedId == TotalFiles)
     {
@@ -718,6 +754,12 @@ void MainWindow::OnCmdStarted()
 
 void MainWindow::ImplementExport(int fileNumber)
 {
+    if(fileNumber >= EpSourceFiles.count()||
+        fileNumber < 0){
+        qDebug() << "index Out Range " << Qt::endl;
+        return;
+    }
+
     bool isMakeDir = uiOpt->makedirBox->isChecked();
     QString finalExpDir = isMakeDir ?
         MakeTreeDirectory(EpSourceFiles[fileNumber],
@@ -742,10 +784,10 @@ void MainWindow::ImplementExport(int fileNumber)
         AddToLog(mCmd->Message);
     EpCount++;
 
-    mImpCmd = mCmd;
+   // mImpCmd = mCmd;
 
     //list Threding
-    if(isMultiThread)
+    if(!mCmd->ConsoleExists(ListCmds))
         ListCmds.push_back(mCmd);
 
 }

@@ -115,3 +115,12 @@ QString MassFbxUltilities::DetachSourceFolder(const QString inSourceFile, const 
 
     return Result;
 }
+
+bool MassFbxUltilities::CheckSourceExists(QStringList inList, const QString inData)
+{
+    if(inList.isEmpty()) return false;
+
+    for(auto f : inList)
+        if(f == inData) return true;
+    return false;
+}

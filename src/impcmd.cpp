@@ -7,7 +7,7 @@ ImpCmd::ImpCmd(QString inSourceFile,QString inExportDir)
 
 ImpCmd::~ImpCmd()
 {
-    this->deleteLater();
+   this->deleteLater();
 }
 
 void ImpCmd::InItProgram()
@@ -86,8 +86,9 @@ void ImpCmd::ReadLogs()
             log.close();
         }
     }
-    qDebug() << line << Qt::endl;
+    //qDebug() << line << Qt::endl;
 
+    //emit OnReadLogs(line);
 }
 
 void ImpCmd::SetProgram(const QString inMayaPath,const QString inBlenderPath)
@@ -105,4 +106,15 @@ void ImpCmd::SetProgram(const QString inMayaPath,const QString inBlenderPath)
     BProgram = inBlenderPath;
 
     InItProgram();
+}
+
+bool ImpCmd::ConsoleExists(QList<ImpCmd *> inList)
+{
+    if(inList.isEmpty()) return false;
+
+    for(auto cons : inList){
+        if(cons->GetSourceFile() == this->GetSourceFile())
+            return true;
+    }
+    return false;
 }

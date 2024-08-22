@@ -116,7 +116,7 @@ private:
     void AddToLog(QString inMessage,QString inColor="black",bool isClear=0);
 
     void AddToLog(const LogType inLog,QString inMessage,bool isClear=0);
-
+    void ResetMem();
 protected:
 
     ImpCmd* mImpCmd=nullptr;
@@ -143,7 +143,7 @@ protected:
     QString _Pc,_Users,_Host;
     bool isRunning=false;
 
-    int TotalFiles;
+    int TotalFiles=0;
     int TotalFbx;
     int completedId=0;
     bool isMultiThread=false;
