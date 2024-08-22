@@ -231,6 +231,7 @@ QString ConsoleCmd::MakeConsoleCmd(SoftwereType inType)
             ScriptPath = InitExportScript(BaseScr);//MASSFBXDIR +  "Scripts/"+  GetSourceName() + ".py";
 
             Cmd = BLENDERCONS.arg(BProgram,MSourcePath,ScriptPath,LogPath);
+            qDebug() << "Script : " << LogPath << Qt::endl;
             break;
         }
     }

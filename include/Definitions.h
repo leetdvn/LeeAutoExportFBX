@@ -26,7 +26,7 @@
 #define SCRIPTDIR  QDir::currentPath() + QString("/Scripts/")// "C:/Users/leepl/Documents/GitHub/LeeAutoExportFBX/Scripts/"
 
 // Mass Version
-#define MASSVERSION "LeeMassFbx Tools  Version 1.02 "
+#define MASSVERSION "LeeMassFbx Tools  Version 1.03 "
 
 //Log
 #define MASSLOGDIR QString("C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/Logs/")
@@ -44,7 +44,7 @@
 #define MAYACONSOLE QString("\"%1\" -file \"%2\" -noAutoloadPlugins -script \"%3\" -log \"%4\"")
 
 //Blender Console Command
-#define BLENDERCONS QString("\"%1\" -b \"%2\" -P \"%3\" --log-file %4")
+#define BLENDERCONS QString("\"%1\" -b \"%2\" -P \"%3\" --log-file \"%4\"")
 
 //Mass Info
 #define MASSINFO QString("PC : %1 <br>USERS : %2 <br>DOMAIN : %3")
