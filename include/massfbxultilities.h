@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QFile>
 #include <Definitions.h>
+#include <QMessageBox>
 
 enum SoftwereType
 {
