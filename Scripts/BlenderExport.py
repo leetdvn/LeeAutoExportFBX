@@ -54,7 +54,13 @@ def LeeMassExport():
     for child in ChildCollections:
         SelectAllObjsInCollection(child)
         expPath = '%1'  + child.name + ".fbx"
-        fbx=bpy.ops.export_scene.fbx(filepath=expPath,use_selection=True)
+        fbx=bpy.ops.export_scene.fbx(filepath=expPath,
+                                    use_selection=True,
+                                    use_active_collection=True,
+                                    object_types={'ARMATURE','MESH','OTHER'},
+                                    use_custom_props=True,
+                                    bake_anim_force_startend_keying=False
+                                    )
         print("Exported  : " + expPath + "\n")
     #print(ChildCollections)
 
@@ -75,3 +81,34 @@ LeeMassExport()
 #     print(type(o))
 #print(chopchop)
 #bpy.ops.outliner.item_activate(deselect_all=True)
+#bpy.ops.nla.bake(frame_start=5, frame_end=100, visual_keying=True, clear_constraints=True, clear_parents=True, use_current_action=True, clean_curves=True, bake_types={'POSE'})
+
+
+##AutoRig Pro FBX EXPORT
+# import bpy
+# import os
+
+# character_names = [i.name for i in bpy.context.selected_objects]
+
+# def set_active_object(object_name):
+#     bpy.context.view_layer.objects.active = bpy.data.objects.get(object_name)
+#     bpy.data.objects.get(object_name).select_set(state=1)
+
+# for char_name in character_names:
+#     bpy.ops.object.select_all(action='DESELECT')
+#     set_active_object(char_name)
+#     # set the file path output here
+#     file_output = 'C:/Users/leepl/Documents/Exports/Shot 005_Final_V6/'+char_name+".fbx"
+#     # export it
+#     bpy.ops.arp.arp_export_fbx_panel(filepath=file_output)
+
+##############ADD-ON CHECKED#########################
+# import addon_utils
+
+# addon_name = 'some_addon'
+
+# success = addon_utils.enable('some_addon')
+# if success:
+#     print("enabled", success.bl_info['name'])
+# else:
+#     print(addon_name, "is not found")

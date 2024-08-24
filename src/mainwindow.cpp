@@ -748,6 +748,7 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
         AddToLog(Warning,QString("Total Export Files : %1").arg(TotalFiles));
         AddToLog(Warning,QString("Total Fbx : %1").arg(TotalFbx));
         //FbxCompletedCount();
+        ui->progressBar->setFormat("Done Job %p%");
     }
     if(isMultiThread) return;
     return ExpNext();
@@ -771,6 +772,8 @@ void MainWindow::ImplementExport(int fileNumber)
     }
 
     bool isMakeDir = uiOpt->makedirBox->isChecked();
+    ui->progressBar->setFormat("Running %p%");
+
     QString finalExpDir = isMakeDir ?
         MakeTreeDirectory(EpSourceFiles[fileNumber],
                         ui->SourceFolderText->toPlainText(),

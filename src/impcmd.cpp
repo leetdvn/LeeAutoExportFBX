@@ -92,9 +92,13 @@ void ImpCmd::OnExpError()
 void ImpCmd::ReadLogs()
 {
     QString line = MExProcess->readAllStandardOutput();
-    line += MExProcess->readAllStandardError();
+    QString err = MExProcess->readAllStandardError();
+    line += err;
 
     QStringList Lines = line.split("\r\n");
+
+    if(err !="")
+        qDebug() << "LeeLog : " << err << Qt::endl;
     for(auto l : Lines){
         if(l.startsWith("Exported")){
             qDebug() << l <<  Qt::endl;
