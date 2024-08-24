@@ -66,7 +66,7 @@ def LeeBakeAllActions():
             #     if k &gt; lastFrame:
             #         lastFrame = k
         #bpy.ops.nla.bake(frame_start=firstFrame, frame_end=lastFrame, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
-        
+
 ##################################################################
 def LeeBakeFunc(Collection=None):
     if Collection is None: return
@@ -76,10 +76,7 @@ def LeeBakeFunc(Collection=None):
         armature =[b for b in GetObjectsInCollection(obj) if b.type =='ARMATURE']
         
         for bone in armature:
-            #print(bone.name)
-            #if bone.name != 'ChopChop_VD_Rig_rig': continue
-            #print(bone)
-            #act = GetActionsFromBone(bone)
+            bpy.ops.object.select_all(action='DESELECT')
             startf,endf = GetStartEndFrame(bone)
             startf = math.ceil(startf)
             endf = math.ceil(endf)
