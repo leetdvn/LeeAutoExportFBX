@@ -49,16 +49,32 @@ def GetStartEndFrame(inBone):
 
     return act.frame_range[0],act.frame_range[1]
 
+
+def LeeBakeAllActions():
+    for a in bpy.data.actions:
+        if not a: continue
+        firstFrame = 0.0
+        lastFrame = 100.0
+            # for keyframe in fcu.keyframe_points:
+                
+            #     x, y = keyframe.co
+            #     k = math.ceil(x)
+
+            #     if k &lt;firstFrame:
+            #         firstFrame = k
+                
+            #     if k &gt; lastFrame:
+            #         lastFrame = k
+        #bpy.ops.nla.bake(frame_start=firstFrame, frame_end=lastFrame, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+        
 ##################################################################
 def LeeBakeFunc(Collection=None):
-    if Collection is None and Collection =='':
-        print("None Collections Name")
-        return 
-
+    if Collection is None: return
     col = bpy.data.collections[Collection]
     listColl = [c for c in col.children if isCollection(c)]
     for obj in listColl:
         armature =[b for b in GetObjectsInCollection(obj) if b.type =='ARMATURE']
+        
         for bone in armature:
             #print(bone.name)
             #if bone.name != 'ChopChop_VD_Rig_rig': continue
@@ -69,19 +85,17 @@ def LeeBakeFunc(Collection=None):
             endf = math.ceil(endf)
             bpy.context.scene.objects[bone.name]
             bpy.data.objects[bone.name].select_set(True)
-            bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
 
-
+            for a in bpy.data.actions:
+                bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+                print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, startf, endf))
 ####################MASSEXPORT FUNC###########################################
 def LeeMassExport():
     Export = "MassExport"
     col = bpy.data.collections[Export]
-    
-    if col is None: return
 
-    #==================BAKE====================
+    ##=================BAKE====================
     LeeBakeFunc(Export)
-
     for o in col.objects:
         bpy.ops.object.select_all(action='DESELECT')
         bpy.context.scene.objects[o.name]
@@ -108,3 +122,33 @@ def LeeMassExport():
 
 LeeMassExport()
 #LeeBakeFunc("MassExport")
+
+
+#Loop in all actions
+# for a in bpy.data.actions:
+    
+#     if not a:
+#         continue
+    
+#     bpy.context.active_object.animation_data.action = a
+    
+#     firstFrame = 9999999
+#     lastFrame = -9999999
+    
+#     #Get the first and last keyframes of the current action
+#     for fcu in a.fcurves:
+#                 for keyframe in fcu.keyframe_points:
+                    
+#                     x, y = keyframe.co
+#                     k = math.ceil(x)
+                    
+#                     if k &lt; firstFrame:
+#                         firstFrame = k
+                    
+#                     if k &gt; lastFrame:
+#                         lastFrame = k
+    
+#     #Bake it
+    
+#     print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, firstFrame, lastFrame))
+    
