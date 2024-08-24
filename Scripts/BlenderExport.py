@@ -1,4 +1,5 @@
 import bpy
+import math
 #Export Cmd ALL
 ##bpy.ops.export_scene.fbx(filepath='%1')
 #-----------Export Selection
@@ -36,10 +37,51 @@ def SelectAllObjsInCollection(inCollection):
         except:
             pass
 
+def GetActionsFromBone(inBone):
+    if inBone is None: return None
+
+    return inBone.animation_data.action
+
+def GetStartEndFrame(inBone):
+    if inBone is None: return
+
+    act = inBone.animation_data.action
+
+    return act.frame_range[0],act.frame_range[1]
+
+##################################################################
+def LeeBakeFunc(Collection=None):
+    if Collection is None and Collection =='':
+        print("None Collections Name")
+        return 
+
+    col = bpy.data.collections[Collection]
+    listColl = [c for c in col.children if isCollection(c)]
+    for obj in listColl:
+        armature =[b for b in GetObjectsInCollection(obj) if b.type =='ARMATURE']
+        for bone in armature:
+            #print(bone.name)
+            #if bone.name != 'ChopChop_VD_Rig_rig': continue
+            #print(bone)
+            #act = GetActionsFromBone(bone)
+            startf,endf = GetStartEndFrame(bone)
+            startf = math.ceil(startf)
+            endf = math.ceil(endf)
+            bpy.context.scene.objects[bone.name]
+            bpy.data.objects[bone.name].select_set(True)
+            bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+
+
 ####################MASSEXPORT FUNC###########################################
 def LeeMassExport():
     Export = "MassExport"
     col = bpy.data.collections[Export]
+    
+    if col is None: return
+
+    #==================BAKE====================
+    LeeBakeFunc(Export)
+
     for o in col.objects:
         bpy.ops.object.select_all(action='DESELECT')
         bpy.context.scene.objects[o.name]
@@ -65,50 +107,4 @@ def LeeMassExport():
     #print(ChildCollections)
 
 LeeMassExport()
-
-# Export = "MassExport"
-# col = bpy.data.collections[Export]
-# #for o in col.children:
-#     #print(o.name)
-#     #print(o.objects)
-#     #bpy.data.objects[o.name].select_set(True)
-#     #for x in o.children:
-#         #print(x.objects.data)
-# chopchop = col.children[0].objects.data
-# chopchop = bpy.data.collections[chopchop.name]
-
-# for o in chopchop.children:
-#     print(type(o))
-#print(chopchop)
-#bpy.ops.outliner.item_activate(deselect_all=True)
-#bpy.ops.nla.bake(frame_start=5, frame_end=100, visual_keying=True, clear_constraints=True, clear_parents=True, use_current_action=True, clean_curves=True, bake_types={'POSE'})
-
-
-##AutoRig Pro FBX EXPORT
-# import bpy
-# import os
-
-# character_names = [i.name for i in bpy.context.selected_objects]
-
-# def set_active_object(object_name):
-#     bpy.context.view_layer.objects.active = bpy.data.objects.get(object_name)
-#     bpy.data.objects.get(object_name).select_set(state=1)
-
-# for char_name in character_names:
-#     bpy.ops.object.select_all(action='DESELECT')
-#     set_active_object(char_name)
-#     # set the file path output here
-#     file_output = 'C:/Users/leepl/Documents/Exports/Shot 005_Final_V6/'+char_name+".fbx"
-#     # export it
-#     bpy.ops.arp.arp_export_fbx_panel(filepath=file_output)
-
-##############ADD-ON CHECKED#########################
-# import addon_utils
-
-# addon_name = 'some_addon'
-
-# success = addon_utils.enable('some_addon')
-# if success:
-#     print("enabled", success.bl_info['name'])
-# else:
-#     print(addon_name, "is not found")
+#LeeBakeFunc("MassExport")
