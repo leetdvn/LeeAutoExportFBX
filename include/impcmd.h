@@ -16,6 +16,7 @@ public:
     void MayExecuteExp();
 
     bool IsNotFound;
+    bool MissingAddons;
 
     QString Message;
 

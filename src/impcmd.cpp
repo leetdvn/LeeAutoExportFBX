@@ -105,6 +105,10 @@ void ImpCmd::ReadLogs()
             QStringList fbxResult = l.split(" : ");
             ListFbxs.push_back(fbxResult[1]);
         }
+        else if(l.startsWith("AutoRigPro")){
+            MissingAddons=true;
+            return;
+        }
     }
 
     ListFbxs.removeDuplicates();

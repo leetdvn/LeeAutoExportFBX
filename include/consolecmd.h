@@ -61,6 +61,7 @@ public:
 
     virtual void InItProgram() = 0;
 
+    void SetScriptPlatForm(QString inFbxPlatForm);
 
 signals:
     void OnLogResult(QStringList Logs);
@@ -99,7 +100,7 @@ protected:
     //Log File
     QString LogPath;
     //Script File
-    QString ScriptPath;
+    QString ScriptPath,BaseScr;
     //Status
     bool IsRunning=false;
 

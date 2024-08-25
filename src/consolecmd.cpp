@@ -112,6 +112,24 @@ bool ConsoleCmd::VerifiedExported()
     return ExportResult.count() > 0 ? true : false;
 }
 
+void ConsoleCmd::SetScriptPlatForm(QString inFbxPlatForm)
+{
+    if(BaseScr.isEmpty() || BaseScr=="") return;
+
+    QString ScriptCont = GetContentFile(BaseScr);
+
+    QString sContent = ScriptCont.arg(MExportDir,inFbxPlatForm);
+
+    QFile Script(ScriptPath);
+
+    if(Script.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        Script.write(sContent.toLocal8Bit());
+        Script.close();
+    }
+
+}
+
 int ConsoleCmd::FilterCompleted(const QString inLogFile,QStringList &LogResult)
 {
 
@@ -159,6 +177,7 @@ QString ConsoleCmd::InitExportScript(const QString inBaseScript)
 {
     //Get Content from Base
     QString ScriptContent = GetContentFile(inBaseScript);
+
     QString sContent = ScriptContent.arg(MExportDir);
 
     //QString BaseScrDir = SCRIPTDIR + "MayaExportCmd.mel";;
@@ -209,7 +228,6 @@ QString ConsoleCmd::MakeConsoleCmd(SoftwereType inType)
     //Script Export
     QString Mel ;
     //Base Script
-    QString BaseScr ;
     //Program
     QString inProg;
 

@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
+
     undo_stack = new QUndoStack(this);
     // QColor color =Qt::white;
     // QPalette palette = ui->menuFile->palette();
@@ -18,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     // ui->menuView->setPalette(palette);
 
     ImplementFbxOptions();
-    ui->progressBar->setValue(0);
+    ui->progressBar->setValue(10);
 
     connect(ui->SourceFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
     connect(ui->ExportFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
@@ -83,7 +84,7 @@ void MainWindow::InfoEnv()
                          "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font><br>";
 
     logStr += MASSINFO.arg(_Pc,_Users,_Host ="" ? "empty" : _Host);
-    AddToLog(logStr,"black",true);
+    AddToLog(logStr,"white",true);
 }
 
 void MainWindow::InitLocal()
@@ -694,31 +695,35 @@ SoftwereType MainWindow::GetSoftWareType()
 
 void MainWindow::OnCmdFinish(QStringList inFbxList) {
 
-
+    //Command Id
     int idx = completedId;
     completedId+=1;
-    // LogFile OnFinish Command
-    // if (!mImpCmd ){
-    //     qDebug()  << "ListCmds Zero.." << Qt::endl;
-    //     return;
-    // }
-    //qDebug() << "ID : " << completedId -1 << "Total : " << ListCmds.count() << Qt::endl;
-    for(auto x : ListCmds)
-        qDebug() << "ID : " << x->GetSourceFile() << "Total : " << ListCmds.count() << Qt::endl;
 
+    //check Id
     if(!completedId-1 >= ListCmds.count() || completedId-1 < 0) return;
 
+
+    //Get Assign Command ID
     ImpCmd* iCmd = ListCmds[completedId-1];
 
+    //Check Blender Addons
+    if(iCmd->MissingAddons) {
+        QString Message = "AutoRigPro : Blender Addons  is Not Found";
+        AddToLog(Error,Message);
+    }
+
+    //verifier
     iCmd->VerifiedExported();
 
+    ///Progress bar
     int value = (100.0/TotalFiles) * completedId;
     ui->progressBar->setValue(value);
     if(value >=99){
         ui->progressBar->setValue(100);
     }
 
-    if (ListCmds[completedId-1]->GetLayerInfo()) {
+    /// File dont have MassExport Layer
+    if (iCmd->GetLayerInfo()) {
         QString Message = "MassExport Layer Name not found : %1";
         Message = Message.arg(EpSourceFiles[completedId-1]);
         AddToLog(Error,Message);

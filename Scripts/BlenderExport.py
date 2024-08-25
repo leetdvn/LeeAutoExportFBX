@@ -1,5 +1,7 @@
 import bpy
 import math
+import addon_utils
+
 #Export Cmd ALL
 ##bpy.ops.export_scene.fbx(filepath='%1')
 #-----------Export Selection
@@ -43,35 +45,20 @@ def GetActionsFromBone(inBone):
     return inBone.animation_data.action
 
 def GetStartEndFrame(inBone):
-    if inBone is None: return
+    if inBone is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
 
     act = inBone.animation_data.action
+    
+    if act is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
 
     return act.frame_range[0],act.frame_range[1]
-
-
-def LeeBakeAllActions():
-    for a in bpy.data.actions:
-        if not a: continue
-        firstFrame = 0.0
-        lastFrame = 100.0
-            # for keyframe in fcu.keyframe_points:
-                
-            #     x, y = keyframe.co
-            #     k = math.ceil(x)
-
-            #     if k &lt;firstFrame:
-            #         firstFrame = k
-                
-            #     if k &gt; lastFrame:
-            #         lastFrame = k
-        #bpy.ops.nla.bake(frame_start=firstFrame, frame_end=lastFrame, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
 
 ##################################################################
 def LeeBakeFunc(Collection=None):
     if Collection is None: return
     col = bpy.data.collections[Collection]
     listColl = [c for c in col.children if isCollection(c)]
+    bpy.ops.object.mode_set(mode = 'OBJECT')
     for obj in listColl:
         armature =[b for b in GetObjectsInCollection(obj) if b.type =='ARMATURE']
         
@@ -83,18 +70,67 @@ def LeeBakeFunc(Collection=None):
             bpy.context.scene.objects[bone.name]
             bpy.data.objects[bone.name].select_set(True)
 
-            for a in bpy.data.actions:
-                bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
-                print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, startf, endf))
+            #========Loop Action =================
+            # for a in bpy.data.actions:
+            ###Bake###########
+            #bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+            #     print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, startf, endf))
+
+
+##===================AutoRigProInterGrade======================
+def LeeArpExport(fileoutput):
+    '''
+    Auto Rig Pro Fbx Intergrade
+    '''
+    
+    if not fileoutput: return
+
+    # set some settings...
+    scn = bpy.context.scene
+    scn.arp_export_rig_type = 'universal'
+    # types: 'humanoid' for humanoid characters, 'mped' for universal skeletons
+
+    scn.arp_engine_type = 'unreal'
+    # other useful settings
+    # scn.arp_keep_bend_bones = True
+    # scn.arp_units_x100 = True
+    # scn.arp_bake_actions = True
+    # scn.arp_export_name_actions = True
+    # scn.arp_export_name_string = "test"
+    # scn.arp_mesh_smooth_type = 'EDGE'
+    # scn.arp_ue_root_motion = True
+    # scn.arp_export_noparent = True
+    scn.arp_export_twist = True
+    scn.arp_fix_fbx_matrix=True
+    scn.arp_ge_sel_only =True
+
+    # run export
+    bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)
+
+def ArpIsLoaded():
+    '''
+    check Addon
+    '''
+    arpAddon ='auto_rig_pro'
+    return addon_utils.enable(arpAddon)
+    
+        
+
 ####################MASSEXPORT FUNC###########################################
-def LeeMassExport():
+def LeeMassExport(Fbx_platform='AutoRigPro'):
     Export = "MassExport"
     col = bpy.data.collections[Export]
 
+    if not col or not ArpIsLoaded():
+        print("AutoRigPro Addons: is Not Found..")
+        return
+
+    if Fbx_platform == "%2": Fbx_platform = "AutoRigPro"
     ##=================BAKE====================
     LeeBakeFunc(Export)
+    bpy.ops.object.mode_set(mode = 'OBJECT')
     for o in col.objects:
-        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.select_all(action=['DESELECT'])
         bpy.context.scene.objects[o.name]
         bpy.data.objects[o.name].select_set(True)
         expPath = '%1'  + o.name + ".fbx"
@@ -107,45 +143,25 @@ def LeeMassExport():
     for child in ChildCollections:
         SelectAllObjsInCollection(child)
         expPath = '%1'  + child.name + ".fbx"
-        fbx=bpy.ops.export_scene.fbx(filepath=expPath,
-                                    use_selection=True,
-                                    use_active_collection=True,
-                                    object_types={'ARMATURE','MESH','OTHER'},
-                                    use_custom_props=True,
-                                    bake_anim_force_startend_keying=False
-                                    )
+        
+        if Fbx_platform=="Blender":
+            bpy.ops.export_scene.fbx(filepath=expPath,
+                                        use_selection=True,
+                                        use_active_collection=True,
+                                        object_types={'ARMATURE','MESH','OTHER'},
+                                        use_custom_props=True,
+                                        bake_anim_force_startend_keying=False
+                                        )
+            
+        elif Fbx_platform=="AutoRigPro":
+            LeeArpExport(expPath)
+        else:
+            print("Fbx Platform Not Found")
         print("Exported  : " + expPath + "\n")
     #print(ChildCollections)
 
-LeeMassExport()
-#LeeBakeFunc("MassExport")
+fbx_Addon = '%2'
+LeeMassExport(fbx_Addon)
 
 
-#Loop in all actions
-# for a in bpy.data.actions:
-    
-#     if not a:
-#         continue
-    
-#     bpy.context.active_object.animation_data.action = a
-    
-#     firstFrame = 9999999
-#     lastFrame = -9999999
-    
-#     #Get the first and last keyframes of the current action
-#     for fcu in a.fcurves:
-#                 for keyframe in fcu.keyframe_points:
-                    
-#                     x, y = keyframe.co
-#                     k = math.ceil(x)
-                    
-#                     if k &lt; firstFrame:
-#                         firstFrame = k
-                    
-#                     if k &gt; lastFrame:
-#                         lastFrame = k
-    
-#     #Bake it
-    
-#     print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, firstFrame, lastFrame))
     

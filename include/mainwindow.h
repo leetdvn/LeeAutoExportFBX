@@ -113,7 +113,7 @@ private:
 
     bool IsValidSoft();
 
-    void AddToLog(QString inMessage,QString inColor="black",bool isClear=0);
+    void AddToLog(QString inMessage,QString inColor="white",bool isClear=0);
 
     void AddToLog(const LogType inLog,QString inMessage,bool isClear=0);
 
