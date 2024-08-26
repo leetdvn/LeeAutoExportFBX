@@ -63,13 +63,14 @@ public:
 
     void SetScriptPlatForm(QString inFbxPlatForm);
 
+    //Process
+    QProcess* MExProcess=nullptr;
+
 signals:
     void OnLogResult(QStringList Logs);
 
 protected:
 
-    //Process
-    QProcess* MExProcess=nullptr;
 
     //Detach Dir
     QString DetachDir;

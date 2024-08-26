@@ -20,7 +20,7 @@
 #include <massfbxultilities.h>
 #include <impcmd.h>
 #include <Definitions.h>
-
+#include <QDesktopServices>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -163,6 +163,11 @@ protected:
     void ExpNext();
 
     int FbxCompletedCount();
+
+    void OnRevealFolder();
+
+public slots:
+    void OnLogs(QString &inLog,QString &Err);
 
 private:
     bool IsAuthored;

@@ -14,174 +14,202 @@ import addon_utils
 #Create Cube
 # bpy.ops.mesh.primitive_cube_add(size=4,name="taoday")
 # cube_obj = bpy.context.active_object
-def GetSelections():
-    return bpy.context.selected_objects
+class MassExportFbx():
 
-def ClearSelection(): return bpy.ops.object.select_all(action='DESELECT')
+    def __init__(self) -> None:
+        pass
 
-def isObjectType(inObject): return type(inObject) == bpy.types.Object
+    def GetSelections(self):
+        return bpy.context.selected_objects
 
-def isCollection(inObject): return type(inObject) == bpy.types.Collection
+    def ClearSelection(self): return bpy.ops.object.select_all(action='DESELECT')
 
-def GetObjectsInCollection(collection):
-    if collection is None: return []
-    return collection.all_objects
+    def isObjectType(self,inObject): return type(inObject) == bpy.types.Object
 
-def set_active_object(object_name):
-    bpy.context.view_layer.objects.active = bpy.data.objects.get(object_name)
-    bpy.data.objects.get(object_name).select_set(state=1)
+    def isCollection(self,inObject): return type(inObject) == bpy.types.Collection
 
-def SelectAllObjsInCollection(inCollection):
-    if inCollection is None: return
+    def GetObjectsInCollection(self,collection):
+        if collection is None: return []
+        return collection.all_objects
 
-    ClearSelection()
-    objecsList = []
-    for obj in GetObjectsInCollection(inCollection):
+    def set_active_object(self,object_name):
         try:
-            if obj.type == 'MESH' or obj.type=='ARMATURE':
-                #bpy.context.scene.objects[obj.name]
-                #bpy.data.objects[obj.name].select_set(True)
-                set_active_object(obj.name)
-                if obj.name is not None:
-                    objecsList.append(obj.name)
-            print("info : ",obj.type)
+            bpy.context.view_layer.objects.active = bpy.data.objects.get(object_name)
+            bpy.data.objects.get(object_name).select_set(state=1)
+        except: pass
+
+    def SelectAllObjsInCollection(self,inCollection):
+        if inCollection is None: return
+
+        self.ClearSelection()
+        objecsList = []
+        for obj in self.GetObjectsInCollection(inCollection):
+            try:
+                if obj.type == 'MESH' or obj.type=='ARMATURE':
+                    #bpy.context.scene.objects[obj.name]
+                    #bpy.data.objects[obj.name].select_set(True)
+                    self.set_active_object(obj.name)
+                    if obj.name is not None:
+                        objecsList.append(obj.name)
+                print("info : ",obj.type)
 
 
-        except:
-            pass
-    return objecsList
-
-def GetActionsFromBone(inBone):
-    if inBone is None: return None
-
-    return inBone.animation_data.action
-
-def GetStartEndFrame(inBone):
-    if inBone is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
-
-    act = inBone.animation_data.action
+            except:
+                pass
+        return objecsList
     
-    if act is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
+    def GetObjectTypes(self,inCollection,inType=''):
+        if not inType or not inCollection: return
 
-    return act.frame_range[0],act.frame_range[1]
+        objects= self.GetObjectsInCollection(inCollection)
 
-##################################################################
-def LeeBakeFunc(Collection=None):
-    if Collection is None: return
-    col = bpy.data.collections[Collection]
-    listColl = [c for c in col.children if isCollection(c)]
-    for obj in listColl:
-        armature =[b for b in GetObjectsInCollection(obj) if b.type =='ARMATURE']
+        return [obj for obj in objects if obj.type == inType]
+
+    def GetActionsFromBone(self,inBone):
+        if inBone is None: return None
+
+        return inBone.animation_data.action
+
+    def GetStartEndFrame(self,inBone):
+        if inBone is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
+
+        act = inBone.animation_data.action
         
+        if act is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
+
+        return act.frame_range[0],act.frame_range[1]
+
+    def GetAllArmatureInColl(self,inCollectioName=''):
+        if not inCollectioName: return []
+        col = bpy.data.collections[inCollectioName]
+
+        return self.GetObjectTypes(col,'ARMATURE')
+    
+    def GetAllGeometryAttachedArmature(self,inARMATURE):
+        Geos = []
+        if not inARMATURE: return Geos
+        
+        Geos = [obj for obj in bpy.data.objects if obj.type == 'MESH' and inARMATURE in [m.object for m in obj.modifiers if m.type == 'ARMATURE']]
+
+        print(Geos)
+
+        return Geos
+
+    ##################################################################
+    def LeeBakeFunc(self,Collection=None):
+        if Collection is None: return
+        col = bpy.data.collections[Collection]
+        armature = self.GetObjectTypes(col,'ARMATURE')
+            
         for bone in armature:
-            set_active_object(bone.name)
+            self.set_active_object(bone.name)
             bpy.ops.object.mode_set(mode = 'POSE')
-            startf,endf = GetStartEndFrame(bone)
+            startf,endf = self.GetStartEndFrame(bone)
             startf = math.ceil(startf)
             endf = math.ceil(endf)
-            bpy.context.scene.objects[bone.name]
-            bpy.data.objects[bone.name].select_set(True)
 
             #========Loop Action =================
             # for a in bpy.data.actions:
             ###Bake###########
             a = bone.animation_data.action
-
+            if not a: continue
             bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
 
             print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, startf, endf))
 
-    bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.object.mode_set(mode = 'OBJECT')
 
-##===================AutoRigProInterGrade======================
-def LeeArpExport(fileoutput):
-    '''
-    Auto Rig Pro Fbx Intergrade
-    '''
-    
-    if not fileoutput: return
-
-    # set some settings...
-    #scn = bpy.context.scene
-    #scn.arp_export_rig_type = 'mped'
-    # types: 'humanoid' for humanoid characters, 'mped' for universal skeletons
-
-    bpy.context.scene.arp_engine_type = 'unreal'
-    # other useful settings
-    # scn.arp_keep_bend_bones = True
-    # scn.arp_units_x100 = True
-    # scn.arp_bake_actions = True
-    # scn.arp_export_name_actions = True
-    # scn.arp_export_name_string = "test"
-    # scn.arp_mesh_smooth_type = 'EDGE'
-    # scn.arp_ue_root_motion = True
-    # scn.arp_export_noparent = True
-    #scn.arp_export_twist = True
-    #scn.arp_fix_fbx_matrix=True
-    #scn.arp_ge_sel_only =True
-
-    bpy.context.scene.arp_ge_sel_only = True
-
-    # run export
-    bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)
-
-def ArpIsLoaded():
-    '''
-    check Addon
-    '''
-    arpAddon ='auto_rig_pro-master'
-    return addon_utils.enable(arpAddon)
-    
+    ##===================AutoRigProInterGrade======================
+    def LeeArpExport(self,fileoutput):
+        '''
+        Auto Rig Pro Fbx Intergrade
+        '''
         
+        if not fileoutput: return
 
-####################MASSEXPORT FUNC###########################################
-def LeeMassExport(Fbx_platform='AutoRigPro'):
-    Export = "MassExport"
-    col = bpy.data.collections[Export]
+        # set some settings...
+        #scn = bpy.context.scene
+        #scn.arp_export_rig_type = 'mped'
+        # types: 'humanoid' for humanoid characters, 'mped' for universal skeletons
 
-    if not ArpIsLoaded():
-        print("AutoRigPro Addons: is Not Found..")
-        return
+        bpy.context.scene.arp_engine_type = 'unreal'
+        # other useful settings
+        # scn.arp_keep_bend_bones = True
+        # scn.arp_units_x100 = True
+        # scn.arp_bake_actions = True
+        # scn.arp_export_name_actions = True
+        # scn.arp_export_name_string = "test"
+        # scn.arp_mesh_smooth_type = 'EDGE'
+        # scn.arp_ue_root_motion = True
+        # scn.arp_export_noparent = True
+        #scn.arp_export_twist = True
+        #scn.arp_fix_fbx_matrix=True
+        #scn.arp_ge_sel_only =True
 
-    ##=================BAKE====================
-    #bpy.ops.object.mode_set(mode = 'OBJECT')
-    for o in col.objects:
-        ClearSelection()
-        bpy.context.scene.objects[o.name]
-        bpy.data.objects[o.name].select_set(True)
-        expPath = '%1'  + o.name + ".fbx"
-        bpy.ops.export_scene.fbx(filepath=expPath,use_selection=True)
-        print("Exported  : " + expPath + "\n")
+        bpy.context.scene.arp_ge_sel_only = True
 
-    ChildCollections  = [c for c in col.children if isCollection(c)]
-    if ChildCollections.__len__() <= 0: return
-    
-    LeeBakeFunc(Export)
+        # run export
+        bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)
 
-    for child in ChildCollections:
-        ClearSelection()
-        listChilds = SelectAllObjsInCollection(child)
-        print("ABC : ",listChilds)
-        expPath = '%1'  + child.name + ".fbx"
+    def ArpIsLoaded(self):
+        '''
+        check Addon
+        '''
+        arpAddon ='auto_rig_pro-master'
+        return addon_utils.enable(arpAddon)
         
-        if Fbx_platform=="Blender":
-            bpy.ops.export_scene.fbx(filepath=expPath,
-                                        use_selection=True,
-                                        use_active_collection=True,
-                                        object_types={'ARMATURE','MESH','OTHER'},
-                                        use_custom_props=True,
-                                        bake_anim_force_startend_keying=False
-                                        )
-            
-        elif Fbx_platform=="AutoRigPro":
-            LeeArpExport(expPath)
-            #bpy.context.scene.arp_ge_sel_only = True
-            #bpy.ops.id.arp_export_fbx_panel(filepath=expPath)
+    ####################MASSEXPORT FUNC###########################################
+    def LeeMassExport(self,Fbx_platform='AutoRigPro'):
+        Export = "MassExport"
+        col = bpy.data.collections[Export]
 
-        else:
-            print("Fbx Platform Not Found")
-        print("Exported  : " + expPath + "\n")
-    #print(ChildCollections)
+        if not self.ArpIsLoaded():
+            print("AutoRigPro Addons: is Not Found..")
+            return
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        ##=================BAKE====================
+        #bpy.ops.object.mode_set(mode = 'OBJECT')
+        # for o in col.objects:
+        #     self.ClearSelection()
+        #     bpy.context.scene.objects[o.name]
+        #     bpy.data.objects[o.name].select_set(True)
+        #     expPath = 'C:/Users/thang/Documents/Exports/'  + o.name + ".fbx"
+        #     bpy.ops.export_scene.fbx(filepath=expPath,use_selection=True)
+        #     print("Exported  : " + expPath + "\n")
+
+        #ChildCollections  = [c for c in col.children if self.isCollection(c)]
+        #if ChildCollections.__len__() <= 0: return
+        armature = self.GetObjectTypes(col,'ARMATURE')
+        if armature.__len__() <= 0: return
+
+        self.LeeBakeFunc(Export)
+
+        for arm in armature:
+            self.ClearSelection()
+            Geos = MassFbx.GetAllGeometryAttachedArmature(arm)
+            for geo in Geos:
+                self.set_active_object(geo.name)
+            self.set_active_object(arm.name)
+            expPath = '%1'  + arm.name + ".fbx"
+            selects = self.GetSelections()
+            print("Sel : ",arm.name,selects)
+            if Fbx_platform=="Blender":
+                bpy.ops.export_scene.fbx(filepath=expPath,
+                                            use_selection=True,
+                                            use_active_collection=True,
+                                            object_types={'ARMATURE','MESH','OTHER'},
+                                            use_custom_props=True,
+                                            bake_anim_force_startend_keying=False
+                                            )
+                
+            elif Fbx_platform=="AutoRigPro":
+                self.LeeArpExport(expPath)
+
+            else:
+                print("Fbx Platform Not Found")
+            print("Exported  : " + expPath + "\n")
+        #print(ChildCollections)
 
 fbx_Addon = '%2'
-LeeMassExport(fbx_Addon)
+MassFbx = MassExportFbx()
+MassFbx.LeeMassExport(fbx_Addon)

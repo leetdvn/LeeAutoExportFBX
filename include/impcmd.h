@@ -19,6 +19,7 @@ public:
     bool MissingAddons;
 
     QString Message;
+    QString Logs;
 
     //Setting ID
     int GetExpId() {return ExpId;}
@@ -31,6 +32,7 @@ public:
     bool ConsoleExists(QList<ImpCmd*> inList);
 
     QStringList ListFbxs;
+
 signals:
     void OnStart();
 
@@ -38,7 +40,7 @@ signals:
 
     void OnError();
 
-    void OnReadLogs(QString&Logs);
+    void OnReadLogs(QString&,QString&);
 
 private:
 

@@ -92,10 +92,11 @@ void ImpCmd::OnExpError()
 void ImpCmd::ReadLogs()
 {
     QString line = MExProcess->readAllStandardOutput();
-    QString err = MExProcess->readAllStandardError();
-    line += err;
 
-    QStringList Lines = line.split("\r\n");
+    QString err = MExProcess->readAllStandardError();
+    Logs = line + err;
+
+    QStringList Lines = Logs.split("\r\n");
 
     if(err !="")
         qDebug() << "LeeLog : " << err << Qt::endl;
@@ -113,14 +114,9 @@ void ImpCmd::ReadLogs()
 
     ListFbxs.removeDuplicates();
     //Debug Log
-    QFile log(LogPath);
-    if(log.exists()){
-        if(log.open(QIODevice::WriteOnly | QIODevice::Append))
-        {
-            log.write(line.toLocal8Bit());
-            log.close();
-        }
-    }
+    MExProcess->setStandardOutputFile(LogPath);
+
+    emit OnReadLogs(line,err);
     //qDebug() << line << Qt::endl;
 
     //emit OnReadLogs(line);

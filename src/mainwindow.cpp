@@ -42,6 +42,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(uiOpt->makedirBox,&QCheckBox::stateChanged,this,&MainWindow::OnMakeDirChanged);
 
+    connect(ui->ShowExploder,&QAction::triggered,this,&MainWindow::OnRevealFolder);
+    connect(ui->ShowExport,&QAction::triggered,this,&MainWindow::OnRevealFolder);
+    connect(ui->ShowSource,&QAction::triggered,this,&MainWindow::OnRevealFolder);
+    connect(ui->ShowScripts,&QAction::triggered,this,&MainWindow::OnRevealFolder);
+    connect(ui->ShowLogs,&QAction::triggered,this,&MainWindow::OnRevealFolder);
+
+
+    connect(ui->Quiter,&QAction::triggered,[this](){QCoreApplication::exit();});
     mProcess = new QProcess();
 
     //Info Env
@@ -293,6 +301,13 @@ void MainWindow::OnExportClicked()
     isMultiThread = uiOpt->MultiThreadBox->isChecked();
 
     if(isMultiThread){
+        if(EpSourceFiles.count() > 100) {
+            QString Notice = "Critical : Number Files too many > 100 files Your Compuer Will Be Die ";
+            for(int i = 0; i < 3 ; ++i)
+                AddToLog(Error,Notice);
+            return;
+        }
+
         #pragma omp parallel
         {
             #pragma omp parallel for
@@ -551,12 +566,13 @@ void MainWindow::AddToLog(const LogType inLog, QString inMessage, bool isClear)
 {
     if(inMessage =="") return;
     QStringList splitMes =  inMessage.split(" : ");
-    QString title = splitMes[0];
-    QString mess = splitMes.count() > 0 ? splitMes[1] : splitMes[0];
+    QString title = splitMes.count() >=0 ? splitMes[0] : inMessage;
+
+    QString mess = splitMes.count() >=2  ? splitMes[1] : splitMes[0];
     QString result;
     switch (inLog) {
         case Log:{
-            result = QString("<font color=\"black\">%1 : </font>").arg(mess);
+            result = QString("<font color=\"white\">%1 : </font>").arg(mess);
             break;
         }
         case Warning:{
@@ -806,6 +822,11 @@ void MainWindow::ImplementExport(int fileNumber)
 
     ///Connecttion
     connect(mCmd,&ImpCmd::OnStart,this,&MainWindow::OnCmdStarted);
+
+    qRegisterMetaType<QString>("QString&");
+
+    connect(mCmd,SIGNAL(OnReadLogs(QString&,QString&)),this,SLOT(OnLogs(QString&,QString&)));
+
     connect(mCmd,&ImpCmd::OnFinish,this,&MainWindow::OnCmdFinish);
     mCmd->GetProcess()->waitForStarted();
     if(!mCmd->Message.isEmpty())
@@ -847,6 +868,38 @@ int MainWindow::FbxCompletedCount()
     }
     //qDebug() << "FBX : " << total << Qt::endl;
     return total;
+}
+
+void MainWindow::OnRevealFolder()
+{
+    //Show in Exploders Directories
+    QAction* act = qobject_cast<QAction*>(sender());
+    if(!act) return;
+
+    QString path{};
+
+    if(act->objectName()==ui->ShowExploder->objectName())
+        path = MASSFBXDIR;
+    else if(act->objectName()==ui->ShowExport->objectName())
+        path = ui->ExportFolderText->toPlainText();
+    else if(act->objectName()==ui->ShowSource->objectName())
+        path=ui->SourceFolderText->toPlainText();
+    else if(act->objectName()==ui->ShowScripts->objectName())
+        path=MASSFBXDIR + "Scripts";
+    else if(act->objectName()==ui->ShowLogs->objectName())
+        path=MASSFBXDIR + "Logs";;
+
+    QDesktopServices::openUrl( QUrl::fromLocalFile(path) );
+}
+
+void MainWindow::OnLogs(QString &inLog,QString &Err)
+{
+    //On Debug Console
+    if(uiOpt->DebugConsole->isChecked()){
+        AddToLog(inLog);
+        AddToLog(Error,Err);
+    }
+
 }
 
 void MainWindow::OnComboBoxChanged(int valuechanged)
