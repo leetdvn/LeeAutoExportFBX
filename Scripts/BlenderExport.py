@@ -143,17 +143,14 @@ def LeeMassExport(Fbx_platform='AutoRigPro'):
         print("AutoRigPro Addons: is Not Found..")
         return
 
-    elif not col:
-        print("AutoRigPro Addons: is Not Found..")
-        return
     ##=================BAKE====================
     #bpy.ops.object.mode_set(mode = 'OBJECT')
     for o in col.objects:
-        bpy.ops.object.select_all(action=['DESELECT'])
+        ClearSelection()
         bpy.context.scene.objects[o.name]
         bpy.data.objects[o.name].select_set(True)
         expPath = '%1'  + o.name + ".fbx"
-        fbx=bpy.ops.export_scene.fbx(filepath=expPath,use_selection=True)
+        bpy.ops.export_scene.fbx(filepath=expPath,use_selection=True)
         print("Exported  : " + expPath + "\n")
 
     ChildCollections  = [c for c in col.children if isCollection(c)]
@@ -188,10 +185,3 @@ def LeeMassExport(Fbx_platform='AutoRigPro'):
 
 fbx_Addon = '%2'
 LeeMassExport(fbx_Addon)
-
-
-    
-#context_override = bpy.context.copy()
-#context_override["selected_objects"] = list(bpy.context.scene.objects)
-
-#print(context_override["selected_objects"])
