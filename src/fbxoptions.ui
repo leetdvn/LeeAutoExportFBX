@@ -54,7 +54,7 @@ color:rgb(255, 255, 255);</string>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox_2">
+      <widget class="QComboBox" name="FbxBlenderKit">
        <property name="styleSheet">
         <string notr="true">font: 700 11pt &quot;Times New Roman&quot;;
 color:rgb(255, 255, 255);</string>

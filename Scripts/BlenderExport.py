@@ -27,17 +27,29 @@ def GetObjectsInCollection(collection):
     if collection is None: return []
     return collection.all_objects
 
+def set_active_object(object_name):
+    bpy.context.view_layer.objects.active = bpy.data.objects.get(object_name)
+    bpy.data.objects.get(object_name).select_set(state=1)
+
 def SelectAllObjsInCollection(inCollection):
     if inCollection is None: return
 
     ClearSelection()
-
+    objecsList = []
     for obj in GetObjectsInCollection(inCollection):
         try:
-            bpy.context.scene.objects[obj.name]
-            bpy.data.objects[obj.name].select_set(True)
+            if obj.type == 'MESH' or obj.type=='ARMATURE':
+                #bpy.context.scene.objects[obj.name]
+                #bpy.data.objects[obj.name].select_set(True)
+                set_active_object(obj.name)
+                if obj.name is not None:
+                    objecsList.append(obj.name)
+            print("info : ",obj.type)
+
+
         except:
             pass
+    return objecsList
 
 def GetActionsFromBone(inBone):
     if inBone is None: return None
@@ -58,12 +70,12 @@ def LeeBakeFunc(Collection=None):
     if Collection is None: return
     col = bpy.data.collections[Collection]
     listColl = [c for c in col.children if isCollection(c)]
-    bpy.ops.object.mode_set(mode = 'OBJECT')
     for obj in listColl:
         armature =[b for b in GetObjectsInCollection(obj) if b.type =='ARMATURE']
         
         for bone in armature:
-            bpy.ops.object.select_all(action='DESELECT')
+            set_active_object(bone.name)
+            bpy.ops.object.mode_set(mode = 'POSE')
             startf,endf = GetStartEndFrame(bone)
             startf = math.ceil(startf)
             endf = math.ceil(endf)
@@ -73,9 +85,13 @@ def LeeBakeFunc(Collection=None):
             #========Loop Action =================
             # for a in bpy.data.actions:
             ###Bake###########
-            #bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
-            #     print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, startf, endf))
+            a = bone.animation_data.action
 
+            bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+
+            print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, startf, endf))
+
+    bpy.ops.object.mode_set(mode = 'OBJECT')
 
 ##===================AutoRigProInterGrade======================
 def LeeArpExport(fileoutput):
@@ -86,11 +102,11 @@ def LeeArpExport(fileoutput):
     if not fileoutput: return
 
     # set some settings...
-    scn = bpy.context.scene
-    scn.arp_export_rig_type = 'universal'
+    #scn = bpy.context.scene
+    #scn.arp_export_rig_type = 'mped'
     # types: 'humanoid' for humanoid characters, 'mped' for universal skeletons
 
-    scn.arp_engine_type = 'unreal'
+    bpy.context.scene.arp_engine_type = 'unreal'
     # other useful settings
     # scn.arp_keep_bend_bones = True
     # scn.arp_units_x100 = True
@@ -100,9 +116,11 @@ def LeeArpExport(fileoutput):
     # scn.arp_mesh_smooth_type = 'EDGE'
     # scn.arp_ue_root_motion = True
     # scn.arp_export_noparent = True
-    scn.arp_export_twist = True
-    scn.arp_fix_fbx_matrix=True
-    scn.arp_ge_sel_only =True
+    #scn.arp_export_twist = True
+    #scn.arp_fix_fbx_matrix=True
+    #scn.arp_ge_sel_only =True
+
+    bpy.context.scene.arp_ge_sel_only = True
 
     # run export
     bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)
@@ -111,7 +129,7 @@ def ArpIsLoaded():
     '''
     check Addon
     '''
-    arpAddon ='auto_rig_pro'
+    arpAddon ='auto_rig_pro-master'
     return addon_utils.enable(arpAddon)
     
         
@@ -121,14 +139,15 @@ def LeeMassExport(Fbx_platform='AutoRigPro'):
     Export = "MassExport"
     col = bpy.data.collections[Export]
 
-    if not col or not ArpIsLoaded():
+    if not ArpIsLoaded():
         print("AutoRigPro Addons: is Not Found..")
         return
 
-    if Fbx_platform == "%2": Fbx_platform = "AutoRigPro"
+    elif not col:
+        print("AutoRigPro Addons: is Not Found..")
+        return
     ##=================BAKE====================
-    LeeBakeFunc(Export)
-    bpy.ops.object.mode_set(mode = 'OBJECT')
+    #bpy.ops.object.mode_set(mode = 'OBJECT')
     for o in col.objects:
         bpy.ops.object.select_all(action=['DESELECT'])
         bpy.context.scene.objects[o.name]
@@ -139,9 +158,13 @@ def LeeMassExport(Fbx_platform='AutoRigPro'):
 
     ChildCollections  = [c for c in col.children if isCollection(c)]
     if ChildCollections.__len__() <= 0: return
+    
+    LeeBakeFunc(Export)
 
     for child in ChildCollections:
-        SelectAllObjsInCollection(child)
+        ClearSelection()
+        listChilds = SelectAllObjsInCollection(child)
+        print("ABC : ",listChilds)
         expPath = '%1'  + child.name + ".fbx"
         
         if Fbx_platform=="Blender":
@@ -155,6 +178,9 @@ def LeeMassExport(Fbx_platform='AutoRigPro'):
             
         elif Fbx_platform=="AutoRigPro":
             LeeArpExport(expPath)
+            #bpy.context.scene.arp_ge_sel_only = True
+            #bpy.ops.id.arp_export_fbx_panel(filepath=expPath)
+
         else:
             print("Fbx Platform Not Found")
         print("Exported  : " + expPath + "\n")
@@ -165,3 +191,7 @@ LeeMassExport(fbx_Addon)
 
 
     
+#context_override = bpy.context.copy()
+#context_override["selected_objects"] = list(bpy.context.scene.objects)
+
+#print(context_override["selected_objects"])

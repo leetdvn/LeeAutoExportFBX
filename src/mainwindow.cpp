@@ -18,6 +18,9 @@ MainWindow::MainWindow(QWidget *parent)
     // palette.setColor(QPalette::WindowText, color);
     // ui->menuView->setPalette(palette);
 
+    //"QMenuBar::item:selected { background: black; } "
+    //ui->menuFile->setStyleSheet("QMenu::item{color: white;}");
+
     ImplementFbxOptions();
     ui->progressBar->setValue(10);
 
@@ -83,7 +86,7 @@ void MainWindow::InfoEnv()
     logStr = !IsAuthored ? "<font color=\"red\">Cannot use unauthorized tools</font><br>" :
                          "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font><br>";
 
-    logStr += MASSINFO.arg(_Pc,_Users,_Host ="" ? "empty" : _Host);
+    logStr += MASSINFO.arg(_Pc,_Users,_Host =="" || _Host.isEmpty() ? "empty" : _Host);
     AddToLog(logStr,"white",true);
 }
 
@@ -793,6 +796,13 @@ void MainWindow::ImplementExport(int fileNumber)
     mCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
     //Set Id
     mCmd->SetExpId(EpCount+1);
+    //Set Blender Kit
+    if (EpSourceFiles[fileNumber].endsWith(".blend")){
+        mCmd->SetScriptPlatForm(
+            uiOpt->FbxBlenderKit->currentText().startsWith("Auto") ?
+            "AutoRigPro" : "Blender"
+        );
+    }
 
     ///Connecttion
     connect(mCmd,&ImpCmd::OnStart,this,&MainWindow::OnCmdStarted);

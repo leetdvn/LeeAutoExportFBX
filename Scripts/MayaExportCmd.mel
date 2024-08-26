@@ -18,5 +18,7 @@ global proc MassFbxExp(){
 			print("Exported  : " + $exp + "\n");
 	};
 }
-MassFbxExp();
+
+//MassFbxExp();
 //file -force -options "v=0" -type "FBX export" -pr -ea "%1";
+print("Debug Leetdvn");
