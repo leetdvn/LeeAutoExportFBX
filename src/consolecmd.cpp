@@ -112,13 +112,14 @@ bool ConsoleCmd::VerifiedExported()
     return ExportResult.count() > 0 ? true : false;
 }
 
-void ConsoleCmd::SetScriptPlatForm(QString inFbxPlatForm)
+void ConsoleCmd::SetScriptPlatForm()
 {
     if(BaseScr.isEmpty() || BaseScr=="") return;
 
     QString ScriptCont = GetContentFile(BaseScr);
+    QString Kit = property("FbxKit").toString();
 
-    QString sContent = ScriptCont.arg(MExportDir,inFbxPlatForm);
+    QString sContent = ScriptCont.arg(MExportDir,Kit);
 
     QFile Script(ScriptPath);
 
@@ -128,6 +129,11 @@ void ConsoleCmd::SetScriptPlatForm(QString inFbxPlatForm)
         Script.close();
     }
 
+}
+
+void ConsoleCmd::LSetProperty(QString key, QVariant invalue)
+{
+    setProperty(key.toLocal8Bit(),invalue);
 }
 
 int ConsoleCmd::FilterCompleted(const QString inLogFile,QStringList &LogResult)

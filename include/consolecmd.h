@@ -61,7 +61,10 @@ public:
 
     virtual void InItProgram() = 0;
 
-    void SetScriptPlatForm(QString inFbxPlatForm);
+    void SetScriptPlatForm();
+
+    void LSetProperty(QString key,QVariant invalue);
+
 
     //Process
     QProcess* MExProcess=nullptr;

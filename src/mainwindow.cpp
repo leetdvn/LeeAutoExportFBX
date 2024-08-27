@@ -814,10 +814,12 @@ void MainWindow::ImplementExport(int fileNumber)
     mCmd->SetExpId(EpCount+1);
     //Set Blender Kit
     if (EpSourceFiles[fileNumber].endsWith(".blend")){
-        mCmd->SetScriptPlatForm(
-            uiOpt->FbxBlenderKit->currentText().startsWith("Auto") ?
-            "AutoRigPro" : "Blender"
-        );
+
+        //Properties Kit Fbx for Blender
+        QString Kit = uiOpt->FbxBlenderKit->currentText().startsWith("Auto") ? "AutoRigPro" : "Blender";
+        mCmd->setProperty("FbxKit",Kit);
+        mCmd->SetScriptPlatForm();
+
     }
 
     ///Connecttion
