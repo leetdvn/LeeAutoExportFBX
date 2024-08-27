@@ -94,7 +94,7 @@ void MainWindow::InfoEnv()
     logStr = !IsAuthored ? "<font color=\"red\">Cannot use unauthorized tools</font><br>" :
                          "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font><br>";
 
-    logStr += MASSINFO.arg(_Pc,_Users,_Host =="" || _Host.isEmpty() ? "empty" : _Host);
+    logStr += MASSINFO.arg(_Pc,_Users,_Host =="" || _Host.isEmpty() || _Host.isNull() ? "empty" : _Host);
     AddToLog(logStr,"white",true);
 }
 
@@ -766,7 +766,7 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
 
     if(completedId == TotalFiles)
     {
-        TotalFbx = FbxCompletedCount();
+        //TotalFbx = FbxCompletedCount();
         //enable Export Btn
         ui->ExportExecute->setEnabled(true);
         AddToLog(Warning,QString("Total Export Files : %1").arg(TotalFiles));
@@ -895,10 +895,18 @@ void MainWindow::OnRevealFolder()
 void MainWindow::OnLogs(QString &inLog,QString &Err)
 {
     //On Debug Console
-    if(uiOpt->DebugConsole->isChecked()){
-        AddToLog(inLog);
-        AddToLog(Error,Err);
+    QString iLog = inLog.replace("\r","");
+    iLog = iLog.replace("\n","");
+    if(!uiOpt->DebugConsole->isChecked()) return;
+
+    if(iLog.startsWith("Exported")){
+        TotalFbx++;
     }
+
+    qDebug() << iLog << Qt::endl;
+    AddToLog(iLog);
+    AddToLog(Error,Err);
+    ScrollToNewLog();
 
 }
 

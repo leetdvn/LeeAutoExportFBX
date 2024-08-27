@@ -166,7 +166,10 @@ class MassExportFbx():
         if not self.ArpIsLoaded():
             print("AutoRigPro Addons: is Not Found..")
             return
-        bpy.ops.object.mode_set(mode = 'OBJECT')
+        #bpy.ops.object.make_local(type='ALL')
+        try:
+            bpy.ops.object.mode_set(mode = 'OBJECT')
+        except: pass
         ##=================BAKE====================
         #bpy.ops.object.mode_set(mode = 'OBJECT')
         # for o in col.objects:
@@ -187,12 +190,16 @@ class MassExportFbx():
         for arm in armature:
             self.ClearSelection()
             Geos = MassFbx.GetAllGeometryAttachedArmature(arm)
+            arm.make_local()
             for geo in Geos:
+                try:
+                    geo.make_local()
+                except: pass
                 self.set_active_object(geo.name)
+
+                  
             self.set_active_object(arm.name)
             expPath = '%1'  + arm.name + ".fbx"
-            selects = self.GetSelections()
-            print("Sel : ",arm.name,selects)
             if Fbx_platform=="Blender":
                 bpy.ops.export_scene.fbx(filepath=expPath,
                                             use_selection=True,
@@ -203,11 +210,13 @@ class MassExportFbx():
                                             )
                 
             elif Fbx_platform=="AutoRigPro":
-                self.LeeArpExport(expPath)
-
-            else:
+                try:
+                    self.LeeArpExport(expPath)
+                    print("Exported  : " + expPath + "\n")
+                except:
+                    print("Issue Export: " + expPath)
+            elif Fbx_platform =="%2":
                 print("Fbx Platform Not Found")
-            print("Exported  : " + expPath + "\n")
         #print(ChildCollections)
 
 fbx_Addon = '%2'

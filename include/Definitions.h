@@ -26,7 +26,7 @@
 #define SCRIPTDIR  QDir::currentPath() + QString("/Scripts/")// "C:/Users/leepl/Documents/GitHub/LeeAutoExportFBX/Scripts/"
 
 // Mass Version
-#define MASSVERSION "LeeMassFbx Tools Beta Version 1.04 "
+#define MASSVERSION "LeeMassFbx Tools Beta Version 1.05 "
 
 //Log
 #define MASSLOGDIR QString("C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/Logs/")

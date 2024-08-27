@@ -114,7 +114,12 @@ void ImpCmd::ReadLogs()
 
     ListFbxs.removeDuplicates();
     //Debug Log
-    MExProcess->setStandardOutputFile(LogPath);
+    QFile logfile(LogPath);
+    if(logfile.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        logfile.write(line.toLocal8Bit());
+        logfile.close();
+    }
 
     emit OnReadLogs(line,err);
     //qDebug() << line << Qt::endl;

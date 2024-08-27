@@ -2,23 +2,211 @@
 if(!`pluginInfo -q -l "fbxmaya"`)
 	loadPlugin "fbxmaya";
 
-global proc MassFbxExp(){
-	if(!`objExists "MassExport"`){
+global string $MassFbxLayer = "MassExport";
+
+global string $AdvSkeleton[] = {"DeformationSystem","Geometry"};
+
+global string $ListConstraint[] = {"parentConstraint","scaleConstraint","pointConstraint","orientConstraint"};
+
+global string $AdvDeletedObject[] = {"FaceFitSkeleton","FitSkeleton","FaceMotionSystem","FaceMotionSystem","MainSystem"};
+
+proc int LObjectExists(string $inobjectname)
+{
+	return `objExists $inobjectname`;
+}
+
+proc float LGetStartFrame(string $inLayerExp)
+{
+	if(!`objExists $inLayerExp`){
+		return 0.0;
+	};
+
+	return `addAttr -q  -min ($inLayerExp+".FrameRange")`;
+}
+
+proc float LGetEndFrame(string $inLayerExp){
+	if(!`objExists $inLayerExp`){
+		return 0.0;
+	};
+
+	return `addAttr -q  -max ($inLayerExp+".FrameRange")`;
+}
+
+proc LClearContraints(string $inContraitName){
+	if($inContraitName =="") return;
+
+	string $Cons[] = `ls -typ $inContraitName`;
+
+	if(size($Cons) <=0) return;
+
+	for($i = 0 ; $i < size($Cons) ; ++$i)
+	{
+		catch(`delete $Cons[$i]`);
+	}
+
+	print("Completed Clear : " + $inContraitName + "\n\n");
+}
+
+proc string[] LSplitString(string $inStr){
+
+	string $buffer[];
+	$numTokens = `tokenize $inStr ":" $buffer`;
+	return $buffer;
+}
+ 
+proc LClearListSet()
+{
+	string $ListSets[] = `ls -sets`;
+	if(size($ListSets) <= 0) return;
+
+	string $CantDelete[] = {"defaultLightSet","defaultObjectSet","initialParticleSE","initialShadingGroup"};
+
+	for($i = 0 ; $i< size($ListSets);++$i){
+		int $isDelete=0;
+		for($x = 0 ; $x < size($CantDelete) ; ++$x)
+		{	
+			if($ListSets[$i]==$CantDelete[$x])
+				$isDelete = 1;
+		}
+
+		if($isDelete==0){
+			if(`objExists $ListSets[$i]`)
+				catch(`delete $ListSets[$i]`);
+		}
+	}
+}
+
+proc string[] LGetAllJointInGrp(string $inGrpName)
+{
+	string $results[];
+	if (LObjectExists($inGrpName))
+		return $results = `listRelatives -ad -typ "joint" $inGrpName`;
+
+	return $results;
+}
+
+proc LBakeFunc()
+{
+	global string $MassFbxLayer;
+	float $Stime = LGetStartFrame($MassFbxLayer);
+	float $Etime = LGetEndFrame($MassFbxLayer);
+	playbackOptions -min $Stime;
+	playbackOptions -max $Etime;
+	string $joints[] = `ls -typ "joint"`;//LGetAllJointInGrp($inGrpName);
+	if (size($joints) <= 0) return;
+	string $timeRange = $Stime + ":" + $Etime;
+	select -r $joints;
+	//print(`ls -sl`);
+	bakeSimulation -t $timeRange;
+	//bakeResults -simulation on -t $timeRange $joints;
+}
+
+proc ImportRef()
+{
+	string $ref[] = `ls -typ "reference"`;
+	if(size($ref) <=0) return;
+
+	for($i =0 ; $i < size($ref) ; ++$i)
+	{
+		//print($ref[$i] + "\n");
+		string $file = `referenceQuery -f $ref[$i]`;
+		catch(`file -ir $file`);
+	}
+}
+
+proc FbxExecute()
+{
+	global string $MassFbxLayer;
+	string $MassExp[] = `editDisplayLayerMembers -q $MassFbxLayer`;
+	if(size($MassExp) <= 0) return;
+
+
+	for($i = 0 ; $i < size($MassExp) ; ++$i)
+	{
+		select -cl;
+		select -r $MassExp[$i];
+		select -hierarchy;
+		string $exp = "C:/Users/leepl/Documents/Exports/" + $MassExp[$i] + ".fbx" ;
+		catch(`file -force -options "v=0" -type "FBX export" -pr -es $exp`);
+
+		if(`file -q -ex $exp`)
+			print("Exported  : " + $exp + "\n");
+	}
+
+}
+
+proc LClearAdvanceSkeleton(string $inAdvGrp)
+{
+	if($inAdvGrp=="") return;
+
+	global string $AdvDeletedObject[];
+
+	select -r $inAdvGrp;
+	string $sel[] = `ls -sl`;
+	string $trans[] = `listRelatives -ad -type "transform" $sel[0]`;
+
+	for($i = 0 ; $i < size($trans); ++$i)
+	{
+		string $Splits[] = LSplitString($trans[$i]);
+		for($a = 0 ; $a < size($AdvDeletedObject); ++$a)
+		{
+			if($Splits[size($Splits)-1] == $AdvDeletedObject[$a]){
+				//print($Splits[size($Splits)-1] + "\n");
+				//print($trans[$i] + "\n");
+				if(LObjectExists($trans[$i]))
+					catch(`delete $trans[$i]`);
+			}
+		}
+
+	}
+
+}
+
+proc LCleanUpFiles(){
+
+	global string $ListConstraint[];
+	//===========================Step 1===============================
+	//===========================BAKE ANIM===========================
+	LBakeFunc();
+	//===========================Step 2===============================
+	//===========================REF IMPORT===========================
+	ImportRef();
+	//===========================Step 3===============================
+	//===========================DELETE CONTRAINS=====================
+	print("===========================DELETE CONTRAINS=======================\n");
+
+	for($i = 0 ; $i < size($ListConstraint) ; ++$i)
+		LClearContraints($ListConstraint[$i]);
+	
+
+	print("=============================CLEAR SETS=============================\n");
+	LClearListSet();
+	//===========================Step 3==================================
+	//===========================CLEAR ADVANSKELETON=====================
+	LClearAdvanceSkeleton("Cudan03:Group");
+}
+
+proc MassFbxExp()
+{
+	global string $MassFbxLayer;
+
+	if(!`objExists $MassFbxLayer`){
 		print("not found MassExport\n");
 		return;
 	}
-	string $MassExp[] = `editDisplayLayerMembers -q MassExport`;
-	print("MassFbxNumber  : "  + size($MassExp) + "\n");
-	for($i = 0 ; $i < size($MassExp) ; ++$i){
-		select -cl;
-		select -r $MassExp[$i];
-		string $exp = "%1" + $MassExp[$i] + ".fbx" ;
-		file -force -options "v=0" -type "FBX export" -pr -es $exp;
-		if(`file -q -ex $exp`)
-			print("Exported  : " + $exp + "\n");
-	};
+	string $MassExp[] = `editDisplayLayerMembers -q $MassFbxLayer`;
+
+	ImportRef();
+	//LBakeFunc();
+	evalDeferred("FbxExecute();");
 }
 
 //MassFbxExp();
-//file -force -options "v=0" -type "FBX export" -pr -ea "%1";
-print("Debug Leetdvn");
+
+LCleanUpFiles();
+
+// string $sel[] = `ls -sl`;
+
+// string $trans[] = `listRelatives -ad -type "transform" $sel[0]`;
+// print($trans);
+
