@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>563</width>
-    <height>134</height>
+    <height>169</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@ color:rgb(255, 255, 255);</string>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox_2">
+      <widget class="QComboBox" name="MayaFbxOptions">
        <property name="styleSheet">
         <string notr="true">font: 700 11pt &quot;Times New Roman&quot;;
 color:rgb(255, 255, 255);</string>

@@ -117,7 +117,9 @@ void ConsoleCmd::SetScriptPlatForm()
     if(BaseScr.isEmpty() || BaseScr=="") return;
 
     QString ScriptCont = GetContentFile(BaseScr);
-    QString Kit = property("FbxKit").toString();
+    QString Kit = BaseScr.endsWith(".py") ?
+        property("FbxKit").toString() :
+        property("FbxOpt").toString();
 
     QString sContent = ScriptCont.arg(MExportDir,Kit);
 

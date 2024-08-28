@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     //ui->menuFile->setStyleSheet("QMenu::item{color: white;}");
 
     ImplementFbxOptions();
-    ui->progressBar->setValue(10);
+    ui->progressBar->setValue(0);
 
     connect(ui->SourceFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
     connect(ui->ExportFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
@@ -814,12 +814,26 @@ void MainWindow::ImplementExport(int fileNumber)
     mCmd->SetExpId(EpCount+1);
     //Set Blender Kit
     if (EpSourceFiles[fileNumber].endsWith(".blend")){
-
         //Properties Kit Fbx for Blender
         QString Kit = uiOpt->FbxBlenderKit->currentText().startsWith("Auto") ? "AutoRigPro" : "Blender";
         mCmd->setProperty("FbxKit",Kit);
         mCmd->SetScriptPlatForm();
 
+    }
+    else{
+        QString FbxOpt{};
+
+        if(uiOpt->MayaFbxOptions->currentText().startsWith("Animation"))
+            FbxOpt="AnimOnly";
+        else if(uiOpt->MayaFbxOptions->currentText().endsWith("Animation"))
+            FbxOpt="All";
+        else
+            FbxOpt="BaseSkeleton";
+
+        //set Property for Maya
+        mCmd->setProperty("FbxOpt",FbxOpt);
+
+        mCmd->SetScriptPlatForm();
     }
 
     ///Connecttion
@@ -897,12 +911,12 @@ void MainWindow::OnRevealFolder()
 void MainWindow::OnLogs(QString &inLog,QString &Err)
 {
     //On Debug Console
-    QString iLog = inLog.replace("\r","");
-    iLog = iLog.replace("\n","");
+    QString iLog = inLog.replace("\r\n","");
+
     if(!uiOpt->DebugConsole->isChecked()) return;
 
     if(iLog.startsWith("Exported")){
-        TotalFbx++;
+        TotalFbx+=1;
     }
 
     qDebug() << iLog << Qt::endl;
