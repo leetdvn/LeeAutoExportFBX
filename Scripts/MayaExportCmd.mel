@@ -309,13 +309,16 @@ global proc FbxExecute()
 		for($jnt in $GeoJnt)
 			print($jnt + " :InfoLee\n");
 
+		select -r $GeoJnt;
+
 		if($Opt == 1)
 		{
 			string $Jnts[]= `listRelatives -ad -typ "joint" $MassExp[$i]`;
 			if(size($Jnts) <= 0) continue;	
 		}
-		select -r $GeoJnt;
-
+		else if(size($GeoJnt) < 2)
+			catch(`select -add $MassExp[$i]`);
+		
 		//catch(`delete ($Str[0] + ":MainSystem")`);
 		catch(`FBXExport -f $exp -s`);
 
