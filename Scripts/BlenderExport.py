@@ -195,9 +195,9 @@ class MassExportFbx():
                 try:
                     geo.make_local()
                 except: pass
-                self.set_active_object(geo.name)
+                if not str("%3").startswith("AnimOnly"):
+                    self.set_active_object(geo.name)
 
-                  
             self.set_active_object(arm.name)
             expPath = '%1'  + arm.name + ".fbx"
             if Fbx_platform=="Blender":
@@ -215,8 +215,6 @@ class MassExportFbx():
                     print("Exported  : " + expPath + "\n")
                 except:
                     print("Issue Export: " + expPath)
-            elif Fbx_platform =="%2":
-                print("Fbx Platform Not Found")
         #print(ChildCollections)
 
 fbx_Addon = '%2'

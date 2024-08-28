@@ -333,12 +333,12 @@ QStringList MainWindow::InitFillters()
     if(SourceType < 0) { return MayaFiles ;}
 
     switch (SourceType) {
-        case 0:{
+        case 1:{
             return MayaFiles;
         }
-        case 1:{
-            return BlenderFiles; }
         case 2:{
+            return BlenderFiles; }
+        case 0:{
             QStringList nFilter= MayaFiles;
             for(auto f : BlenderFiles)
             {
@@ -648,7 +648,7 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QString
 void MainWindow::ImplementFbxOptions()
 {
 
-    Spoiler = new LeeSpoiler("Settings Maya",100,this);
+    Spoiler = new LeeSpoiler("Settings Maya And Blender",100,this);
     uiOpt->setupUi(Spoiler);
     connect(uiOpt->comboBox,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
 
@@ -820,21 +820,21 @@ void MainWindow::ImplementExport(int fileNumber)
         mCmd->SetScriptPlatForm();
 
     }
-    else{
-        QString FbxOpt{};
 
-        if(uiOpt->MayaFbxOptions->currentText().startsWith("Animation"))
-            FbxOpt="AnimOnly";
-        else if(uiOpt->MayaFbxOptions->currentText().endsWith("Animation"))
-            FbxOpt="All";
-        else
-            FbxOpt="BaseSkeleton";
+    QString FbxOpt{};
 
-        //set Property for Maya
-        mCmd->setProperty("FbxOpt",FbxOpt);
+    if(uiOpt->MayaFbxOptions->currentText().startsWith("Animation"))
+        FbxOpt="AnimOnly";
+    else if(uiOpt->MayaFbxOptions->currentText().endsWith("Animation"))
+        FbxOpt="All";
+    else
+        FbxOpt="BaseSkeleton";
 
-        mCmd->SetScriptPlatForm();
-    }
+    //set Property for Maya
+    mCmd->setProperty("FbxOpt",FbxOpt);
+
+    mCmd->SetScriptPlatForm();
+
 
     ///Connecttion
     connect(mCmd,&ImpCmd::OnStart,this,&MainWindow::OnCmdStarted);
@@ -931,9 +931,9 @@ void MainWindow::OnComboBoxChanged(int valuechanged)
     qDebug() << "Value Changed " << valuechanged << Qt::endl;
     QString textChanged;
     switch (valuechanged) {
-        case 0:{textChanged="Settings Maya";break;}
-        case 1:{textChanged="Settings Blender";break;}
-        case 2:{textChanged="Settings Maya And Blender";break;}
+        case 1:{textChanged="Settings Maya";break;}
+        case 2:{textChanged="Settings Blender";break;}
+        case 0:{textChanged="Settings Maya And Blender";break;}
     }
 
     Spoiler->toggleButton->setText(textChanged);

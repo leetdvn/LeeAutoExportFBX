@@ -10,6 +10,8 @@ global string $ListConstraint[] = {"parentConstraint","scaleConstraint","pointCo
 
 global string $AdvDeletedObject[] = {"FaceFitSkeleton","FitSkeleton","FaceMotionSystem","MotionSystem"};
 
+global string $FbxOpt= "%2";
+
 proc int LObjectExists(string $inobjectname)
 {
 	return `objExists $inobjectname`;
@@ -245,7 +247,7 @@ proc LCleanUpFiles(){
 
 proc int LGetFbxOpt()
 {
-	string $FbxOpt = "%2";
+	global string $FbxOpt;
 
 	global string $MassFbxLayer;
 	int $Stime = LGetStartFrame($MassFbxLayer);
@@ -283,6 +285,8 @@ proc int LGetFbxOpt()
 global proc FbxExecute()
 {
 	global string $MassFbxLayer;
+	global string $FbxOpt;
+
 	string $MassExp[] = `editDisplayLayerMembers -q $MassFbxLayer`;
 	if(size($MassExp) <= 0) return;
 

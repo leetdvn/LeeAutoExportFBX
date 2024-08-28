@@ -95,17 +95,17 @@ color:rgb(255, 255, 255);</string>
        </property>
        <item>
         <property name="text">
+         <string>Maya &amp; Blender</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Maya</string>
         </property>
        </item>
        <item>
         <property name="text">
          <string>Blender</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Maya &amp; Blender</string>
         </property>
        </item>
       </widget>
