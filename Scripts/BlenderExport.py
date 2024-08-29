@@ -1,7 +1,7 @@
 import bpy
 import math
 import addon_utils
-
+from pathlib import Path
 #Export Cmd ALL
 ##bpy.ops.export_scene.fbx(filepath='%1')
 #-----------Export Selection
@@ -31,6 +31,24 @@ class MassExportFbx():
     def GetObjectsInCollection(self,collection):
         if collection is None: return []
         return collection.all_objects
+
+    def OpenBlenderFile(self,path):
+        iPath = Path(path)
+        if not iPath.is_file(): return
+        bpy.ops.wm.open_mainfile(filepath=path)
+
+    def GetAllLibraries(self,fullpath=True):
+        libraries = bpy.context.blend_data.libraries
+        libs = []
+        for lib in libraries:
+            path = ""
+            if fullpath:
+                path= lib.filepath
+            else:
+                path=lib
+            libs.append(path)
+        
+        return libs
 
     def set_active_object(self,object_name):
         try:
