@@ -359,6 +359,7 @@ proc LExportReferenceFile(string $inSelectObj)
 	print($Advs);
 }
 
+//Note Export Base from Anim Check Box Option
 LExportReferenceFile("Cudan01:Group");
 //LCleanUnknowNode();
 //cleanUpScene(3);
