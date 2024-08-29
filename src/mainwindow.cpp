@@ -261,7 +261,13 @@ void MainWindow::OnExportClicked()
     //Valid Soft Ware path name
     if(!IsValidSoft() || !IsAuthored) return;
 
-
+    // Check Opt Working
+    QString FbxOptions = uiOpt->MayaFbxOptions->currentText();
+    if(FbxOptions.endsWith("Skeleton")){
+        QString message = "%1 : This Option not ready to run";
+        AddToLog(message.arg(FbxOptions),"red");
+        return;
+    }
 
     SoftwereType SType = GetSoftWareType();
 
@@ -797,6 +803,8 @@ void MainWindow::ImplementExport(int fileNumber)
 
     bool isMakeDir = uiOpt->makedirBox->isChecked();
     ui->progressBar->setFormat("Running %p%");
+
+
 
     QString finalExpDir = isMakeDir ?
         MakeTreeDirectory(EpSourceFiles[fileNumber],

@@ -332,11 +332,35 @@ global proc FbxExecute()
 }
 
 
-FbxExecute();
+//FbxExecute();
 
+proc LExportReferenceFile(string $inSelectObj)
+{
+	if(!`objExists $inSelectObj` || 
+	!`referenceQuery -isNodeReferenced $inSelectObj`
+	) return;
 
-// string $sel[] = `ls -sl`;
+	//int $Opt = LGetFbxOpt();
 
+	string $Split[] = LSplitString($inSelectObj);
+	string $file = `referenceQuery -filename $inSelectObj`;
+	string $shortName = `referenceQuery -namespace -shortName $inSelectObj`;
+	file -f -options "v=0;"  -ignoreVersion  -typ "mayaAscii" -o $file;
+	//evalDeferred("select -r " + $Split[1] + ";");
+	
+	string $Advs[] = LAdvanceSkeletonGeoJoint($Split[1],2);
+	select -cl;
+	select -r $Advs;
+
+	//file path
+	string $exp = "C:/Users/thang/Documents/Exports/Base/" + $Split[0] + ".fbx" ;
+	catch(`FBXExport -f $exp -s`);
+
+	print($Advs);
+}
+
+LExportReferenceFile("Cudan01:Group");
 //LCleanUnknowNode();
 //cleanUpScene(3);
 
+//file -f -options "v=0;"  -ignoreVersion  -typ "mayaAscii" -o "C:/Users/thang/Desktop/PlusAbc/_MODEL3D/2024_KunGalaxy/Character/Cudan_01/Cudan01_Rig.ma"
