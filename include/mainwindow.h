@@ -13,6 +13,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonValue>
+#include <QJsonArray>
 #include <omp.h>
 #include <QHostInfo>
 #include <QNetworkInterface>
@@ -21,6 +22,7 @@
 #include <impcmd.h>
 #include <Definitions.h>
 #include <QDesktopServices>
+#include <QFileDevice>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -37,6 +39,8 @@ enum DataPath
     LExport,
     LMakeDir
 };
+
+const QString LogsFileName = "ExportsLogs.plus";
 
 
 using namespace MassFbxUltilities;
@@ -95,6 +99,8 @@ private:
     bool ValidPaths();
 
     void SaveRecentData(const QString inFilePath);
+
+    void AddToExpLogs(const QString inFileTargetsqaeu2rdxsz);
 
     void SaveToLocal(DataPath inType,const QString inContent);
 

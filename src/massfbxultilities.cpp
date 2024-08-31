@@ -1,5 +1,5 @@
 #include "massfbxultilities.h"
-
+#include <Windows.h>
 
 
 bool MassFbxUltilities::IsValidPath(QString inPaths)
@@ -175,3 +175,42 @@ QJsonObject MassFbxUltilities::LoadObjectFromFile(const QString infile)
     return jdoc.object();
 }
 
+QJsonObject MassFbxUltilities::GetFileInfo(const QString inFile)
+{
+
+    QJsonObject obj;
+    if(inFile.isEmpty())
+    {
+        qDebug() << "Empty Files " << Qt::endl;
+        return obj;
+    }
+
+    QFileInfo fInfo(inFile);
+
+    if(!fInfo.isFile()) return obj;
+    qt_ntfs_permission_lookup++;
+
+    obj["File"] = inFile;
+    obj["Owner"] = fInfo.owner();
+    obj["Time Created"] = fInfo.birthTime().toString();
+    obj["Last Modifier"] = fInfo.lastModified().toString();
+    obj["Size"]= QString::number((fInfo.size()/1024),'f',1) + " Kb";
+    qt_ntfs_permission_lookup--;
+    return obj;
+}
+
+int MassFbxUltilities::ExistObject(QJsonArray inArray, QJsonObject inObject, QString inKey)
+{
+    if(inArray.isEmpty() || inKey.isEmpty() || inObject.isEmpty()) return -1;
+
+    int count=0;
+    for(auto js : inArray) {
+        auto obj = js.toObject();
+        if(obj.value(inKey).toString() == inObject.value(inKey).toString()){
+            qDebug() << "JS Arr 1 : " << obj.value(inKey).toString() << "JS inObj 2 : " << inObject.value(inKey).toString() << Qt::endl;
+            return count;
+        }
+        count++;
+    }
+    return -1;
+}

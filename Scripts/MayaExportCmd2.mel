@@ -268,7 +268,7 @@ global proc LExportReferenceFile(string $inFile, string $inSelectObj)
 
 	if($inFile == "") return;
 
-	file -f -options "v=0;"  -ignoreVersion  -typ "mayaAscii" -o $inFile;
+	file -f -options "v=0;" -esn false  -ignoreVersion  -typ "mayaAscii" -o $inFile;
 	//evalDeferred("select -r " + $Split[1] + ";");
 	print("Open Base Skeletal  : " + $inFile + "\n");
 	string $Advs[] = LAdvanceSkeletonGeoJoint($Split[1],2);

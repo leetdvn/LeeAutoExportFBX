@@ -398,6 +398,51 @@ void MainWindow::SaveRecentData(const QString inFilePath)
     }
 }
 
+void MainWindow::AddToExpLogs(const QString inFileTarget)
+{
+    QString fInfo = ui->ExportFolderText->toPlainText() + LogsFileName;
+    QFile file(fInfo);
+
+    QByteArray dataCurrent;
+    //read
+    if(file.open(QIODevice::ReadOnly)){
+        dataCurrent = file.readAll();
+        file.close();
+    }
+
+     qDebug() << "JSon 1: " << inFileTarget << Qt::endl;
+    QJsonParseError err;
+    QJsonDocument jdoc = !dataCurrent.isEmpty() ? QJsonDocument::fromJson(dataCurrent, &err) : QJsonDocument();
+    QJsonObject currentObj = !jdoc.isEmpty() ? jdoc.object() : QJsonObject();
+    QJsonArray Infos = !currentObj.isEmpty() ? currentObj.value("ExportHistory").toArray() : QJsonArray();
+
+    //qDebug() << "JSon 2 " << QString(jdoc.toJson(QJsonDocument::Compact)) << Qt::endl;
+    if(err.error != QJsonParseError::NoError){
+        //qDebug() << "JSon 2: " << err.errorString() << Qt::endl;
+        return; // Failure
+    }
+
+
+    QJsonObject obj = GetFileInfo(inFileTarget);
+
+    int idx = ExistObject(Infos,obj,"File");
+
+    if(idx >= 0){
+        Infos.removeAt(idx);
+    }
+    Infos.append(obj);
+    QJsonObject final;
+    final["ExportHistory"] = Infos;
+    jdoc.setObject(final);
+    //qDebug() << "JSon 3 " << QString(jdoc.toJson(QJsonDocument::Compact)) << Qt::endl;
+
+    if(file.open(QIODevice::ReadWrite | QIODevice::Truncate)){
+        file.write(jdoc.toJson());
+        file.close();
+    }
+
+}
+
 void MainWindow::SaveToLocal(DataPath inType,const QString inContent)
 {
 
@@ -774,6 +819,9 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
         //FbxCompletedCount();
         ui->progressBar->setFormat("Done Job %p%");
     }
+
+    AddToExpLogs(iCmd->GetSourceFile());
+
     if(isMultiThread) return;
     return ExpNext();
 }

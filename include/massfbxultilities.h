@@ -10,6 +10,9 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonValue>
+#include <QJsonArray>
+#include <QFileSystemModel>
+
 
 enum SoftwereType
 {
@@ -36,6 +39,10 @@ enum DataInfo
     LSize
 
 };
+
+
+extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
+
 
 namespace MassFbxUltilities
 {
@@ -68,9 +75,15 @@ bool CheckSourceExists(QStringList inList,const QString inData);
 
 //get File Owner
 QString GetFileOwner(const QString inFile);
+
+QJsonObject GetFileInfo(const QString inFile);
+
 //void Create LogInfo
 QStringList GetFileOwners(const QStringList infiles);
 
+//JSon Object Exist
+
+int ExistObject(QJsonArray inArray,QJsonObject inObject,QString inKey);
 
 };
 
