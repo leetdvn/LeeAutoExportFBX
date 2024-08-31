@@ -119,12 +119,11 @@ void ConsoleCmd::SetScriptPlatForm()
     QString ScriptCont = GetContentFile(BaseScr);
     QString BlKit = property("FbxKit").toString();
     QString FbxOpt = property("FbxOpt").toString();
-
-    QString ExpDir = FbxOpt.endsWith("") ? MExportDir  : MExportDir;
+    QString Mesh = property("Mesh").toString();
 
     QString sContent = BaseScr.endsWith(".py") ?
-        ScriptCont.arg(ExpDir,BlKit,FbxOpt):
-        ScriptCont.arg(ExpDir,FbxOpt);
+        ScriptCont.arg(MExportDir,BlKit,FbxOpt):
+        ScriptCont.arg(MExportDir,FbxOpt,Mesh);
 
 
     QFile Script(ScriptPath);

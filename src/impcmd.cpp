@@ -94,7 +94,7 @@ void ImpCmd::ReadLogs()
     QString line = MExProcess->readAllStandardOutput();
 
     QString err = MExProcess->readAllStandardError();
-    Logs = line + err;
+    //Logs = line + err;
 
     QStringList Lines = Logs.split("\r\n");
 

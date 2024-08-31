@@ -363,6 +363,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="LeeDebugConsole"/>
+    <addaction name="LeeDebugContent"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="styleSheet">
@@ -407,6 +409,27 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <action name="ShowLogs">
    <property name="text">
     <string>Show Logs</string>
+   </property>
+  </action>
+  <action name="actionaa">
+   <property name="text">
+    <string>aa</string>
+   </property>
+  </action>
+  <action name="LeeDebugConsole">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Debug Console</string>
+   </property>
+  </action>
+  <action name="LeeDebugContent">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Debug Data</string>
    </property>
   </action>
  </widget>

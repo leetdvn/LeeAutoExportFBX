@@ -691,7 +691,7 @@ void MainWindow::ImplementFbxOptions()
     Spoiler->toggleButton->setAutoRaise(true);
     QVBoxLayout * vlayout = new QVBoxLayout();
     QHBoxLayout* hlayout = new QHBoxLayout();
-    hlayout->addLayout(uiOpt->gridLayout);
+    hlayout->addLayout(uiOpt->verticalLayout);
     vlayout->addLayout(hlayout);
     Spoiler->setContentLayout(*vlayout);
    // ui->AuthorLayout->insertWidget(ui->AuthorLayout->count(),Spoiler);// ->addWidget(Spoiler);
@@ -772,8 +772,11 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
 
     //Check Blender Addons
     if(iCmd->MissingAddons) {
-        QString Message = "AutoRigPro : Blender Addons  is Not Found";
-        AddToLog(Error,Message);
+        if(iCmd->GetSourceFile().endsWith(".blend"))
+        {
+            QString Message = "AutoRigPro : Blender Addons  is Not Found";
+            AddToLog(Error,Message);
+        }
     }
 
     //verifier
@@ -802,7 +805,7 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
         AddToLog(Completed,CompleteText);
     }
 
-    if(!uiOpt->DebugBox->isChecked()){
+    if(!ui->LeeDebugContent->isChecked()){
         ImpCmd* iCmd = ListCmds[completedId-1];
         iCmd->ClearOnFinish();
         //ListCmds.removeOne(iCmd);
@@ -871,13 +874,13 @@ void MainWindow::ImplementExport(int fileNumber)
 
     QString FbxOpt{};
 
-    if(uiOpt->MayaFbxOptions->currentText().startsWith("Animation"))
-        FbxOpt="AnimOnly";
-    else if(uiOpt->MayaFbxOptions->currentText().endsWith("Animation"))
-        FbxOpt="All";
-    else
+    if(uiOpt->EBaseSkeleton->isChecked())
         FbxOpt="BaseSkeleton";
+    else
+        FbxOpt="AnimOnly";
 
+    if(uiOpt->LeeGeometry->isChecked())
+        mCmd->setProperty("Mesh","On");
     //set Property for Maya
     mCmd->setProperty("FbxOpt",FbxOpt);
 
@@ -960,14 +963,19 @@ void MainWindow::OnLogs(QString &inLog,QString &Err)
 {
     //On Debug Console
     QString iLog = inLog.replace("\r\n","");
-
-    if(!uiOpt->DebugConsole->isChecked()) return;
+    //Debug Development
+    qDebug() << iLog << Qt::endl;
 
     if(iLog.startsWith("Exported")){
-        TotalFbx+=1;
+        AddToLog(LogType::Completed,iLog);
+        TotalFbx++;
+        ScrollToNewLog();
     }
 
-    qDebug() << iLog << Qt::endl;
+    //Show Log Console
+    if(!ui->LeeDebugConsole->isChecked()) return;
+
+
     AddToLog(iLog);
     AddToLog(Error,Err);
     ScrollToNewLog();

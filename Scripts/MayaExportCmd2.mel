@@ -13,6 +13,7 @@ global string $AdvDeletedObject[] = {"FaceFitSkeleton","FitSkeleton","FaceMotion
 global string $BaseSkeletals[];
 
 global string $FbxOpt= "%2";
+global string $Mesh = "%3";
 
 proc int LObjectExists(string $inobjectname)
 {
@@ -262,7 +263,6 @@ proc string GetRefFile(string $inRefObject){
 
 global proc LExportReferenceFile(string $inFile, string $inSelectObj)
 {
-	//int $Opt = LGetFbxOpt();
 
 	string $Split[] = LSplitString($inSelectObj);
 
@@ -276,7 +276,8 @@ global proc LExportReferenceFile(string $inFile, string $inSelectObj)
 	select -r $Advs;
 
 	//file path
-	string $exp = "C:/Users/thang/Documents/Exports/" + "BaseSkeletal/" + $Split[0] + ".fbx" ;
+	string $exp = "%1" + "BaseSkeletal/" + $Split[0] + ".fbx" ;
+
 	// Execute Export
 	catch(`FBXExport -f $exp -s`);
 	if(`file -q -ex $exp`)
@@ -293,8 +294,8 @@ proc int LGetFbxOpt()
 	int $Etime = LGetEndFrame($MassFbxLayer);
 
 	FBXExportCameras -v true;
+	//FBXExportShapes -v true;
 	FBXExportInputConnections -v true;
-	FBXExportShapes -v true;
 	FBXExportSkeletonDefinitions -v true;
 	FBXExportSkins -v true;
 	FBXExportScaleFactor 1.0;
@@ -303,7 +304,7 @@ proc int LGetFbxOpt()
 	FBXExportBakeComplexStart -v $Stime;
 	FBXExportBakeComplexEnd -v $Etime;
 	FBXExportBakeResampleAnimation -v true;
-	FBXExportFileVersion -v FBX202000;
+	FBXExportFileVersion -v `FBXExportFileVersion -q`;
 
 	if($FbxOpt == "AnimOnly"){
 		return 1;
@@ -312,11 +313,6 @@ proc int LGetFbxOpt()
 		FBXExportBakeComplexAnimation -v false;
 		return 2;
 	}
-	else if($FbxOpt == "All"){
-		FBXExportBakeComplexAnimation -v true;
-		return 3;
-	}
-
 
 	return 0;
 }
@@ -326,16 +322,36 @@ global proc FbxExecute()
 	global string $MassFbxLayer;
 	global string $FbxOpt;
 	global string $BaseSkeletals[];
+	global string $Mesh;
+
 	string $reffiles[];
 	string $MassExp[] = `editDisplayLayerMembers -q $MassFbxLayer`;
 	if(size($MassExp) <= 0) return;
+
+	int $Opt = LGetFbxOpt();
+
+	//Log List File Export
+	for($i = 0 ; $i < size($MassExp) ; ++$i){
+		string $Str[] = LSplitString($MassExp[$i]);
+		string $exp = "%1" + $Str[0] + ".fbx" ;
+		print("ListFbx : " + $exp + "\n");
+		if($FbxOpt == "BaseSkeleton")
+		{
+			string $baseFbx = GetRefFile($MassExp[$i]);
+			if($baseFbx !="")
+				print("ListFbx : " + $baseFbx + "\n");
+		}
+	}
+
+	//clean up file
 	LCleanUpFiles();
-
-
-	int $Opt = 2;
-
-	int $Boolean = $Opt == 1 ? 1 : 0;
 	LCleanUpDisplayLayer();
+
+	int $addMesh =1;
+	if($Mesh =="On")
+		$addMesh =2;
+
+	FBXExportShapes -v false;
 
 	for($i = 0 ; $i < size($MassExp) ; ++$i)
 	{
@@ -345,23 +361,17 @@ global proc FbxExecute()
 		LClearAdvanceSkeleton($MassExp[$i]);
 
 		string $Str[] = LSplitString($MassExp[$i]);
-		string $exp = "C:/Users/thang/Documents/Exports/" + $Str[0] + ".fbx" ;
+		string $exp = "%1" + $Str[0] + ".fbx" ;
 		
-		string $GeoJnt[] = LAdvanceSkeletonGeoJoint($MassExp[$i],$Opt);
-		for($jnt in $GeoJnt)
-			print($jnt + " :InfoLee\n");
+		
+		string $GeoJnt[] = LAdvanceSkeletonGeoJoint($MassExp[$i],$addMesh);
 
 		select -r $GeoJnt;
 
-		if($Opt == 1)
-		{
-			string $Jnts[]= `listRelatives -ad -typ "joint" $MassExp[$i]`;
-			if(size($Jnts) <= 0) continue;	
-		}
-		else if(size($GeoJnt) < 2)
+
+		if(size(`ls -sl`) <= 0)
 			catch(`select -add $MassExp[$i]`);
 		
-		//catch(`delete ($Str[0] + ":MainSystem")`);
 		catch(`FBXExport -f $exp -s`);
 		if($Opt==2){
 			$BaseSkeletals[$i] = $MassExp[$i];
@@ -372,30 +382,16 @@ global proc FbxExecute()
 			print("Exported : " + $exp + "\n");
 	}
 
-	int $f=0;
-	$FbxOpt = "BaseSkeleton";
-	for($Base in $BaseSkeletals){
-        if($reffiles[$f] !=""){
-            evalDeferred("LExportReferenceFile(\"" + $reffiles[$f] + "\",\"" + $Base + "\");");
-            //LExportReferenceFile($reffiles[$f],$Base);
-        }
-
-		//evalDeferred("LExportReferenceFile(\"" + $reffiles[$f] + "\",\"" + $Base + "\");");
-		//LExportReferenceFile($file,$MassExp[$i]);
-		$f++;
+	if($FbxOpt == "BaseSkeleton"){
+		int $f=0;
+		FBXExportShapes -v true;
+		for($Base in $BaseSkeletals){
+			if($reffiles[$f] !=""){
+				evalDeferred("LExportReferenceFile(\"" + $reffiles[$f] + "\",\"" + $Base + "\");");
+			}
+			$f++;
+		}
 	}
 
-
 }
-
-
 FbxExecute();
-
-
-
-//Note Export Base from Anim Check Box Option
-//LExportReferenceFile("Cudan01:Group");
-//LCleanUnknowNode();
-//cleanUpScene(3);
-
-//file -f -options "v=0;"  -ignoreVersion  -typ "mayaAscii" -o "C:/Users/thang/Desktop/PlusAbc/_MODEL3D/2024_KunGalaxy/Character/Cudan_01/Cudan01_Rig.ma"
