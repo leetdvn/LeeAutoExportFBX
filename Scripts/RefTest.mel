@@ -10,8 +10,6 @@ global string $ListConstraint[] = {"parentConstraint","scaleConstraint","pointCo
 
 global string $AdvDeletedObject[] = {"FaceFitSkeleton","FitSkeleton","FaceMotionSystem","MotionSystem"};
 
-global string $BaseSkeletals[];
-
 global string $FbxOpt= "%2";
 
 proc int LObjectExists(string $inobjectname)
@@ -247,37 +245,26 @@ proc LCleanUpFiles(){
 
 }
 
-proc string GetRefFile(string $inRefObject){
-
-	string $fResult="";
-	if(!`objExists $inRefObject` || !`referenceQuery -isNodeReferenced $inRefObject`) 
-	{
-		print("Object Not Found  : " + $inRefObject + "\n");
-		return $fResult;
-	}
-
-	return `referenceQuery -filename $inRefObject`;
-
-}
-
-global proc LExportReferenceFile(string $inFile, string $inSelectObj)
+proc LExportReferenceFile(string $inSelectObj)
 {
+	if(!`objExists $inSelectObj` || 
+	!`referenceQuery -isNodeReferenced $inSelectObj`
+	) return;
+
 	//int $Opt = LGetFbxOpt();
 
 	string $Split[] = LSplitString($inSelectObj);
-
-	if($inFile == "") return;
-
-	file -f -options "v=0;"  -ignoreVersion  -typ "mayaAscii" -o $inFile;
+	string $file = `referenceQuery -filename $inSelectObj`;
+	string $shortName = `referenceQuery -namespace -shortName $inSelectObj`;
+	file -f -options "v=0;"  -ignoreVersion  -typ "mayaAscii" -o $file;
 	//evalDeferred("select -r " + $Split[1] + ";");
-	print("Open Base Skeletal  : " + $inFile + "\n");
+	
 	string $Advs[] = LAdvanceSkeletonGeoJoint($Split[1],2);
 	select -cl;
 	select -r $Advs;
 
 	//file path
-	string $exp = "%1" + "BaseSkeletal/" + $Split[0] + ".fbx" ;
-	// Execute Export
+	string $exp = "C:/Users/thang/Documents/Exports/Base/" + $Split[0] + ".fbx" ;
 	catch(`FBXExport -f $exp -s`);
 
 	print($Advs);
@@ -324,8 +311,7 @@ global proc FbxExecute()
 {
 	global string $MassFbxLayer;
 	global string $FbxOpt;
-	global string $BaseSkeletals[];
-	string $reffiles[];
+
 	string $MassExp[] = `editDisplayLayerMembers -q $MassFbxLayer`;
 	if(size($MassExp) <= 0) return;
 
@@ -344,6 +330,7 @@ global proc FbxExecute()
 		//===========================CLEAR ADVANSKELETON=====================
 		LClearAdvanceSkeleton($MassExp[$i]);
 
+		
 		string $Str[] = LSplitString($MassExp[$i]);
 		string $exp = "%1" + $Str[0] + ".fbx" ;
 		
@@ -363,22 +350,17 @@ global proc FbxExecute()
 		
 		//catch(`delete ($Str[0] + ":MainSystem")`);
 		catch(`FBXExport -f $exp -s`);
-		if($Opt==2){
-			$BaseSkeletals[$i] = $MassExp[$i];
-			$reffiles[$i] = GetRefFile($MassExp[$i]);
-		}
 
 		if(`file -q -ex $exp`)
 			print("Exported : " + $exp + "\n");
-	}
 
-	int $f=0;
-	for($Base in $BaseSkeletals){
-		evalDeferred("LExportReferenceFile(\"" + $reffiles[$f] + "\",\"" + $Base + "\");");
-		//LExportReferenceFile($file,$MassExp[$i]);
-		$f++;
-	}
 
+        if($Opt == 2)
+        {
+            LExportReferenceFile($MassExp[$i]);
+        }
+        
+	}
 }
 
 

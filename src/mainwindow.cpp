@@ -262,12 +262,12 @@ void MainWindow::OnExportClicked()
     if(!IsValidSoft() || !IsAuthored) return;
 
     // Check Opt Working
-    QString FbxOptions = uiOpt->MayaFbxOptions->currentText();
-    if(FbxOptions.endsWith("Skeleton")){
-        QString message = "%1 : This Option not ready to run";
-        AddToLog(message.arg(FbxOptions),"red");
-        return;
-    }
+    // QString FbxOptions = uiOpt->MayaFbxOptions->currentText();
+    // if(FbxOptions.endsWith("Skeleton")){
+    //     QString message = "%1 : This Option not ready to run";
+    //     AddToLog(message.arg(FbxOptions),"red");
+    //     return;
+    // }
 
     SoftwereType SType = GetSoftWareType();
 
@@ -691,6 +691,7 @@ QString MainWindow::GetExportPath(const QString inSourceFile, const QString inEx
 
     QString FbxPath = nPathDir + fname.left(fname.lastIndexOf(".")) + ".fbx";
 
+
     //qDebug() << "fbxPaht : " << FbxPath << Qt::endl;
 
     //make dir export fbx
@@ -698,8 +699,17 @@ QString MainWindow::GetExportPath(const QString inSourceFile, const QString inEx
 
     if(!makedir) return FbxPath;
 
-    if(!nDir.exists())
+    if(!nDir.exists()){
         nDir.mkpath(nPathDir);
+    }
+
+    if(uiOpt->EBaseSkeleton->isChecked()){
+        QString BDir = nPathDir + "BaseSkeletal/";
+        QDir BaesDir(BDir);
+        if(!BaesDir.exists(BDir))
+            BaesDir.mkpath(BDir);
+        qDebug() <<"Debug : " << BDir << Qt::endl;
+    }
 
     //return fbx file exports
     return FbxPath;
@@ -804,13 +814,11 @@ void MainWindow::ImplementExport(int fileNumber)
     bool isMakeDir = uiOpt->makedirBox->isChecked();
     ui->progressBar->setFormat("Running %p%");
 
+    bool IsMakeBase = uiOpt->EBaseSkeleton->isChecked();
 
-
-    QString finalExpDir = isMakeDir ?
-        MakeTreeDirectory(EpSourceFiles[fileNumber],
+    QString finalExpDir = MakeTreeDirectory(EpSourceFiles[fileNumber],
                         ui->SourceFolderText->toPlainText(),
-                        ui->ExportFolderText->toPlainText()):
-                              ui->ExportFolderText->toPlainText();
+                        ui->ExportFolderText->toPlainText(),IsMakeBase);
     //Maya Exp Refactored..
     ImpCmd* mCmd = new ImpCmd(EpSourceFiles[fileNumber],finalExpDir);
     mCmd->SetExpId(fileNumber);

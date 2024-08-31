@@ -67,7 +67,7 @@ QString MassFbxUltilities::GetContentFile(const QString inPath)
     return melStream.readAll();
 }
 
-QString MassFbxUltilities::MakeTreeDirectory(const QString inSourceF, const QString inSourceFol,const QString inExpFol)
+QString MassFbxUltilities::MakeTreeDirectory(const QString inSourceF, const QString inSourceFol,const QString inExpFol,bool isMakeBase)
 {
     if(inSourceF =="") return QString();
 
@@ -89,6 +89,10 @@ QString MassFbxUltilities::MakeTreeDirectory(const QString inSourceF, const QStr
         //qDebug() << " Final 1: " << Result << Qt::endl;
         nDir.mkpath(Result);
     }
+
+    if(isMakeBase)
+        if(!IsValidPath(Result + "BaseSkeletal/"))
+            nDir.mkpath(Result+"BaseSkeletal/");
 
     //qDebug() << "Final 2 : " << detach << Qt::endl;
 

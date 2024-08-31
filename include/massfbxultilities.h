@@ -41,7 +41,7 @@ void MakeFile(const QString inPath);
 QString GetContentFile(const QString inPath);
 
 //Make Tree Folder
-QString MakeTreeDirectory(const QString inSourceF, const QString inSourceFol,const QString inExpFol);
+QString MakeTreeDirectory(const QString inSourceF, const QString inSourceFol,const QString inExpFol,bool isMakeBase=false);
 
 //Detach Source
 QString DetachSourceFolder(const QString inSourceFile,const QString inSourceFol,bool includeFile=false);
