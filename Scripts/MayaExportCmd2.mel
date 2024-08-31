@@ -279,8 +279,9 @@ global proc LExportReferenceFile(string $inFile, string $inSelectObj)
 	string $exp = "C:/Users/thang/Documents/Exports/" + "BaseSkeletal/" + $Split[0] + ".fbx" ;
 	// Execute Export
 	catch(`FBXExport -f $exp -s`);
+	if(`file -q -ex $exp`)
+		print("Exported : " + $exp + "\n");
 
-	print($Advs);
 }
 
 proc int LGetFbxOpt()
@@ -377,7 +378,6 @@ global proc FbxExecute()
         if($reffiles[$f] !=""){
             evalDeferred("LExportReferenceFile(\"" + $reffiles[$f] + "\",\"" + $Base + "\");");
             //LExportReferenceFile($reffiles[$f],$Base);
-            print("taoday : " + $reffiles[$f] + "\n");
         }
 
 		//evalDeferred("LExportReferenceFile(\"" + $reffiles[$f] + "\",\"" + $Base + "\");");

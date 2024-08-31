@@ -62,17 +62,17 @@ void LeeSpoiler::setContentLayout(QLayout& contentLayout)
     contentArea->setLayout(&contentLayout);
     collapsedHeight = sizeHint().height() - contentArea->maximumHeight();
 
-    updateHeights();
+    updateHeightsWidth();
 }
 
-void LeeSpoiler::setTitle(QString title)
-{
+void LeeSpoiler::setTitle(QString title){
     toggleButton->setText(std::move(title));
 }
 
-void LeeSpoiler::updateHeights()
+void LeeSpoiler::updateHeightsWidth(bool isWeight)
 {
-    int contentHeight = contentArea->layout()->sizeHint().height();
+    int contentHeight = !isWeight ? contentArea->layout()->sizeHint().height() :
+                            contentArea->layout()->sizeHint().width();
 
     for (int i = 0; i < toggleAnimation->animationCount() - 1; ++i)
     {

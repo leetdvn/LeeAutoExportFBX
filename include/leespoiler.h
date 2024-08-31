@@ -38,7 +38,7 @@ public:
     void setTitle(QString title);
 
     // update animations and their heights
-    void updateHeights();
+    void updateHeightsWidth(bool isWeight=false);
 
     QToolButton* toggleButton;
 };
