@@ -4,8 +4,12 @@
 #include <QObject>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <Definitions.h>
 #include <QMessageBox>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonValue>
 
 enum SoftwereType
 {
@@ -22,6 +26,17 @@ enum LogType{
     Completed
 };
 
+
+enum DataInfo
+{
+    LOwner,
+    LCreated,
+    LTimModifier,
+    LPCName,
+    LSize
+
+};
+
 namespace MassFbxUltilities
 {
 
@@ -29,6 +44,8 @@ namespace MassFbxUltilities
 bool IsValidPath(QString inPaths);
 
 void MakeScript(QString inPath,QString inContent);
+
+QJsonObject LoadObjectFromFile(const QString infile);
 
 QStringList GetFilesInDirectory(const QString inDir);
 
@@ -48,6 +65,12 @@ QString DetachSourceFolder(const QString inSourceFile,const QString inSourceFol,
 
 // Data Exists in StringList
 bool CheckSourceExists(QStringList inList,const QString inData);
+
+//get File Owner
+QString GetFileOwner(const QString inFile);
+//void Create LogInfo
+QStringList GetFileOwners(const QStringList infiles);
+
 
 };
 

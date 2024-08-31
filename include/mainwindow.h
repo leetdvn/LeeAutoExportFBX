@@ -38,6 +38,7 @@ enum DataPath
     LMakeDir
 };
 
+
 using namespace MassFbxUltilities;
 
 
@@ -98,8 +99,6 @@ private:
     void SaveToLocal(DataPath inType,const QString inContent);
 
     void LoadRecentData();
-
-    QJsonObject LoadObjectFromFile(const QString infile);
 
     QString localfilePath="C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/LeeMassFbx.json";
 

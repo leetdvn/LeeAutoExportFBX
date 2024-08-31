@@ -470,22 +470,6 @@ void MainWindow::LoadRecentData()
     uiOpt->makedirBox->setChecked(checked);
 }
 
-QJsonObject MainWindow::LoadObjectFromFile(const QString infile)
-{
-    QJsonDocument jdoc;
-    QFile jfile(infile);
-    if(jfile.exists()){
-        if(jfile.open(QIODevice::ReadOnly))
-        {
-            QString content = jfile.readAll();
-            jdoc=QJsonDocument::fromJson(content.toUtf8());
-        }
-        jfile.close();
-    }
-
-    return jdoc.object();
-}
-
 QString MainWindow::GetMacAdress()
 {
     QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();

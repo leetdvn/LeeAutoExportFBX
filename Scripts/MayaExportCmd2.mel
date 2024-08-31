@@ -276,7 +276,7 @@ global proc LExportReferenceFile(string $inFile, string $inSelectObj)
 	select -r $Advs;
 
 	//file path
-	string $exp = "%1" + "BaseSkeletal/" + $Split[0] + ".fbx" ;
+	string $exp = "C:/Users/thang/Documents/Exports/" + "BaseSkeletal/" + $Split[0] + ".fbx" ;
 	// Execute Export
 	catch(`FBXExport -f $exp -s`);
 
@@ -328,7 +328,6 @@ global proc FbxExecute()
 	string $reffiles[];
 	string $MassExp[] = `editDisplayLayerMembers -q $MassFbxLayer`;
 	if(size($MassExp) <= 0) return;
-
 	LCleanUpFiles();
 
 
@@ -345,7 +344,7 @@ global proc FbxExecute()
 		LClearAdvanceSkeleton($MassExp[$i]);
 
 		string $Str[] = LSplitString($MassExp[$i]);
-		string $exp = "%1" + $Str[0] + ".fbx" ;
+		string $exp = "C:/Users/thang/Documents/Exports/" + $Str[0] + ".fbx" ;
 		
 		string $GeoJnt[] = LAdvanceSkeletonGeoJoint($MassExp[$i],$Opt);
 		for($jnt in $GeoJnt)
@@ -373,6 +372,7 @@ global proc FbxExecute()
 	}
 
 	int $f=0;
+	$FbxOpt = "BaseSkeleton";
 	for($Base in $BaseSkeletals){
         if($reffiles[$f] !=""){
             evalDeferred("LExportReferenceFile(\"" + $reffiles[$f] + "\",\"" + $Base + "\");");

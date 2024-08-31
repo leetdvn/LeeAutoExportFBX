@@ -127,3 +127,51 @@ bool MassFbxUltilities::CheckSourceExists(QStringList inList, const QString inDa
         if(f == inData) return true;
     return false;
 }
+
+QStringList MassFbxUltilities::GetFileOwners(const QStringList infiles)
+{
+    if(infiles.isEmpty())
+    {
+        qDebug() << "Empty Files " << Qt::endl;
+        QStringList();
+    }
+
+    QStringList owners;
+
+    for(auto file : infiles){
+        QString own = GetFileOwner(file);
+        owners.push_back(own);
+    }
+    return owners;
+}
+
+QString MassFbxUltilities::GetFileOwner(const QString inFile)
+{
+    if(inFile.isEmpty())
+    {
+        qDebug() << "Empty Files " << Qt::endl;
+        return QString();
+    }
+
+    QFileInfo fInfo(inFile);
+
+    if(!fInfo.isFile()) return QString();
+    return fInfo.owner();
+}
+
+QJsonObject MassFbxUltilities::LoadObjectFromFile(const QString infile)
+{
+    QJsonDocument jdoc;
+    QFile jfile(infile);
+    if(jfile.exists()){
+        if(jfile.open(QIODevice::ReadOnly))
+        {
+            QString content = jfile.readAll();
+            jdoc=QJsonDocument::fromJson(content.toUtf8());
+        }
+        jfile.close();
+    }
+
+    return jdoc.object();
+}
+
