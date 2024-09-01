@@ -2,8 +2,9 @@ import bpy
 import math
 import addon_utils
 from pathlib import Path
+import sys
 #Export Cmd ALL
-##bpy.ops.export_scene.fbx(filepath='%1')
+##bpy.ops.export_scene.fbx(filepath='C:/Users/thang/Documents/Exports/Blender/Shot005_Final_V6/')
 #-----------Export Selection
 ##bpy.ops.export_scene.fbx(filepath='C:/Users/leepl/OneDrive/Desktop/Present_Export/Taoday.fbx',use_selection=True)
 
@@ -163,7 +164,7 @@ class MassExportFbx():
         #scn.arp_export_twist = True
         #scn.arp_fix_fbx_matrix=True
         #scn.arp_ge_sel_only =True
-        bpy.context.scene.arp_apply_mods = True
+
         bpy.context.scene.arp_ge_sel_only = True
 
         # run export
@@ -173,7 +174,8 @@ class MassExportFbx():
         '''
         check Addon
         '''
-        Addons = ['auto_rig_pro-master','Animation_Layers','Multikey']
+        Addons = ['auto_rig_pro-master','Animation_Layers','Multikey','Auto-Rig Pro']
+
         addon_utils.modules_refresh()
         BAddons = [mod.__name__ for mod in addon_utils.modules()]
 
@@ -190,14 +192,14 @@ class MassExportFbx():
                 except:
                     pass
         return checkloaded
-
     ####################MASSEXPORT FUNC###########################################
     def LeeMassExport(self,Fbx_platform='AutoRigPro'):
         Export = "MassExport"
         col = bpy.data.collections[Export]
 
-        if not self.ArpIsLoaded():
-            print("AutoRigPro Addons: is Not Found..")
+        loaded = self.ArpIsLoaded()
+        if not loaded:
+            print("AutoRigPro Addons: is Not Found..",loaded)
             return
         #bpy.ops.object.make_local(type='ALL')
         try:
@@ -218,7 +220,7 @@ class MassExportFbx():
         armature = self.GetObjectTypes(col,'ARMATURE')
         if armature.__len__() <= 0: return
 
-        self.LeeBakeFunc(Export)
+        #self.LeeBakeFunc(Export)
 
         for arm in armature:
             self.ClearSelection()
@@ -228,19 +230,18 @@ class MassExportFbx():
                 try:
                     geo.make_local()
                 except: pass
-                if str("%3").startswith("On"):
+                if not str("AnimOnly").startswith("AnimOnly"):
                     self.set_active_object(geo.name)
 
             self.set_active_object(arm.name)
-            expPath = '%1'  + arm.name + ".fbx"
+            expPath = 'C:/Users/thang/Documents/Exports/Blender/Shot005_Final_V6/'  + arm.name + ".fbx"
             if Fbx_platform=="Blender":
                 bpy.ops.export_scene.fbx(filepath=expPath,
                                             use_selection=True,
                                             use_active_collection=True,
                                             object_types={'ARMATURE','MESH','OTHER'},
                                             use_custom_props=True,
-                                            bake_anim_force_startend_keying=False,
-                                            use_mesh_modifiers=True
+                                            bake_anim_force_startend_keying=False
                                             )
                 
             elif Fbx_platform=="AutoRigPro":
@@ -251,6 +252,6 @@ class MassExportFbx():
                     print("Issue Export: " + expPath)
         #print(ChildCollections)
 
-fbx_Addon = '%2'
+fbx_Addon = 'AutoRigPro'
 MassFbx = MassExportFbx()
 MassFbx.LeeMassExport(fbx_Addon)

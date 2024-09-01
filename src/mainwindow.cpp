@@ -961,8 +961,10 @@ void MainWindow::OnRevealFolder()
 
 void MainWindow::OnLogs(QString &inLog,QString &Err)
 {
+    ImpCmd* iCmd = qobject_cast<ImpCmd*>(sender());
+
     //On Debug Console
-    QString iLog = inLog.replace("\r\n","");
+    QString iLog = !iCmd->GetSourceFile().endsWith(".blend") ? inLog.replace("\r\n","") : inLog.replace("\r","");
     //Debug Development
     qDebug() << iLog << Qt::endl;
 

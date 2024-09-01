@@ -352,7 +352,6 @@ global proc FbxExecute()
 		$addMesh =2;
 
 	FBXExportShapes -v false;
-
 	for($i = 0 ; $i < size($MassExp) ; ++$i)
 	{
 		select -cl;
