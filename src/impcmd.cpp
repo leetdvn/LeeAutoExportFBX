@@ -142,6 +142,7 @@ void ImpCmd::SetProgram(const QString inMayaPath,const QString inBlenderPath)
     BProgram = inBlenderPath;
 
     InItProgram();
+
 }
 
 bool ImpCmd::ConsoleExists(QList<ImpCmd *> inList)

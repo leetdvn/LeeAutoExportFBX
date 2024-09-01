@@ -122,7 +122,7 @@ void ConsoleCmd::SetScriptPlatForm()
     QString Mesh = property("Mesh").toString();
 
     QString sContent = BaseScr.endsWith(".py") ?
-        ScriptCont.arg(MExportDir,BlKit,Mesh):
+        ScriptCont.arg(MExportDir,BlKit,Mesh,MASSFBXDIR + "Scripts/",MProgram):
         ScriptCont.arg(MExportDir,FbxOpt,Mesh);
 
 

@@ -2,21 +2,15 @@ import bpy
 import math
 import addon_utils
 from pathlib import Path
-#Export Cmd ALL
-##bpy.ops.export_scene.fbx(filepath='%1')
-#-----------Export Selection
-##bpy.ops.export_scene.fbx(filepath='C:/Users/leepl/OneDrive/Desktop/Present_Export/Taoday.fbx',use_selection=True)
+import os
 
-#Selection Object
-##obj = bpy.context.scene.objects['20B']
-##bpy.data.objects[obj.name].select_set(True); 
 
-#Create Cube
-# bpy.ops.mesh.primitive_cube_add(size=4,name="taoday")
-# cube_obj = bpy.context.active_object
 class MassExportFbx():
 
     def __init__(self) -> None:
+        self.ExportDir=str('%1{fName}')
+        self.ScriptDir=str('%4{py}')
+        self.blProgram =str('%5')
         pass
 
     def GetSelections(self):
@@ -37,17 +31,11 @@ class MassExportFbx():
         if not iPath.is_file(): return
         bpy.ops.wm.open_mainfile(filepath=path)
 
-    def GetAllLibraries(self,fullpath=True):
+    def GetAllLibraries(self):
         libraries = bpy.context.blend_data.libraries
         libs = []
         for lib in libraries:
-            path = ""
-            if fullpath:
-                path= lib.filepath
-            else:
-                path=lib
-            libs.append(path)
-        
+            libs.append(lib)
         return libs
 
     def set_active_object(self,object_name):
@@ -59,8 +47,7 @@ class MassExportFbx():
     def SelectAllObjsInCollection(self,inCollection):
         if inCollection is None: return
 
-        self.ClearSelection()
-        objecsList = []
+        objecsList=bpy.context.selected_objects
         for obj in self.GetObjectsInCollection(inCollection):
             try:
                 if obj.type == 'MESH' or obj.type=='ARMATURE':
@@ -69,7 +56,7 @@ class MassExportFbx():
                     self.set_active_object(obj.name)
                     if obj.name is not None:
                         objecsList.append(obj.name)
-                print("info : ",obj.type)
+                #print("info : ",obj.type)
 
 
             except:
@@ -191,6 +178,10 @@ class MassExportFbx():
                     pass
         return checkloaded
 
+    def InitScriptExpSkeletal(self,scriptLoc):
+        pass
+
+        
     ####################MASSEXPORT FUNC###########################################
     def LeeMassExport(self,Fbx_platform='AutoRigPro'):
         Export = "MassExport"
@@ -203,22 +194,41 @@ class MassExportFbx():
         try:
             bpy.ops.object.mode_set(mode = 'OBJECT')
         except: pass
-        ##=================BAKE====================
-        #bpy.ops.object.mode_set(mode = 'OBJECT')
-        # for o in col.objects:
-        #     self.ClearSelection()
-        #     bpy.context.scene.objects[o.name]
-        #     bpy.data.objects[o.name].select_set(True)
-        #     expPath = 'C:/Users/thang/Documents/Exports/'  + o.name + ".fbx"
-        #     bpy.ops.export_scene.fbx(filepath=expPath,use_selection=True)
-        #     print("Exported  : " + expPath + "\n")
 
-        #ChildCollections  = [c for c in col.children if self.isCollection(c)]
-        #if ChildCollections.__len__() <= 0: return
         armature = self.GetObjectTypes(col,'ARMATURE')
         if armature.__len__() <= 0: return
 
-        self.LeeBakeFunc(Export)
+        dir = os.path.dirname(os.path.abspath(__file__))
+
+        SkeBaseScr  = str("{sdir}/BaseExport.py").format(sdir=dir)
+        f = open(SkeBaseScr,'r')
+        text= f.read()
+        f.close()
+
+        Libs= MassFbx.GetAllLibraries()
+        transientPath= []
+        for i,lib in enumerate(Libs):
+            scr = bpy.path.display_name(lib.filepath)
+            if str(scr).endswith("Rig"):
+                srcPy = scr + ".py"
+                srcPy = str(srcPy).replace(" ","")
+                scrPath = self.ScriptDir.format(py=srcPy)
+                fbxPath = self.ExportDir.format(fName=scr)
+                f = open(scrPath,'w')
+                f.write(text.format(fbxpath=fbxPath))
+                f.close()
+                fpath = bpy.path.abspath(lib.filepath)
+                iCmd = str('\"{blender}\" -b ').format(blender=str(self.blProgram))
+                iCmd += str('{file}  -P ').format(file=fpath)
+                iCmd += str("{Str} -Y").format(Str=scrPath)
+                iCmd = iCmd.replace("\\","/")
+                infoCmd = os.system(iCmd)
+                print("Exported : " + fpath)
+                transientPath.append(scrPath)
+                #print("Command  : " ,iCmd ,infoCmd)
+
+        ##=================BAKE====================
+        #self.LeeBakeFunc(Export)
 
         for arm in armature:
             self.ClearSelection()
@@ -232,11 +242,10 @@ class MassExportFbx():
                     self.set_active_object(geo.name)
 
             self.set_active_object(arm.name)
-            expPath = '%1'  + arm.name + ".fbx"
+            expPath = self.ExportDir + arm.name + ".fbx"
             if Fbx_platform=="Blender":
                 bpy.ops.export_scene.fbx(filepath=expPath,
                                             use_selection=True,
-                                            use_active_collection=True,
                                             object_types={'ARMATURE','MESH','OTHER'},
                                             use_custom_props=True,
                                             bake_anim_force_startend_keying=False,
@@ -245,11 +254,15 @@ class MassExportFbx():
                 
             elif Fbx_platform=="AutoRigPro":
                 try:
-                    self.LeeArpExport(expPath)
+                    #self.LeeArpExport(expPath)
                     print("Exported  : " + expPath + "\n")
                 except:
                     print("Issue Export: " + expPath)
         #print(ChildCollections)
+        # for f in transientPath:
+        #     pyf = open(f)
+        #     if pyf.closed:
+        #         os.remove(f)
 
 fbx_Addon = '%2'
 MassFbx = MassExportFbx()
