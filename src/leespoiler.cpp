@@ -62,6 +62,7 @@ void LeeSpoiler::setContentLayout(QLayout& contentLayout)
     contentArea->setLayout(&contentLayout);
     collapsedHeight = sizeHint().height() - contentArea->maximumHeight();
 
+    collapsedWidth = sizeHint().width() - contentArea->maximumWidth();
     updateHeightsWidth();
 }
 
@@ -73,6 +74,8 @@ void LeeSpoiler::updateHeightsWidth(bool isWeight)
 {
     int contentHeight = !isWeight ? contentArea->layout()->sizeHint().height() :
                             contentArea->layout()->sizeHint().width();
+
+    int contentWidth = contentArea->layout()->sizeHint().width();
 
     for (int i = 0; i < toggleAnimation->animationCount() - 1; ++i)
     {

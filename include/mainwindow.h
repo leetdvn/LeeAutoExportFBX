@@ -23,11 +23,15 @@
 #include <Definitions.h>
 #include <QDesktopServices>
 #include <QFileDevice>
+#include <QTreeView>
+#include <QFileSystemModel>
+#include <leetreemodel.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class MainWindow;
-class FbxOptions;
+    class MainWindow;
+    class FbxOptions;
+    class Maintain;
 }
 QT_END_NAMESPACE
 
@@ -71,10 +75,16 @@ public slots:
 
     void GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters);
 
+    void OnDirectoryFilterLoader();
+
+    void OnTestModel();
 private:
     Ui::MainWindow *ui;
     Ui::FbxOptions *uiOpt;
+    Ui::Maintain   *uiTree;
 
+    QFileSystemModel* TreeSysV;
+    LeeTreeModel* LeeModel=nullptr;
     QUndoStack* undo_stack=nullptr;
 
     QString logStr;
@@ -84,6 +94,7 @@ private:
 
     QStringList InitFillters();
 
+    QStringList file3DFilter;
     //init Default
     void InitLocal();
 
@@ -134,6 +145,8 @@ protected:
 
     void ImplementFbxOptions();
 
+    void ImplementTreeView();
+
     QString GetExportPath(const QString inSourceFile,const QString inExportDir);
 
     SoftwereType GetSoftWareType();
@@ -142,6 +155,9 @@ protected:
     void InfoEnv();
 
     LeeSpoiler* Spoiler;
+
+    LeeSpoiler* MaintainSpoiler;
+
 
     QPushButton* ExpotBtn;
 

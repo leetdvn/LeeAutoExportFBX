@@ -1,12 +1,13 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "./ui_FbxOptions.h"
-
+#include "./ui_Maintain.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , uiOpt(new Ui::FbxOptions)
+    , uiTree(new Ui::Maintain)
 {
 
     ui->setupUi(this);
@@ -22,6 +23,8 @@ MainWindow::MainWindow(QWidget *parent)
     //ui->menuFile->setStyleSheet("QMenu::item{color: white;}");
 
     ImplementFbxOptions();
+
+    ImplementTreeView();
     ui->progressBar->setValue(0);
 
     connect(ui->SourceFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
@@ -48,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ShowScripts,&QAction::triggered,this,&MainWindow::OnRevealFolder);
     connect(ui->ShowLogs,&QAction::triggered,this,&MainWindow::OnRevealFolder);
 
+    connect(ui->TestModel,&QPushButton::clicked,this,&MainWindow::OnTestModel);
 
     connect(ui->Quiter,&QAction::triggered,[this](){QCoreApplication::exit();});
     mProcess = new QProcess();
@@ -680,9 +684,56 @@ void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QString
     OutFiles.removeDuplicates();
 }
 
-void MainWindow::ImplementFbxOptions()
+void MainWindow::OnDirectoryFilterLoader()
 {
 
+}
+
+void MainWindow::OnTestModel()
+{
+
+   // qDebug() << "Model Debug " << Qt::endl;
+
+    // QModelIndex idx =  LeeModel->index(0,0);
+    // LeeModel->g
+    // qDebug() << "Model : " << idx.flags() << Qt::endl;
+
+    // int childrenCount = LeeModel->rowCount(idx);
+    // for(int i = 0; i < childrenCount; i++)
+    // {
+    //     QModelIndex child = LeeModel->index(i, 0, idx);
+
+    //     qDebug() << "Model 2: " << child.siblingAtRow(child.row()).data(Qt::Checked).toString() << Qt::endl;
+    // }
+    //qDebug() << "Model : " << idx.flags() << Qt::endl;
+
+    QModelIndexList indexes = uiTree->treeView->selectionModel()->selectedIndexes();
+    if(indexes.size() > 0){
+
+        for(auto idx : indexes){
+            if(idx.column() > 0) continue;
+            const QAbstractItemModel* qMol = idx.model();
+            qDebug() << "Model : " << qMol->data(idx,Qt::Checked) << Qt::endl;
+        }
+        // for(int i = 0 ; i < map.size(); ++i)
+        // {
+        //     qDebug() << "Model : " <<  << Qt::endl;
+        // }
+    }
+
+
+    QStringList checkeditems = LeeModel->GetCheckedItem();
+    for(auto item : checkeditems)
+        qDebug() << "Model 2: " << item << Qt::endl;
+
+}
+
+
+
+void MainWindow::ImplementFbxOptions()
+{
+    ///Implement Export OPtions
+    ///==============================
     Spoiler = new LeeSpoiler("Settings Maya And Blender",100,this);
     uiOpt->setupUi(Spoiler);
     connect(uiOpt->comboBox,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
@@ -696,8 +747,56 @@ void MainWindow::ImplementFbxOptions()
     Spoiler->setContentLayout(*vlayout);
    // ui->AuthorLayout->insertWidget(ui->AuthorLayout->count(),Spoiler);// ->addWidget(Spoiler);
     //ui->MainVLayout->layout()->addWidget(Spoiler);
-    ui->verticalLayout_3->insertWidget(ui->verticalLayout_3->count()-2,Spoiler,Qt::AlignHCenter);
+    ui->horizontalLayout_3->addWidget(Spoiler,Qt::AlignHCenter);
     //ui->verticalLayout_3->addWidget(Spoiler,Qt::AlignCenter);
+}
+
+void MainWindow::ImplementTreeView()
+{
+    MaintainSpoiler = new LeeSpoiler("Maintain",150,this);
+    uiTree->setupUi(MaintainSpoiler);
+
+
+    MaintainSpoiler->toggleButton->setStyleSheet("font: 700 11pt \"Sitka\"; color: rgb(255, 255, 255);");
+    // MaintainSpoiler->toggleButton->setMinimumSize(QSize(30,100));
+    MaintainSpoiler->toggleButton->setAutoRaise(true);
+    QHBoxLayout * vlayout = new QHBoxLayout();
+    QVBoxLayout* hlayout = new QVBoxLayout();
+    hlayout->addLayout(vlayout);
+    vlayout->addLayout(uiTree->gridLayout);
+    MaintainSpoiler->setContentLayout(*hlayout);
+
+
+    ui->MaintainV->addWidget(MaintainSpoiler);
+
+    QString directory = ui->SourceFolderText->toPlainText();
+    QDir dir(directory);
+
+    file3DFilter <<"*.ma" << "*.mb" << "*.blend";
+    directory = dir.exists(directory) ? directory : "C:/Users/thang/Documents/SourceFiles/";
+    ///
+    /// Init TreeView
+    ///
+
+
+    LeeModel = new LeeTreeModel(uiTree->treeView);
+    //TreeSysV = new QFileSystemModel(uiTree->treeView);
+    LeeModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
+    LeeModel->setNameFilterDisables(false);
+    LeeModel->setNameFilters(file3DFilter);
+    uiTree->treeView->setModel(LeeModel);
+
+    connect(LeeModel,&QFileSystemModel::directoryLoaded,this,&MainWindow::OnDirectoryFilterLoader);
+    uiTree->label->setText(directory);
+    uiTree->treeView->setRootIndex(LeeModel->setRootPath(directory));
+
+    ///set Avarage With column
+    float avgWidth = float(this->width()/LeeModel->columnCount());
+
+    for(int i = 0 ; i < LeeModel->columnCount() ; ++i)
+        uiTree->treeView->setColumnWidth(i,avgWidth);
+
+
 }
 
 QString MainWindow::GetExportPath(const QString inSourceFile, const QString inExportDir)

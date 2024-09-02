@@ -36,17 +36,23 @@ set(PROJECT_SOURCES
     include/consolecmd.h
     include/massfbxultilities.h
     include/impcmd.h
+    include/leetreemodel.h
+
 
     src/main.cpp
     src/mainwindow.cpp
 
     src/mainwindow.ui
     src/FbxOptions.ui
+    src/Maintain.ui
+
     src/leespoiler.cpp
     LeeAutoExportFBX.rc
     src/massfbxultilities.cpp
     src/consolecmd.cpp
     src/impcmd.cpp
+    src/leetreemodel.cpp
+
 
 
 )

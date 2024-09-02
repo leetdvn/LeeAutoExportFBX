@@ -20,6 +20,7 @@ private:
     QScrollArea* contentArea;
     int animationDuration;
     int collapsedHeight;
+    int collapsedWidth;
     bool isExpanded = false;
 
 public slots:
