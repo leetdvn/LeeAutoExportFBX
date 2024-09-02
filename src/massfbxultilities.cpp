@@ -214,3 +214,55 @@ int MassFbxUltilities::ExistObject(QJsonArray inArray, QJsonObject inObject, QSt
     }
     return -1;
 }
+
+QStringList MassFbxUltilities::GetFileNameFromDir(const QString inPathDir, QStringList inNames)
+{
+    QDir mDir(inPathDir);
+    QStringList files,Results;
+    QStringList filters;
+    filters << "*.ma" << "*.mb" << "*.blend";
+    if(!mDir.exists()) return files;
+
+    GetFilesInDir(inPathDir,files,filters);
+
+    for(int i = 0 ; i < inNames.count() ; ++i){
+
+        for(auto f : files)
+        {
+            QStringList split = f.split("/");
+            if(split[split.count()-1] != inNames[i]) continue;
+
+            qDebug() << "F : " << f << " Name : " << inNames[i] << Qt::endl;
+            Results.push_back(f);
+
+        }
+
+    }
+
+    return Results;
+
+}
+
+void MassFbxUltilities::GetFilesInDir(const QString inDir, QStringList &OutFiles, QStringList inFilters)
+{
+    QDir dir(inDir);
+    if(!dir.exists()) return;
+
+    QStringList files = dir.entryList(inFilters);
+
+    QStringList folders = dir.entryList(QDir::Dirs);
+
+
+    for(auto f : files){
+        QString sFile = inDir + f;
+        OutFiles.push_back(sFile);
+    }
+
+    for(auto fo : folders){
+        if(fo.endsWith(".") || fo.endsWith("..")) continue;
+        QString dirPath = inDir + fo + "/";
+        GetFilesInDir(dirPath,OutFiles,inFilters);
+    }
+
+    OutFiles.removeDuplicates();
+}

@@ -73,8 +73,6 @@ public slots:
 
     void OnMakeDirChanged(int value);
 
-    void GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters);
-
     void OnDirectoryFilterLoader();
 
     void OnTestModel();
@@ -136,6 +134,8 @@ private:
     void ScrollToNewLog();
 
     void ResetMem();
+
+    void OnStudioValidFailure();
 protected:
 
 
@@ -146,6 +146,8 @@ protected:
     void ImplementFbxOptions();
 
     void ImplementTreeView();
+
+    void InitFileSysModel();
 
     QString GetExportPath(const QString inSourceFile,const QString inExportDir);
 

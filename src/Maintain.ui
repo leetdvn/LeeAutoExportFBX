@@ -41,18 +41,34 @@ color:rgb(255, 255, 255);</string>
 	color:rgb(255, 255, 255);
      width: 20px;
  }
-QTreeView::menu {
+QHeaderView::section {
 	font: 700 11pt &quot;Times New Roman&quot;;     
+	background-color:rgb(46, 47, 48);
 	color:rgb(255, 255, 255);
      width: 20px;
  }</string>
        </property>
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+       </property>
        <property name="selectionMode">
-        <enum>QAbstractItemView::SelectionMode::MultiSelection</enum>
+        <enum>QAbstractItemView::SelectionMode::NoSelection</enum>
        </property>
        <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectionBehavior::SelectColumns</enum>
+        <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
        </property>
+       <property name="verticalScrollMode">
+        <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
+       </property>
+       <attribute name="headerVisible">
+        <bool>true</bool>
+       </attribute>
       </widget>
      </item>
     </layout>

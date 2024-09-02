@@ -12,9 +12,12 @@ LeeSpoiler::LeeSpoiler(const QString& title, const int animationDuration, QWidge
     contentArea = new QScrollArea(this);
     mainLayout = new QGridLayout(this);
 
+    UnfoldDirection = Qt::ArrowType::UpArrow;
+    foldDirection = Qt::ArrowType::DownArrow;
+
     toggleButton->setStyleSheet("QToolButton {border: none;}");
     toggleButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    toggleButton->setArrowType(Qt::ArrowType::RightArrow);
+    toggleButton->setArrowType(foldDirection);
     toggleButton->setText(title);
     toggleButton->setCheckable(true);
     toggleButton->setChecked(false);
@@ -43,11 +46,12 @@ LeeSpoiler::LeeSpoiler(const QString& title, const int animationDuration, QWidge
     setLayout(mainLayout);
 
     connect(toggleButton, &QToolButton::toggled, this, &LeeSpoiler::toggle);
+
 }
 
 void LeeSpoiler::toggle(bool expanded)
 {
-    toggleButton->setArrowType(expanded ? Qt::ArrowType::DownArrow : Qt::ArrowType::RightArrow);
+    toggleButton->setArrowType(expanded ? UnfoldDirection : foldDirection);
     toggleAnimation->setDirection(expanded ? QAbstractAnimation::Forward : QAbstractAnimation::Backward);
     toggleAnimation->start();
 
@@ -92,5 +96,10 @@ void LeeSpoiler::updateHeightsWidth(bool isWeight)
 
     toggleAnimation->setDirection(isExpanded ? QAbstractAnimation::Forward : QAbstractAnimation::Backward);
     toggleAnimation->start();
+}
+
+void LeeSpoiler::SetDirection(const Qt::ArrowType inType, bool isUnfold)
+{
+    isUnfold == false ? foldDirection = inType : UnfoldDirection = inType;
 }
 

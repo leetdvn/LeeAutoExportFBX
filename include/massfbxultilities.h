@@ -85,6 +85,12 @@ QStringList GetFileOwners(const QStringList infiles);
 
 int ExistObject(QJsonArray inArray,QJsonObject inObject,QString inKey);
 
+void GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters);
+
+
+//filter file
+QStringList GetFileNameFromDir(const QString inPathDir,QStringList inNames);
+
 };
 
 #endif // MASSFBXULTILITIES_H

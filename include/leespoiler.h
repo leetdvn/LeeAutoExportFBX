@@ -23,6 +23,10 @@ private:
     int collapsedWidth;
     bool isExpanded = false;
 
+    Qt::ArrowType foldDirection;
+
+    Qt::ArrowType UnfoldDirection;
+
 public slots:
     void toggle(bool collapsed);
 
@@ -42,6 +46,8 @@ public:
     void updateHeightsWidth(bool isWeight=false);
 
     QToolButton* toggleButton;
+
+    void SetDirection(const Qt::ArrowType inType, bool isUnfold=false);
 };
 
 #endif // LEESPOILER_H

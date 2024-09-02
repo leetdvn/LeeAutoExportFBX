@@ -4,6 +4,7 @@
 LeeTreeModel::LeeTreeModel(QObject *parent)
     :QFileSystemModel(parent)
 {
+    //setSty
 }
 
 LeeTreeModel::~LeeTreeModel()
@@ -48,7 +49,7 @@ bool LeeTreeModel::setData(const QModelIndex &index, const QVariant &value, int 
 Qt::ItemFlags LeeTreeModel::flags(const QModelIndex &index) const
 {
 
-    Qt::ItemFlags flag = index.column() > 1 ? Qt::NoItemFlags : Qt::ItemIsUserCheckable;
+    Qt::ItemFlags flag = index.column() > 1 ? Qt::NoItemFlags : Qt::ItemIsUserCheckable ;
 
     return QFileSystemModel::flags(index) | flag;
 }

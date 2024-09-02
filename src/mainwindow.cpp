@@ -24,7 +24,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     ImplementFbxOptions();
 
-    ImplementTreeView();
     ui->progressBar->setValue(0);
 
     connect(ui->SourceFolderText,&QTextEdit::textChanged, this, &MainWindow::OnTextChanged);
@@ -51,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ShowScripts,&QAction::triggered,this,&MainWindow::OnRevealFolder);
     connect(ui->ShowLogs,&QAction::triggered,this,&MainWindow::OnRevealFolder);
 
+    //test button
     connect(ui->TestModel,&QPushButton::clicked,this,&MainWindow::OnTestModel);
 
     connect(ui->Quiter,&QAction::triggered,[this](){QCoreApplication::exit();});
@@ -73,6 +73,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     //filter Blender
     BlenderFiles << "*.blend";
+
+
+    //Inti Maintain Folder
+    ImplementTreeView();
 
 
 }
@@ -99,6 +103,7 @@ void MainWindow::InfoEnv()
                          "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font><br>";
 
     logStr += MASSINFO.arg(_Pc,_Users,_Host =="" || _Host.isEmpty() || _Host.isNull() ? "empty" : _Host);
+    if(!IsAuthored) return;
     AddToLog(logStr,"white",true);
 }
 
@@ -534,13 +539,15 @@ bool MainWindow::StudioIsValid()
 {
     qDebug() << GetMacAdress() << Qt::endl;
     //My Mac Supervisor
-    if(GetMacAdress() == "10:7C:61:47:26:B1" || GetMacAdress() == "04:7C:16:E3:94:DB") {return true;}
+    if(GetMacAdress() == "10:7C:61:47:26:B1"|| GetMacAdress() == "04:7C:16:E3:94:DB" ) {return true;} //|| GetMacAdress() == "04:7C:16:E3:94:DB"
     //Studio PC Domain Name
     if(_Host == "giaoduc.edu") return true;
 
-    QString LogAuthor =  "Error : You cannot use the software without the consent of Plus Studio.";
+    QString LogAuthor =  "Error : You cannot use the software without the consent of Lee.";
 
-    AddToLog(LogAuthor,"red");
+    AddToLog(Error,LogAuthor);
+
+    OnStudioValidFailure();
 
     return false;
 }
@@ -660,30 +667,6 @@ void MainWindow::ResetMem()
     EpSourceFiles.clear();
 }
 
-void MainWindow::GetFilesInDir(const QString inDir,QStringList &OutFiles,QStringList inFilters)
-{
-    QDir dir(inDir);
-    if(!dir.exists()) return;
-
-    QStringList files = dir.entryList(inFilters);
-
-    QStringList folders = dir.entryList(QDir::Dirs);
-
-
-    for(auto f : files){
-        QString sFile = inDir + f;
-        OutFiles.push_back(sFile);
-    }
-
-    for(auto fo : folders){
-        if(fo.endsWith(".") || fo.endsWith("..")) continue;
-        QString dirPath = inDir + fo + "/";
-        GetFilesInDir(dirPath,OutFiles,inFilters);
-    }
-
-    OutFiles.removeDuplicates();
-}
-
 void MainWindow::OnDirectoryFilterLoader()
 {
 
@@ -691,44 +674,17 @@ void MainWindow::OnDirectoryFilterLoader()
 
 void MainWindow::OnTestModel()
 {
-
-   // qDebug() << "Model Debug " << Qt::endl;
-
-    // QModelIndex idx =  LeeModel->index(0,0);
-    // LeeModel->g
-    // qDebug() << "Model : " << idx.flags() << Qt::endl;
-
-    // int childrenCount = LeeModel->rowCount(idx);
-    // for(int i = 0; i < childrenCount; i++)
-    // {
-    //     QModelIndex child = LeeModel->index(i, 0, idx);
-
-    //     qDebug() << "Model 2: " << child.siblingAtRow(child.row()).data(Qt::Checked).toString() << Qt::endl;
-    // }
-    //qDebug() << "Model : " << idx.flags() << Qt::endl;
-
-    QModelIndexList indexes = uiTree->treeView->selectionModel()->selectedIndexes();
-    if(indexes.size() > 0){
-
-        for(auto idx : indexes){
-            if(idx.column() > 0) continue;
-            const QAbstractItemModel* qMol = idx.model();
-            qDebug() << "Model : " << qMol->data(idx,Qt::Checked) << Qt::endl;
-        }
-        // for(int i = 0 ; i < map.size(); ++i)
-        // {
-        //     qDebug() << "Model : " <<  << Qt::endl;
-        // }
-    }
-
-
+    //Get List Checked Item
     QStringList checkeditems = LeeModel->GetCheckedItem();
-    for(auto item : checkeditems)
-        qDebug() << "Model 2: " << item << Qt::endl;
+    // for(auto item : checkeditems)
+    //     qDebug() << "Model 2: " << item << Qt::endl;
 
+    QStringList files = GetFileNameFromDir(ui->SourceFolderText->toPlainText(),checkeditems);
+
+    for(auto f: files){
+        qDebug() << "Model result: " << f << Qt::endl;
+    }
 }
-
-
 
 void MainWindow::ImplementFbxOptions()
 {
@@ -737,8 +693,8 @@ void MainWindow::ImplementFbxOptions()
     Spoiler = new LeeSpoiler("Settings Maya And Blender",100,this);
     uiOpt->setupUi(Spoiler);
     connect(uiOpt->comboBox,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
-
-    Spoiler->toggleButton->setStyleSheet("font: 700 11pt \"Sitka\"; color: rgb(255, 255, 255);");
+    //font: 700 9pt "Times New Roman";
+    Spoiler->toggleButton->setStyleSheet("font: 700 11pt \"Times New Roman\"; color: rgb(255, 255, 255);");
     Spoiler->toggleButton->setAutoRaise(true);
     QVBoxLayout * vlayout = new QVBoxLayout();
     QHBoxLayout* hlayout = new QHBoxLayout();
@@ -749,15 +705,19 @@ void MainWindow::ImplementFbxOptions()
     //ui->MainVLayout->layout()->addWidget(Spoiler);
     ui->horizontalLayout_3->addWidget(Spoiler,Qt::AlignHCenter);
     //ui->verticalLayout_3->addWidget(Spoiler,Qt::AlignCenter);
+    this->setMinimumHeight(this->height() + Spoiler->height());
+
 }
 
 void MainWindow::ImplementTreeView()
 {
-    MaintainSpoiler = new LeeSpoiler("Maintain",150,this);
+    MaintainSpoiler = new LeeSpoiler("Custom Files",150,this);
+    MaintainSpoiler->SetDirection(Qt::UpArrow,true);
+    MaintainSpoiler->SetDirection(Qt::DownArrow);
     uiTree->setupUi(MaintainSpoiler);
 
 
-    MaintainSpoiler->toggleButton->setStyleSheet("font: 700 11pt \"Sitka\"; color: rgb(255, 255, 255);");
+    MaintainSpoiler->toggleButton->setStyleSheet("font: 700 11pt \"Times New Roman\"; color: rgb(255, 255, 255);");
     // MaintainSpoiler->toggleButton->setMinimumSize(QSize(30,100));
     MaintainSpoiler->toggleButton->setAutoRaise(true);
     QHBoxLayout * vlayout = new QHBoxLayout();
@@ -769,15 +729,28 @@ void MainWindow::ImplementTreeView()
 
     ui->MaintainV->addWidget(MaintainSpoiler);
 
-    QString directory = ui->SourceFolderText->toPlainText();
-    QDir dir(directory);
+    /// Init TreeView
+    InitFileSysModel();
 
-    file3DFilter <<"*.ma" << "*.mb" << "*.blend";
-    directory = dir.exists(directory) ? directory : "C:/Users/thang/Documents/SourceFiles/";
+}
+
+void MainWindow::InitFileSysModel()
+{
+
     ///
     /// Init TreeView
     ///
+    QString directory = ui->SourceFolderText->toPlainText();
+    QDir dir(directory);
 
+    if(!dir.exists()){
+        uiTree->label->setText("Source folder is empty");
+        return;
+    }
+
+    file3DFilter <<"*.ma" << "*.mb" << "*.blend";
+
+    QString TreeLabel = QString("Folder Path : %1").arg(directory);
 
     LeeModel = new LeeTreeModel(uiTree->treeView);
     //TreeSysV = new QFileSystemModel(uiTree->treeView);
@@ -785,18 +758,19 @@ void MainWindow::ImplementTreeView()
     LeeModel->setNameFilterDisables(false);
     LeeModel->setNameFilters(file3DFilter);
     uiTree->treeView->setModel(LeeModel);
-
-    connect(LeeModel,&QFileSystemModel::directoryLoaded,this,&MainWindow::OnDirectoryFilterLoader);
-    uiTree->label->setText(directory);
+    uiTree->label->setText(TreeLabel);
     uiTree->treeView->setRootIndex(LeeModel->setRootPath(directory));
+    uiTree->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    //test button
+    connect(LeeModel,&QFileSystemModel::directoryLoaded,this,&MainWindow::OnDirectoryFilterLoader);
 
     ///set Avarage With column
-    float avgWidth = float(this->width()/LeeModel->columnCount());
-
-    for(int i = 0 ; i < LeeModel->columnCount() ; ++i)
-        uiTree->treeView->setColumnWidth(i,avgWidth);
-
-
+    float windowWidth = this->width();
+    float avgWidth = float(windowWidth/LeeModel->columnCount());
+    for(int i = 0 ; i < LeeModel->columnCount() ; ++i){
+        float value = i == 0 ? windowWidth/2 : avgWidth/2;
+        uiTree->treeView->setColumnWidth(i,value);
+    }
 }
 
 QString MainWindow::GetExportPath(const QString inSourceFile, const QString inExportDir)
@@ -1102,3 +1076,8 @@ void MainWindow::OnMakeDirChanged(int value)
     SaveToLocal(LMakeDir,QString::number(value));
 }
 
+
+void MainWindow::OnStudioValidFailure()
+{
+    this->setDisabled(true);
+}
