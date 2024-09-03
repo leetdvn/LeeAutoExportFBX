@@ -364,18 +364,25 @@ color:rgb(255, 255, 255);</string>
      <x>0</x>
      <y>0</y>
      <width>804</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QMenuBar::item { color: white; background-color:black; };</string>
+    <string notr="true">font: 700 9pt &quot;Times New Roman&quot;;
+color:white; QMenuBar::item::selected {background-color:rgb(46, 47, 48) }
+
+
+</string>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="autoFillBackground">
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">QMenu::item{color: white;}</string>
+     <string notr="true">QMenu::item{color: white;}
+QMenu::item::selected{
+color:yellow;
+}</string>
     </property>
     <property name="title">
      <string>File</string>
@@ -391,7 +398,10 @@ color:rgb(255, 255, 255);</string>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="styleSheet">
-     <string notr="true">QMenu::item{color: white;}</string>
+     <string notr="true">QMenu::item{color: white;}
+QMenu::item::selected{
+color:yellow;
+}</string>
     </property>
     <property name="title">
      <string>Edit</string>
@@ -401,7 +411,10 @@ color:rgb(255, 255, 255);</string>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="styleSheet">
-     <string notr="true">QMenu::item{color: white;}</string>
+     <string notr="true">QMenu::item{color: white;}
+QMenu::item::selected{
+color:yellow;
+}</string>
     </property>
     <property name="title">
      <string>View</string>

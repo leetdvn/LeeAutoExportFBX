@@ -179,28 +179,13 @@ class MassExportFbx():
         return checkloaded
 
     def InitScriptExpSkeletal(self,scriptLoc):
-        pass
-
-        
-    ####################MASSEXPORT FUNC###########################################
-    def LeeMassExport(self,Fbx_platform='AutoRigPro'):
-        Export = "MassExport"
-        col = bpy.data.collections[Export]
-
-        if not self.ArpIsLoaded():
-            print("AutoRigPro Addons: is Not Found..")
-            return
-        #bpy.ops.object.make_local(type='ALL')
-        try:
-            bpy.ops.object.mode_set(mode = 'OBJECT')
-        except: pass
-
-        armature = self.GetObjectTypes(col,'ARMATURE')
-        if armature.__len__() <= 0: return
-
         dir = os.path.dirname(os.path.abspath(__file__))
 
         SkeBaseScr  = str("{sdir}/BaseExport.py").format(sdir=dir)
+
+        #Script Exists check
+        #if not os.path.exists(SkeBaseScr): return
+        print("Scripts",SkeBaseScr)
         f = open(SkeBaseScr,'r')
         text= f.read()
         f.close()
@@ -227,8 +212,27 @@ class MassExportFbx():
                 transientPath.append(scrPath)
                 #print("Command  : " ,iCmd ,infoCmd)
 
+
+        
+    ####################MASSEXPORT FUNC###########################################
+    def LeeMassExport(self,Fbx_platform='AutoRigPro'):
+        Export = "MassExport"
+        col = bpy.data.collections[Export]
+
+        if not self.ArpIsLoaded():
+            print("AutoRigPro Addons: is Not Found..")
+            return
+        #bpy.ops.object.make_local(type='ALL')
+        try:
+            bpy.ops.object.mode_set(mode = 'OBJECT')
+        except: pass
+
+        armature = self.GetObjectTypes(col,'ARMATURE')
+
+        if armature.__len__() <= 0: return
+
         ##=================BAKE====================
-        #self.LeeBakeFunc(Export)
+        self.LeeBakeFunc(Export)
 
         for arm in armature:
             self.ClearSelection()
@@ -242,7 +246,7 @@ class MassExportFbx():
                     self.set_active_object(geo.name)
 
             self.set_active_object(arm.name)
-            expPath = self.ExportDir + arm.name + ".fbx"
+            expPath = str(self.ExportDir).format(fName=arm.name) + ".fbx"
             if Fbx_platform=="Blender":
                 bpy.ops.export_scene.fbx(filepath=expPath,
                                             use_selection=True,
@@ -254,7 +258,7 @@ class MassExportFbx():
                 
             elif Fbx_platform=="AutoRigPro":
                 try:
-                    #self.LeeArpExport(expPath)
+                    self.LeeArpExport(expPath)
                     print("Exported  : " + expPath + "\n")
                 except:
                     print("Issue Export: " + expPath)
