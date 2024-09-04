@@ -24,7 +24,12 @@ void ImpCmd::MayExecuteExp()
     }
 
     SoftwereType soft = MSourcePath.endsWith(".blend") ? Blender :  Maya;
+
+
     QString Cmd= MakeConsoleCmd(soft);
+
+    //Init Base SKeletal
+    InitSkeletalExp(soft);
 
 
     MExProcess = new QProcess();
@@ -98,6 +103,7 @@ void ImpCmd::ReadLogs()
 
     QStringList Lines = Logs.split("\r\n");
 
+    QString allLog = line + err;
     if(err !="")
         qDebug() << "LeeLog : " << err << Qt::endl;
     for(auto l : Lines){
@@ -115,9 +121,9 @@ void ImpCmd::ReadLogs()
     ListFbxs.removeDuplicates();
     //Debug Log
     QFile logfile(LogPath);
-    if(logfile.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    if(logfile.open(QIODevice::WriteOnly | QIODevice::Append))
     {
-        logfile.write(line.toLocal8Bit());
+        logfile.write(allLog.toLocal8Bit());
         logfile.close();
     }
 
@@ -154,4 +160,32 @@ bool ImpCmd::ConsoleExists(QList<ImpCmd *> inList)
             return true;
     }
     return false;
+}
+
+void ImpCmd::InitSkeletalExp(const SoftwereType inBlender)
+{
+    if(inBlender !=Blender ||  !isExportSkeletal) return;
+    {
+        QString ScrSkeletal = SCRIPTDIR + "BaseExport.py";
+        QFile SkelfileBase(ScrSkeletal);
+
+        ///Create Script Base Export Skeletal with base
+        if(!SkelfileBase.exists()){
+            qDebug() << "Base Script does not exists.. " << Qt::endl;
+            return;
+        }
+
+        SkeletalDir = GetDirectoryFromFile(SKELETALSCR) ;//+ "BaseSkeletal/";//"BaseScripts.py
+
+        QFile SkeletalF(SKELETALSCR);
+
+        QString content = GetContentFile(ScrSkeletal);
+        if(SkeletalF.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        {
+            SkeletalF.write(content.toLocal8Bit());
+            SkeletalF.close();
+        }
+
+
+    }
 }

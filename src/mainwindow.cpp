@@ -913,73 +913,79 @@ void MainWindow::OnCmdStarted()
 
 void MainWindow::ImplementExport(int fileNumber)
 {
-    if(fileNumber >= EpSourceFiles.count()||
-        fileNumber < 0){
-        qDebug() << "index Out Range " << Qt::endl;
-        return;
-    }
 
-    bool isMakeDir = uiOpt->makedirBox->isChecked();
-    ui->progressBar->setFormat("Running %p%");
+    {
+        if(fileNumber >= EpSourceFiles.count()||
+            fileNumber < 0){
+            qDebug() << "index Out Range " << Qt::endl;
+            return;
+        }
 
-    bool IsMakeBase = uiOpt->EBaseSkeleton->isChecked();
+        bool isMakeDir = uiOpt->makedirBox->isChecked();
+        ui->progressBar->setFormat("Running %p%");
 
-    QString finalExpDir = MakeTreeDirectory(EpSourceFiles[fileNumber],
-                        ui->SourceFolderText->toPlainText(),
-                        ui->ExportFolderText->toPlainText(),IsMakeBase);
-    //Maya Exp Refactored..
-    ImpCmd* mCmd = new ImpCmd(EpSourceFiles[fileNumber],finalExpDir);
-    mCmd->SetExpId(fileNumber);
-    //Set Source Dir
-    mCmd->SetSourceDir(ui->SourceFolderText->toPlainText());
-    //Set Program
-    mCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
-    //Set Id
-    mCmd->SetExpId(EpCount+1);
-    //Set Blender Kit
-    if (EpSourceFiles[fileNumber].endsWith(".blend")){
-        //Properties Kit Fbx for Blender
-        QString Kit = uiOpt->FbxBlenderKit->currentText().startsWith("Auto") ? "AutoRigPro" : "Blender";
-        mCmd->setProperty("FbxKit",Kit);
+        bool IsMakeBase = uiOpt->EBaseSkeleton->isChecked();
+
+        QString finalExpDir = MakeTreeDirectory(EpSourceFiles[fileNumber],
+                            ui->SourceFolderText->toPlainText(),
+                            ui->ExportFolderText->toPlainText(),IsMakeBase);
+        //Maya Exp Refactored..
+        ImpCmd* mCmd = new ImpCmd(EpSourceFiles[fileNumber],finalExpDir);
+
+        //Base Skeletal
+        mCmd->SetExportSkeletal(uiOpt->EBaseSkeleton->isChecked());
+
+        mCmd->SetExpId(fileNumber);
+        //Set Source Dir
+        mCmd->SetSourceDir(ui->SourceFolderText->toPlainText());
+        //Set Program
+        mCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
+        //Set Id
+        mCmd->SetExpId(EpCount+1);
+        //Set Blender Kit
+        if (EpSourceFiles[fileNumber].endsWith(".blend")){
+            //Properties Kit Fbx for Blender
+            QString Kit = uiOpt->FbxBlenderKit->currentText().startsWith("Auto") ? "AutoRigPro" : "Blender";
+            mCmd->setProperty("FbxKit",Kit);
+            mCmd->SetScriptPlatForm();
+
+        }
+
+        QString FbxOpt{};
+
+        if(uiOpt->EBaseSkeleton->isChecked())
+            FbxOpt="BaseSkeleton";
+        else
+            FbxOpt="AnimOnly";
+
+        if(uiOpt->LeeGeometry->isChecked())
+            mCmd->setProperty("Mesh","On");
+        //set Property for Maya
+        mCmd->setProperty("FbxOpt",FbxOpt);
+
         mCmd->SetScriptPlatForm();
 
+
+        ///Connecttion
+        connect(mCmd,&ImpCmd::OnStart,this,&MainWindow::OnCmdStarted);
+
+        qRegisterMetaType<QString>("QString&");
+
+        connect(mCmd,SIGNAL(OnReadLogs(QString&,QString&)),this,SLOT(OnLogs(QString&,QString&)));
+
+        connect(mCmd,&ImpCmd::OnFinish,this,&MainWindow::OnCmdFinish);
+        mCmd->GetProcess()->waitForStarted();
+        if(!mCmd->Message.isEmpty())
+            AddToLog(mCmd->Message);
+
+        EpCount++;
+
+       // mImpCmd = mCmd;
+
+        //list Threding Add to List
+        if(!mCmd->ConsoleExists(ListCmds))
+            ListCmds.push_back(mCmd);
     }
-
-    QString FbxOpt{};
-
-    if(uiOpt->EBaseSkeleton->isChecked())
-        FbxOpt="BaseSkeleton";
-    else
-        FbxOpt="AnimOnly";
-
-    if(uiOpt->LeeGeometry->isChecked())
-        mCmd->setProperty("Mesh","On");
-    //set Property for Maya
-    mCmd->setProperty("FbxOpt",FbxOpt);
-
-    mCmd->SetScriptPlatForm();
-
-
-    ///Connecttion
-    connect(mCmd,&ImpCmd::OnStart,this,&MainWindow::OnCmdStarted);
-
-    qRegisterMetaType<QString>("QString&");
-
-    connect(mCmd,SIGNAL(OnReadLogs(QString&,QString&)),this,SLOT(OnLogs(QString&,QString&)));
-
-    connect(mCmd,&ImpCmd::OnFinish,this,&MainWindow::OnCmdFinish);
-    mCmd->GetProcess()->waitForStarted();
-    if(!mCmd->Message.isEmpty())
-        AddToLog(mCmd->Message);
-
-    EpCount++;
-
-   // mImpCmd = mCmd;
-
-    //list Threding Add to List
-    if(!mCmd->ConsoleExists(ListCmds))
-        ListCmds.push_back(mCmd);
-
 }
 
 void MainWindow::ExpNext()
@@ -1075,7 +1081,6 @@ void MainWindow::OnMakeDirChanged(int value)
     qDebug() << "Make Dir " << value <<  Qt::endl;
     SaveToLocal(LMakeDir,QString::number(value));
 }
-
 
 void MainWindow::OnStudioValidFailure()
 {

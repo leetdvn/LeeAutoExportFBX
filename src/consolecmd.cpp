@@ -122,8 +122,8 @@ void ConsoleCmd::SetScriptPlatForm()
     QString Mesh = property("Mesh").toString();
 
     QString sContent = BaseScr.endsWith(".py") ?
-        ScriptCont.arg(MExportDir,BlKit,Mesh,MASSFBXDIR + "Scripts/",MProgram):
-        ScriptCont.arg(MExportDir,FbxOpt,Mesh);
+                        ScriptCont.arg(MExportDir,BlKit,Mesh,MASSFBXDIR+ "Scripts/",BProgram,FbxOpt):
+                        ScriptCont.arg(MExportDir,FbxOpt,Mesh);
 
 
     QFile Script(ScriptPath);

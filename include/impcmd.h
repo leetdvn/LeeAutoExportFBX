@@ -34,6 +34,10 @@ public:
     QStringList ListFbxs;
 
 
+    void SetExportSkeletal(bool isSkeletal) {isExportSkeletal=isSkeletal;}
+
+    bool GetExportSkeletal() {return isExportSkeletal;}
+
 signals:
     void OnStart();
 
@@ -48,6 +52,12 @@ private:
     bool IsRuning=false;
 
     int ExpId=0;
+
+    bool isExportSkeletal;
+
+    void InitSkeletalExp(const SoftwereType Blender);
+
+    QString SkeletalDir;
 
 private slots:
     void OnExpStart();

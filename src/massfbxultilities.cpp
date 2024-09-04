@@ -266,3 +266,19 @@ void MassFbxUltilities::GetFilesInDir(const QString inDir, QStringList &OutFiles
 
     OutFiles.removeDuplicates();
 }
+
+QString MassFbxUltilities::GetDirectoryFromFile(const QString inFile)
+{
+    if(inFile.isEmpty()) return QString();
+
+    QStringList result = inFile.split("/");
+
+    QString dirpath ;
+    int count{};
+    for(auto str : result){
+        if(str != result[result.count()-1])
+            dirpath += str + "/";
+        count++;
+    }
+    return dirpath;
+}

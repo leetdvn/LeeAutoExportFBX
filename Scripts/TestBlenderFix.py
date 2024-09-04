@@ -8,10 +8,10 @@ import os
 class MassExportFbx():
 
     def __init__(self) -> None:
-        self.ExportDir=str('%1{fName}')
-        self.ScriptDir=str('%4{py}')
-        self.blProgram =str('%5')
-        self.Skeletal = str('%6')
+        self.ExportDir=str('C:/Users/leepl/Documents/Exports/Blender/Shot 003_Final_V4/{fName}')
+        self.ScriptDir=str('C:/Users/leepl/AppData/Local/LeeMassFbx/Scripts/{py}')
+        self.blProgram =str('C:/Program Files/Autodesk/Maya2020/bin/mayabatch.exe')
+        self.Skeletal = str('AnimOnly')
         pass
 
     def GetSelections(self):
@@ -220,7 +220,7 @@ class MassExportFbx():
         Export = "MassExport"
         col = bpy.data.collections[Export]
 
-        #self.ArpIsLoaded()
+        self.ArpIsLoaded()
         # if not self.ArpIsLoaded():
         #     print("AutoRigPro Addons: is Not Found..")
         #     return
@@ -232,15 +232,12 @@ class MassExportFbx():
         armature = self.GetObjectTypes(col,'ARMATURE')
 
         if armature.__len__() <= 0: return
-        
-        self.LeeBakeFunc(Export)
 
-        if self.Skeletal.endswith("BaseSkeleton"):
-            self.InitScriptExpSkeletal()
+        # if self.Skeletal.endswith("BaseSkeleton"):
+        #     self.InitScriptExpSkeletal()
 
         ##=================BAKE====================
-
-        #bpy.ops.object.make_local(type='ALL')
+        self.LeeBakeFunc(Export)
 
         for arm in armature:
             self.ClearSelection()
@@ -250,7 +247,7 @@ class MassExportFbx():
                 try:
                     geo.make_local()
                 except: pass
-                if str("%3").startswith("On"):
+                if str("").startswith("On"):
                     self.set_active_object(geo.name)
 
             self.set_active_object(arm.name)
@@ -276,6 +273,6 @@ class MassExportFbx():
         #     if pyf.closed:
         #         os.remove(f)
 
-fbx_Addon = '%2'
+fbx_Addon = 'AutoRigPro'
 MassFbx = MassExportFbx()
 MassFbx.LeeMassExport(fbx_Addon)
