@@ -52,9 +52,6 @@ set(PROJECT_SOURCES
     src/consolecmd.cpp
     src/impcmd.cpp
     src/leetreemodel.cpp
-
-
-
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

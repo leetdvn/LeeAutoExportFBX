@@ -28,6 +28,7 @@
 #include <QFileSystemModel>
 #include <leetreemodel.h>
 #include <QTextEdit>
+#include <QSortFilterProxyModel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -75,7 +76,7 @@ public slots:
 
     void OnExportClicked();
 
-    void OnComboBoxChanged(int valuechanged);
+    void OnSoftWereChanged(const QString& textchanged);
 
     void OnMakeDirChanged(int value);
 

@@ -44,8 +44,6 @@ bool LeeTreeModel::setData(const QModelIndex &index, const QVariant &value, int 
 
 }
 
-
-
 Qt::ItemFlags LeeTreeModel::flags(const QModelIndex &index) const
 {
 

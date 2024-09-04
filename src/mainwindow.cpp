@@ -206,9 +206,18 @@ void MainWindow::OnBrowserFolder()
             //qDebug() << senderButton->objectName() << Qt::endl;
             if(senderButton->objectName()== ui->SourceBrowserBtn->objectName())
             {
-
                 ui->SourceFolderText->setText(dir);
                 SaveToLocal(LSource,dir);
+                if(uiTree->treeView !=nullptr)
+                {
+                    if(LeeModel !=nullptr){
+                        uiTree->treeView->setRootIndex(LeeModel->setRootPath(dir));
+                        uiTree->label->setText(QString("Folder Path : %1").arg(dir));
+                    }
+                }
+
+                // if(TreeSysV !=nullptr)
+                //     TreeSysV->setRootPath(dir);
             }
             else{
                 ui->ExportFolderText->setText(dir);
@@ -738,8 +747,8 @@ void MainWindow::ImplementFbxOptions()
     ///==============================
     Spoiler = new LeeSpoiler("Settings Maya And Blender",100,this);
     uiOpt->setupUi(Spoiler);
-    connect(uiOpt->LeeSoft,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
-    connect(uiOpt->FbxBlenderKit,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
+    connect(uiOpt->LeeSoft,&QComboBox::currentTextChanged,this,&MainWindow::OnSoftWereChanged);
+    connect(uiOpt->FbxBlenderKit,&QComboBox::currentTextChanged,this,&MainWindow::OnSoftWereChanged);
     //font: 700 9pt "Times New Roman";
     Spoiler->toggleButton->setStyleSheet("font: 700 11pt \"Times New Roman\"; color: rgb(255, 255, 255);");
     Spoiler->toggleButton->setAutoRaise(true);
@@ -800,14 +809,27 @@ void MainWindow::InitFileSysModel()
     QString TreeLabel = QString("Folder Path : %1").arg(directory);
 
     LeeModel = new LeeTreeModel(uiTree->treeView);
+
+    //QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(this);
+
+    //uiTree->treeView->setModel(proxyModel);
+    //proxyModel->setSourceModel(LeeModel);
+    //proxyModel->
     //TreeSysV = new QFileSystemModel(uiTree->treeView);
-    LeeModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
-    LeeModel->setNameFilterDisables(false);
-    LeeModel->setNameFilters(file3DFilter);
+
     uiTree->treeView->setModel(LeeModel);
-    uiTree->label->setText(TreeLabel);
     uiTree->treeView->setRootIndex(LeeModel->setRootPath(directory));
+    LeeModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
+    LeeModel->setNameFilters(file3DFilter);
+    LeeModel->setNameFilterDisables(false);
+    //proxyModel->setFilterFixedString("\.ma");
+    // proxyModel->setFilterRegularExpression(QRegularExpression("*.ma", QRegularExpression::CaseInsensitiveOption));
+    // proxyModel->setFilterKeyColumn(1);
+
+    uiTree->label->setText(TreeLabel);
     uiTree->treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+
     //test button
     connect(LeeModel,&QFileSystemModel::directoryLoaded,this,&MainWindow::OnDirectoryFilterLoader);
 
@@ -1103,32 +1125,24 @@ void MainWindow::OnLogs(QString &inLog,QString &Err)
     //Show Log Console
     if(!ui->LeeDebugConsole->isChecked()) return;
 
-
     AddToLog(iLog);
     AddToLog(Error,Err);
     ScrollToNewLog();
 
 }
 
-void MainWindow::OnComboBoxChanged(int valuechanged)
+void MainWindow::OnSoftWereChanged(const QString & textchanged)
 {
-
     QComboBox* box = qobject_cast<QComboBox*>(sender());
 
-    QString textChanged;
-    switch (valuechanged) {
-        case 1:{textChanged="Settings Maya";break;}
-        case 2:{textChanged="Settings Blender";break;}
-        case 0:{textChanged="Settings Maya And Blender";break;}
+    if(box == nullptr) return;
+
+    if(box->objectName().endsWith("LeeSoft")){
+        SaveToLocal(LSoft,QString("%1").arg(textchanged));
+        Spoiler->toggleButton->setText(QString("Settings %1").arg(textchanged));
     }
-
-    Spoiler->toggleButton->setText(textChanged);
-
-    if(box->objectName().endsWith("LeeSoft"))
-        SaveToLocal(LSoft,uiOpt->LeeSoft->currentText());
     else if(box->objectName()=="FbxBlenderKit")
-        SaveToLocal(LKit,uiOpt->FbxBlenderKit->currentText());
-
+        SaveToLocal(LKit,QString("%1").arg(textchanged));
 }
 
 void MainWindow::OnMakeDirChanged(int value)
