@@ -43,6 +43,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ExportExecute,&QPushButton::clicked,this,&MainWindow::OnExportClicked);
 
     connect(uiOpt->makedirBox,&QCheckBox::stateChanged,this,&MainWindow::OnMakeDirChanged);
+    connect(uiOpt->EBaseSkeleton,&QCheckBox::stateChanged,this,&MainWindow::OnMakeDirChanged);
+    connect(uiOpt->LeeGeometry,&QCheckBox::stateChanged,this,&MainWindow::OnMakeDirChanged);
 
     connect(ui->ShowExploder,&QAction::triggered,this,&MainWindow::OnRevealFolder);
     connect(ui->ShowExport,&QAction::triggered,this,&MainWindow::OnRevealFolder);
@@ -288,7 +290,7 @@ void MainWindow::OnExportClicked()
     for(auto ff : filters)
         FilLog+= ff;
 
-    QString ShowType = "Export Type : " + uiOpt->comboBox->currentText();
+    QString ShowType = "Export Type : " + uiOpt->LeeSoft->currentText();
     AddToLog(Warning,ShowType);
     qDebug() << FilLog << Qt::endl;
 
@@ -340,10 +342,10 @@ void MainWindow::OnExportClicked()
 
 QStringList MainWindow::InitFillters()
 {
-    if(uiOpt->comboBox == nullptr)
+    if(uiOpt->LeeSoft == nullptr)
         SourceType=1;
 
-    SourceType = uiOpt->comboBox->currentIndex();
+    SourceType = uiOpt->LeeSoft->currentIndex();
 
     if(SourceType < 0) { return MayaFiles ;}
 
@@ -480,6 +482,22 @@ void MainWindow::SaveToLocal(DataPath inType,const QString inContent)
             Session="Makedir";
             break;
         }
+        case LMesh: {
+            Session="Mesh";
+            break;
+        }
+        case LSkeleton:{
+            Session ="Skeletal";
+            break;
+        }
+        case LSoft : {
+            Session = "SoftWare";
+            break;
+        }
+        case LKit : {
+            Session = "FbxKit";
+            break;
+        }
     }
 
     qDebug() << "ip : " << inType << "Sess : " << Session << "path : " << inContent <<  Qt::endl;
@@ -498,6 +516,26 @@ void MainWindow::SaveToLocal(DataPath inType,const QString inContent)
 
 void MainWindow::LoadRecentData()
 {
+    //Loadd All Text Edit Data
+    SetTextLine(ui->MayaText,GetDataFromKey("BatchMaya").toString());
+    SetTextLine(ui->BlenderText,GetDataFromKey("Blender").toString());
+    SetTextLine(ui->SourceFolderText,GetDataFromKey("SourcePath").toString());
+    SetTextLine(ui->ExportFolderText,GetDataFromKey("ExportPath").toString());
+
+    //Load All Check Box Data
+    SetCheckBox(uiOpt->makedirBox,GetDataFromKey("Makedir").toString()=="2" ? true :false);
+    SetCheckBox(uiOpt->LeeGeometry,GetDataFromKey("Mesh").toString()=="2" ? true :false);
+    SetCheckBox(uiOpt->EBaseSkeleton,GetDataFromKey("Skeletal").toString()=="2" ? true :false);
+
+    //Load ALl Combo Box Data
+    SetComboText(uiOpt->LeeSoft,GetDataFromKey("SoftWare").toString());
+    SetComboText(uiOpt->FbxBlenderKit,GetDataFromKey("FbxKit").toString());
+
+}
+
+QJsonValue MainWindow::GetDataFromKey(const QString key)
+{
+
     QJsonDocument jdoc;
     QFile jfile(localfilePath);
     if(jfile.exists()){
@@ -508,20 +546,28 @@ void MainWindow::LoadRecentData()
         }
         jfile.close();
     }
-
     QJsonObject jobj = jdoc.object();
-    QJsonValue maya = jobj.value("BatchMaya");
-    QJsonValue blender = jobj.value("Blender");
-    QJsonValue source = jobj.value("SourcePath");
-    QJsonValue exp = jobj.value("ExportPath");
-    QJsonValue mDir = jobj.value("Makedir");
-    ui->MayaText->setText(maya.toString());
-    ui->BlenderText->setText(blender.toString());
-    ui->SourceFolderText->setText(source.toString());
-    ui->ExportFolderText->setText(exp.toString());
+    return jobj.value(key);
+}
 
-    bool checked = mDir.toString() == "2" ? true : false;
-    uiOpt->makedirBox->setChecked(checked);
+void MainWindow::SetCheckBox(QCheckBox *box, bool isChecked)
+{
+    if(box ==nullptr) return;
+
+    return box->setChecked(isChecked);
+}
+
+void MainWindow::SetTextLine(QTextEdit *text, const QString intext)
+{
+    if(text ==nullptr) return;
+    return text->setText(intext);
+}
+
+void MainWindow::SetComboText(QComboBox *box, const QString intext)
+{
+    if(box ==nullptr) return;
+    return box->setCurrentText(intext);
+
 }
 
 QString MainWindow::GetMacAdress()
@@ -554,7 +600,7 @@ bool MainWindow::StudioIsValid()
 
 bool MainWindow::IsValidSoft()
 {
-    QString SoftOptions = uiOpt->comboBox->currentText();
+    QString SoftOptions = uiOpt->LeeSoft->currentText();
     bool result = false;
     QString CLog;//= ui->LeeLog->toHtml();
 
@@ -692,7 +738,8 @@ void MainWindow::ImplementFbxOptions()
     ///==============================
     Spoiler = new LeeSpoiler("Settings Maya And Blender",100,this);
     uiOpt->setupUi(Spoiler);
-    connect(uiOpt->comboBox,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
+    connect(uiOpt->LeeSoft,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
+    connect(uiOpt->FbxBlenderKit,&QComboBox::currentIndexChanged,this,&MainWindow::OnComboBoxChanged);
     //font: 700 9pt "Times New Roman";
     Spoiler->toggleButton->setStyleSheet("font: 700 11pt \"Times New Roman\"; color: rgb(255, 255, 255);");
     Spoiler->toggleButton->setAutoRaise(true);
@@ -819,7 +866,7 @@ QString MainWindow::GetExportPath(const QString inSourceFile, const QString inEx
 
 SoftwereType MainWindow::GetSoftWareType()
 {
-    int SType = uiOpt->comboBox->currentIndex();
+    int SType = uiOpt->LeeSoft->currentIndex();
 
     switch (SType) {
         case 0: return Maya;
@@ -1065,7 +1112,9 @@ void MainWindow::OnLogs(QString &inLog,QString &Err)
 
 void MainWindow::OnComboBoxChanged(int valuechanged)
 {
-    qDebug() << "Value Changed " << valuechanged << Qt::endl;
+
+    QComboBox* box = qobject_cast<QComboBox*>(sender());
+
     QString textChanged;
     switch (valuechanged) {
         case 1:{textChanged="Settings Maya";break;}
@@ -1074,12 +1123,25 @@ void MainWindow::OnComboBoxChanged(int valuechanged)
     }
 
     Spoiler->toggleButton->setText(textChanged);
+
+    if(box->objectName().endsWith("LeeSoft"))
+        SaveToLocal(LSoft,uiOpt->LeeSoft->currentText());
+    else if(box->objectName()=="FbxBlenderKit")
+        SaveToLocal(LKit,uiOpt->FbxBlenderKit->currentText());
+
 }
 
 void MainWindow::OnMakeDirChanged(int value)
 {
+    QCheckBox* chBox = qobject_cast<QCheckBox*>(sender());
     qDebug() << "Make Dir " << value <<  Qt::endl;
-    SaveToLocal(LMakeDir,QString::number(value));
+
+    if(chBox->objectName()=="makedirBox")
+        SaveToLocal(LMakeDir,QString::number(value));
+    else if(chBox->objectName() =="LeeGeometry")
+        SaveToLocal(LMesh,QString::number(value));
+    else if(chBox->objectName()=="EBaseSkeleton")
+        SaveToLocal(LSkeleton,QString::number(value));
 }
 
 void MainWindow::OnStudioValidFailure()

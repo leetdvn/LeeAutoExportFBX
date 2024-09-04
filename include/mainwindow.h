@@ -17,6 +17,7 @@
 #include <omp.h>
 #include <QHostInfo>
 #include <QNetworkInterface>
+#include <qcombobox.h>
 #include <qmessagebox.h>
 #include <massfbxultilities.h>
 #include <impcmd.h>
@@ -26,6 +27,7 @@
 #include <QTreeView>
 #include <QFileSystemModel>
 #include <leetreemodel.h>
+#include <QTextEdit>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -41,7 +43,11 @@ enum DataPath
     LBlender,
     LSource,
     LExport,
-    LMakeDir
+    LMakeDir,
+    LMesh,
+    LSkeleton,
+    LSoft,
+    LKit
 };
 
 const QString LogsFileName = "ExportsLogs.plus";
@@ -114,6 +120,15 @@ private:
     void SaveToLocal(DataPath inType,const QString inContent);
 
     void LoadRecentData();
+
+    QJsonValue GetDataFromKey(const QString key);
+
+    void SetCheckBox(QCheckBox* box , bool isChecked);
+
+    void SetTextLine(QTextEdit* text ,const QString intext);
+
+    void SetComboText(QComboBox* box ,const QString intext);
+
 
     QString localfilePath="C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/LeeMassFbx.json";
 

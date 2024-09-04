@@ -134,7 +134,7 @@ color:rgb(255, 255, 255);</string>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox">
+      <widget class="QComboBox" name="LeeSoft">
        <property name="font">
         <font>
          <family>Times New Roman</family>
