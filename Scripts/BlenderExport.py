@@ -182,7 +182,7 @@ class MassExportFbx():
     def InitScriptExpSkeletal(self,scriptLoc=''):
         #dir = self.ScriptDir #os.path.dirname(os.path.abspath(__file__))
 
-        SkeBaseScr  = str("{sdir}/BaseExport.py").format(sdir=self.ScriptDir)
+        SkeBaseScr  = str("{sdir}BaseExport.py").format(sdir=self.ScriptDir.format(py=""))
 
         #Script Exists check
         #if not os.path.exists(SkeBaseScr): return
@@ -199,7 +199,7 @@ class MassExportFbx():
                 srcPy = scr + ".py"
                 srcPy = str(srcPy).replace(" ","")
                 scrPath = str(self.ScriptDir).format(py=srcPy)
-                fbxPath = self.ExportDir.format(fName=scr)
+                fbxPath = self.ExportDir.format(fName=str("BaseSkeletal/" +scr))
                 f = open(scrPath,'w')
                 f.write(text.format(fbxpath=fbxPath))
                 f.close()

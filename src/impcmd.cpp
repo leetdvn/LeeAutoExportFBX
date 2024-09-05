@@ -186,6 +186,6 @@ void ImpCmd::InitSkeletalExp(const SoftwereType inBlender)
             SkeletalF.close();
         }
 
-
+        qDebug() << "Skeletal "<< SKELETALSCR << Qt::endl;
     }
 }

@@ -10,8 +10,8 @@ class MassExportFbx():
     def __init__(self) -> None:
         self.ExportDir=str('C:/Users/leepl/Documents/Exports/Blender/Shot 003_Final_V4/{fName}')
         self.ScriptDir=str('C:/Users/leepl/AppData/Local/LeeMassFbx/Scripts/{py}')
-        self.blProgram =str('C:/Program Files/Autodesk/Maya2020/bin/mayabatch.exe')
-        self.Skeletal = str('AnimOnly')
+        self.blProgram =str('C:/Program Files/Blender Foundation/Blender 3.3/blender.exe')
+        self.Skeletal = str('BaseSkeleton')
         pass
 
     def GetSelections(self):
@@ -182,11 +182,10 @@ class MassExportFbx():
     def InitScriptExpSkeletal(self,scriptLoc=''):
         #dir = self.ScriptDir #os.path.dirname(os.path.abspath(__file__))
 
-        SkeBaseScr  = str("{sdir}/BaseExport.py").format(sdir=self.ScriptDir)
+        SkeBaseScr  = str("{sdir}BaseExport.py").format(sdir=self.ScriptDir.format(py=""))
 
         #Script Exists check
         #if not os.path.exists(SkeBaseScr): return
-        print("Scripts",SkeBaseScr)
         f = open(SkeBaseScr,'r')
         text= f.read()
         f.close()
@@ -220,7 +219,7 @@ class MassExportFbx():
         Export = "MassExport"
         col = bpy.data.collections[Export]
 
-        self.ArpIsLoaded()
+        #self.ArpIsLoaded()
         # if not self.ArpIsLoaded():
         #     print("AutoRigPro Addons: is Not Found..")
         #     return
@@ -232,12 +231,15 @@ class MassExportFbx():
         armature = self.GetObjectTypes(col,'ARMATURE')
 
         if armature.__len__() <= 0: return
+        
+        self.LeeBakeFunc(Export)
 
-        # if self.Skeletal.endswith("BaseSkeleton"):
-        #     self.InitScriptExpSkeletal()
+        if self.Skeletal.endswith("BaseSkeleton"):
+            self.InitScriptExpSkeletal()
 
         ##=================BAKE====================
-        self.LeeBakeFunc(Export)
+
+        #bpy.ops.object.make_local(type='ALL')
 
         for arm in armature:
             self.ClearSelection()

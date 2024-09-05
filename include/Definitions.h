@@ -11,7 +11,7 @@
 #define MASSFBXDIR QString("C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/")
 
 //Data Dir
-#define SKELETALSCR QString("C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/BaseExport.py")
+#define SKELETALSCR QString("C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/Scripts/BaseExport.py")
 
 //Mel Script path
 #define MELEXPORTSCRIPT  "C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/MayaExportCmd.mel"
@@ -29,7 +29,7 @@
 #define SCRIPTDIR  QDir::currentPath() + QString("/Scripts/")// "C:/Users/leepl/Documents/GitHub/LeeAutoExportFBX/Scripts/"
 
 // Mass Version
-#define MASSVERSION "LeeMassFbx Tools Beta Version 1.07 "
+#define MASSVERSION "LeeMassFbx Tools Beta Version 1.08 "
 
 //Log
 #define MASSLOGDIR QString("C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/Logs/")
