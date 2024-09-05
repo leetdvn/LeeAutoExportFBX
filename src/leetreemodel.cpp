@@ -34,7 +34,6 @@ bool LeeTreeModel::setData(const QModelIndex &index, const QVariant &value, int 
     //QApplication::setOverrideCursor(Qt::WaitCursor);
     if (role == Qt::CheckStateRole)
     {
-
         setNodeCheckState(index, value, role);
         setParentNodeCheckState(index);
     }

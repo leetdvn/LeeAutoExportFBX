@@ -39,7 +39,7 @@
     <item row="2" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QPushButton" name="TestModel">
+       <widget class="QPushButton" name="CustomFilesBtn">
         <property name="styleSheet">
          <string notr="true">font: 700 12pt &quot;Times New Roman&quot;;
 background-color:rgb(170, 85, 127);
@@ -408,6 +408,7 @@ color:yellow;
     </property>
     <addaction name="LeeDebugConsole"/>
     <addaction name="LeeDebugContent"/>
+    <addaction name="EditClearConsole"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="styleSheet">
@@ -477,6 +478,11 @@ color:yellow;
    </property>
    <property name="text">
     <string>Debug Data</string>
+   </property>
+  </action>
+  <action name="EditClearConsole">
+   <property name="text">
+    <string>Clear Console</string>
    </property>
   </action>
  </widget>

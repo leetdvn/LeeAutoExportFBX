@@ -282,3 +282,22 @@ QString MassFbxUltilities::GetDirectoryFromFile(const QString inFile)
     }
     return dirpath;
 }
+
+bool MassFbxUltilities::ShowMessageConfirmBox()
+{
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Lee Confirm Popup");
+    msgBox.setText("This mode will be export all Maya And Blender files \n              click yes for export no for cancel");
+    QString style = "font: 700 9pt \"Times New Roman\";\n QMessageBox::title{ font: 700 9pt\"Times New Roman\"}";
+    msgBox.setStyleSheet(style);
+    msgBox.setStandardButtons(QMessageBox::Yes| QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::Yes);
+    if(msgBox.exec() == QMessageBox::Yes){
+        // do something
+        return true;
+    }else {
+        // do something else
+        return false;
+    }
+    return false;
+}

@@ -291,7 +291,6 @@ void ConsoleCmd::InitDirectories()
         TransientDir.push_back(transDir + split[0] +"/");
     }
 }
-
 //private slots emit Logs
 void ConsoleCmd::ExportLogResult()
 {

@@ -53,9 +53,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ShowLogs,&QAction::triggered,this,&MainWindow::OnRevealFolder);
 
     //test button
-    connect(ui->TestModel,&QPushButton::clicked,this,&MainWindow::OnTestModel);
+    connect(ui->CustomFilesBtn,&QPushButton::clicked,this,&MainWindow::OnExportClicked);
 
     connect(ui->Quiter,&QAction::triggered,[this](){QCoreApplication::exit();});
+    connect(ui->EditClearConsole, &QAction::triggered,[this](){ui->LeeLog->clear(); });
     mProcess = new QProcess();
 
     //Info Env
@@ -275,6 +276,8 @@ void MainWindow::OnBrowserFile()
 void MainWindow::OnExportClicked()
 {
 
+
+
     qDebug() << "EXTPORT File Running.." << Qt::endl;
 
 
@@ -289,6 +292,10 @@ void MainWindow::OnExportClicked()
     //     return;
     // }
 
+
+    QPushButton* clickBtn = qobject_cast<QPushButton*>(sender());
+
+
     SoftwereType SType = GetSoftWareType();
 
     //create Filter List
@@ -299,20 +306,35 @@ void MainWindow::OnExportClicked()
     for(auto ff : filters)
         FilLog+= ff;
 
-    QString ShowType = "Export Type : " + uiOpt->LeeSoft->currentText();
-    AddToLog(Warning,ShowType);
-    qDebug() << FilLog << Qt::endl;
 
     //Get Source Files
-
-
-
     //Reset On Click;
     // completedId = 0;
     // TotalFbx = 0;
     ResetMem();
 
-    GetFilesInDir(ipSourceDir,EpSourceFiles,filters);
+
+    //===================================================
+    if(clickBtn->objectName() == "CustomFilesBtn")
+    {
+        bool Confirm = ShowMessageConfirmBox();
+        if(!Confirm) return;
+        uiOpt->LeeSoft->setCurrentText("Maya & Blender");
+        QStringList checkeditems = LeeModel->GetCheckedItem();
+        EpSourceFiles = GetFileNameFromDir(ui->SourceFolderText->toPlainText(),checkeditems);
+
+    }
+    else{
+        GetFilesInDir(ipSourceDir,EpSourceFiles,filters);
+    }
+    QString ShowType = EpSourceFiles.count() > 0 ?
+        "Export Type : " + uiOpt->LeeSoft->currentText() :
+                           QString("MassLogs : No Selection Custom files for export...");
+
+    qDebug() << FilLog << Qt::endl;
+
+    AddToLog(Warning,ShowType);
+
 
     TotalFiles = EpSourceFiles.count();
     ui->progressBar->setValue(0);
@@ -322,6 +344,8 @@ void MainWindow::OnExportClicked()
     //Log Files Searching
     qDebug() << "Files Count " << EpSourceFiles.count() << Qt::endl;
     qDebug() << "ip Source " << ipSourceDir << Qt::endl;
+
+
 
     //check Multi Threading
     isMultiThread = uiOpt->MultiThreadBox->isChecked();

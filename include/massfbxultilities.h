@@ -92,6 +92,8 @@ QStringList GetFileNameFromDir(const QString inPathDir,QStringList inNames);
 
 QString GetDirectoryFromFile(const QString inFile);
 
+bool ShowMessageConfirmBox();
+
 };
 
 #endif // MASSFBXULTILITIES_H
