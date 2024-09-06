@@ -273,8 +273,10 @@ global proc LExportReferenceFile(string $inFile, string $inSelectObj)
 	print("Open Base Skeletal  : " + $inFile + "\n");
 	string $Advs[] = LAdvanceSkeletonGeoJoint($Split[1],2);
 	select -cl;
+	string $bMesh[]= `ls -typ "mesh"`;
 	select -r $Advs;
 
+	catch(`select -add $bMesh`);
 	//file path
 	string $exp = "%1" + "BaseSkeletal/" + $Split[0] + ".fbx" ;
 
