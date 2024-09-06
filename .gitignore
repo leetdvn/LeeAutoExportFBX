@@ -76,3 +76,4 @@ include/Definitions.h
 deploy.bat
 include/Definitions.h
 deploy.bat
+Scripts/.vscode/tasks.json
