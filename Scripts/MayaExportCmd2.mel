@@ -6,14 +6,16 @@ global string $MassFbxLayer = "MassExport";
 
 global string $AdvSkeleton[] = {"DeformationSystem","Geometry","FaceDeformationSystem"};
 
+global int $AdvNumber[] = {17,8,21};
+
 global string $ListConstraint[] = {"parentConstraint","scaleConstraint","pointConstraint","orientConstraint"};
 
 global string $AdvDeletedObject[] = {"FaceFitSkeleton","FitSkeleton","FaceMotionSystem","MotionSystem"};
 
 global string $BaseSkeletals[];
 
-global string $FbxOpt= "%2";
-global string $Mesh = "%3";
+global string $FbxOpt= "AnimOnly";
+global string $Mesh = "";
 
 proc int LObjectExists(string $inobjectname)
 {
@@ -159,6 +161,7 @@ proc LClearAdvanceSkeleton(string $inAdvGrp)
 proc string[] LAdvanceSkeletonGeoJoint(string $inAdvGrp,int $Opt){
 	
 	string $results[];
+	global int $AdvNumber[];
 
 	if($inAdvGrp=="") return $results;
 
@@ -171,10 +174,11 @@ proc string[] LAdvanceSkeletonGeoJoint(string $inAdvGrp,int $Opt){
 	int $count=0;
 	for($i = 0 ; $i < size($trans); ++$i)
 	{
-		string $Splits[] = LSplitString($trans[$i]);
+		//string $Splits[] = LSplitString($trans[$i]);
 		for($a = 0 ; $a < size($AdvSkeleton); ++$a)
 		{
-			if($Splits[size($Splits)-1] == $AdvSkeleton[$a]){
+			string $endStr = endString($trans[$i],$AdvNumber[$a]);
+			if($endStr == $AdvSkeleton[$a]){
 				if($Opt == 1 && $AdvSkeleton[$a] == "Geometry")
 					continue;
 				$results[$count] = $trans[$i];
@@ -185,6 +189,17 @@ proc string[] LAdvanceSkeletonGeoJoint(string $inAdvGrp,int $Opt){
 	}
 	return $results;
 }
+
+proc string[] LObjectTypeFilter(string $inTopNode,string $inTypeNode){
+	
+	string $results[];
+
+	if($inTopNode=="") return $results;
+
+	return `listRelatives -ad -type $inTypeNode $inTopNode`;
+
+}
+
 
 proc LCleanUnknownP(){
 	string $unks[] = `unknownPlugin -q -l`;
@@ -273,10 +288,12 @@ global proc LExportReferenceFile(string $inFile, string $inSelectObj)
 	print("Open Base Skeletal  : " + $inFile + "\n");
 	string $Advs[] = LAdvanceSkeletonGeoJoint($Split[1],2);
 	select -cl;
+	string $bMesh[]= `ls -typ "mesh"`;
 	select -r $Advs;
 
+	catch(`select -add $bMesh`);
 	//file path
-	string $exp = "%1" + "BaseSkeletal/" + $Split[0] + ".fbx" ;
+	string $exp = "C:/Users/leepl/Documents/Exports/KunGLX_SS2_EP01_Shot 035/" + "BaseSkeletal/" + $Split[0] + ".fbx" ;
 
 	// Execute Export
 	catch(`FBXExport -f $exp -s`);
@@ -295,15 +312,15 @@ proc int LGetFbxOpt()
 
 	FBXExportCameras -v true;
 	//FBXExportShapes -v true;
-	FBXExportInputConnections -v true;
+	FBXExportInputConnections -v false;
 	FBXExportSkeletonDefinitions -v true;
 	FBXExportSkins -v true;
 	FBXExportScaleFactor 1.0;
 	FBXExportAnimationOnly -v false;
-	FBXExportBakeComplexAnimation -v true;
+	FBXExportBakeComplexAnimation -v false;
 	FBXExportBakeComplexStart -v $Stime;
 	FBXExportBakeComplexEnd -v $Etime;
-	FBXExportBakeResampleAnimation -v true;
+	FBXExportBakeResampleAnimation -v false;
 	FBXExportFileVersion -v `FBXExportFileVersion -q`;
 
 	if($FbxOpt == "AnimOnly"){
@@ -333,7 +350,7 @@ global proc FbxExecute()
 	//Log List File Export
 	for($i = 0 ; $i < size($MassExp) ; ++$i){
 		string $Str[] = LSplitString($MassExp[$i]);
-		string $exp = "%1" + $Str[0] + ".fbx" ;
+		string $exp = "C:/Users/leepl/Documents/Exports/KunGLX_SS2_EP01_Shot 035/" + $Str[0] + ".fbx" ;
 		print("ListFbx : " + $exp + "\n");
 		if($FbxOpt == "BaseSkeleton")
 		{
@@ -348,10 +365,12 @@ global proc FbxExecute()
 	LCleanUpDisplayLayer();
 
 	int $addMesh =1;
-	if($Mesh =="On")
+	if($Mesh =="On"){
 		$addMesh =2;
+	}
 
 	FBXExportShapes -v false;
+
 	for($i = 0 ; $i < size($MassExp) ; ++$i)
 	{
 		select -cl;
@@ -360,13 +379,16 @@ global proc FbxExecute()
 		LClearAdvanceSkeleton($MassExp[$i]);
 
 		string $Str[] = LSplitString($MassExp[$i]);
-		string $exp = "%1" + $Str[0] + ".fbx" ;
+		string $exp = "C:/Users/leepl/Documents/Exports/KunGLX_SS2_EP01_Shot 035/" + $Str[0] + ".fbx" ;
 		
 		
+		// string $Jnt[] = `listRelatives -ad -type "joint" $MassExp[$i]`;
+		// string $Geo[] = `listRelatives -ad -type "mesh" $MassExp[$i]`;
 		string $GeoJnt[] = LAdvanceSkeletonGeoJoint($MassExp[$i],$addMesh);
-
 		select -r $GeoJnt;
 
+		// if($addMesh==2)
+		// 	catch(`select -add $Geo`);
 
 		if(size(`ls -sl`) <= 0)
 			catch(`select -add $MassExp[$i]`);

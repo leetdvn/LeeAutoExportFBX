@@ -6,6 +6,8 @@ global string $MassFbxLayer = "MassExport";
 
 global string $AdvSkeleton[] = {"DeformationSystem","Geometry","FaceDeformationSystem"};
 
+global int $AdvNumber[] = {17,8,21};
+
 global string $ListConstraint[] = {"parentConstraint","scaleConstraint","pointConstraint","orientConstraint"};
 
 global string $AdvDeletedObject[] = {"FaceFitSkeleton","FitSkeleton","FaceMotionSystem","MotionSystem"};
@@ -163,6 +165,7 @@ proc string[] LAdvanceSkeletonGeoJoint(string $inAdvGrp,int $Opt){
 	if($inAdvGrp=="") return $results;
 
 	global string $AdvSkeleton[];
+	global int $AdvNumber[];
 
 	select -r $inAdvGrp;
 	string $sel[] = `ls -sl`;
@@ -171,10 +174,11 @@ proc string[] LAdvanceSkeletonGeoJoint(string $inAdvGrp,int $Opt){
 	int $count=0;
 	for($i = 0 ; $i < size($trans); ++$i)
 	{
-		string $Splits[] = LSplitString($trans[$i]);
+		//string $Splits[] = LSplitString($trans[$i]);
 		for($a = 0 ; $a < size($AdvSkeleton); ++$a)
 		{
-			if($Splits[size($Splits)-1] == $AdvSkeleton[$a]){
+			string $endStr = endString($trans[$i],$AdvNumber[$a]);
+			if($endStr == $AdvSkeleton[$a]){
 				if($Opt == 1 && $AdvSkeleton[$a] == "Geometry")
 					continue;
 				$results[$count] = $trans[$i];
@@ -185,6 +189,17 @@ proc string[] LAdvanceSkeletonGeoJoint(string $inAdvGrp,int $Opt){
 	}
 	return $results;
 }
+
+proc string[] LObjectTypeFilter(string $inTopNode,string $inTypeNode){
+	
+	string $results[];
+
+	if($inTopNode=="") return $results;
+
+	return `listRelatives -ad -type $inTypeNode $inTopNode`;
+
+}
+
 
 proc LCleanUnknownP(){
 	string $unks[] = `unknownPlugin -q -l`;
@@ -297,15 +312,15 @@ proc int LGetFbxOpt()
 
 	FBXExportCameras -v true;
 	//FBXExportShapes -v true;
-	FBXExportInputConnections -v true;
+	FBXExportInputConnections -v false;
 	FBXExportSkeletonDefinitions -v true;
 	FBXExportSkins -v true;
 	FBXExportScaleFactor 1.0;
 	FBXExportAnimationOnly -v false;
-	FBXExportBakeComplexAnimation -v true;
+	FBXExportBakeComplexAnimation -v false;
 	FBXExportBakeComplexStart -v $Stime;
 	FBXExportBakeComplexEnd -v $Etime;
-	FBXExportBakeResampleAnimation -v true;
+	FBXExportBakeResampleAnimation -v false;
 	FBXExportFileVersion -v `FBXExportFileVersion -q`;
 
 	if($FbxOpt == "AnimOnly"){
@@ -350,8 +365,9 @@ global proc FbxExecute()
 	LCleanUpDisplayLayer();
 
 	int $addMesh =1;
-	if($Mesh =="On")
+	if($Mesh =="On"){
 		$addMesh =2;
+	}
 
 	FBXExportShapes -v false;
 
@@ -367,9 +383,7 @@ global proc FbxExecute()
 		
 		
 		string $GeoJnt[] = LAdvanceSkeletonGeoJoint($MassExp[$i],$addMesh);
-
 		select -r $GeoJnt;
-
 
 		if(size(`ls -sl`) <= 0)
 			catch(`select -add $MassExp[$i]`);
