@@ -16,7 +16,6 @@ ConsoleCmd::ConsoleCmd(const ConsoleCmd &cCmd)
     MSourcePath(cCmd.MSourcePath),
     MExportDir(cCmd.MExportDir)
 {
-
 }
 
 ConsoleCmd::ConsoleCmd(const QString inMaya, const QString inBlend, QString inSourceFile, QString inExportDir)

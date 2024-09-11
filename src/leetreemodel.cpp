@@ -169,4 +169,3 @@ Qt::CheckState LeeTreeModel::getCheckStateAccordingToChildren(const QModelIndex 
 }
 
 
-

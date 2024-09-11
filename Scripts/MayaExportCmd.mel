@@ -347,6 +347,9 @@ global proc FbxExecute()
 
 	int $Opt = LGetFbxOpt();
 
+	if($FbxOpt !="BaseSkeleton")
+		ImportRef();
+
 	//Log List File Export
 	for($i = 0 ; $i < size($MassExp) ; ++$i){
 		string $Str[] = LSplitString($MassExp[$i]);
@@ -410,4 +413,4 @@ global proc FbxExecute()
 	}
 
 }
-FbxExecute();
+evalDeferred("FbxExecute();");
