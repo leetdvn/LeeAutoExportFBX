@@ -177,6 +177,8 @@ class MassExportFbx():
                     return checkloaded
                 except:
                     pass
+                finally:
+                    pass
         return checkloaded
 
     def InitScriptExpSkeletal(self,scriptLoc=''):
@@ -276,6 +278,22 @@ class MassExportFbx():
         #     if pyf.closed:
         #         os.remove(f)
 
-fbx_Addon = '%2'
-MassFbx = MassExportFbx()
-MassFbx.LeeMassExport(fbx_Addon)
+# fbx_Addon = '%2'
+# MassFbx = MassExportFbx()
+# MassFbx.LeeMassExport(fbx_Addon)
+
+
+import bpy
+import math
+import addon_utils
+from pathlib import Path
+import os
+Addons = ['auto_rig_pro-master','Animation_Layers','Multikey']
+BAddons = [mod.__name__ for mod in addon_utils.modules()]
+checkloaded =False
+for addon in Addons:
+    if addon not in BAddons: continue
+        
+    checkloaded = addon_utils.check(addon)[1]
+    print("check : " ,checkloaded)
+    str("").format()
