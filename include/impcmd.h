@@ -43,7 +43,7 @@ signals:
 
     void OnFinish(QStringList Logs);
 
-    void OnError();
+    void OnError(QProcess::ProcessError &Error);
 
     void OnReadLogs(QString&,QString&);
 

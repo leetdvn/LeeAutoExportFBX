@@ -416,6 +416,8 @@ global proc FbxExecute()
 			if($baseFbx !="")
 				print("ListFbx : " + $baseFbx + "\n");
 		}
+		LBakeSingleObject($MassExpFull[$i]);
+
 	}
 
 	//clean up file
@@ -434,7 +436,6 @@ global proc FbxExecute()
 	{
 
 		if(!IsValidObject($MassExpFull[$i])) continue;
-		LBakeSingleObject($MassExpFull[$i]);
 		select -cl;
 
 		catch(`select -r $MassExpFull[$i]`);

@@ -1074,6 +1074,8 @@ void MainWindow::ImplementExport(int fileNumber)
         connect(mCmd,SIGNAL(OnReadLogs(QString&,QString&)),this,SLOT(OnLogs(QString&,QString&)));
 
         connect(mCmd,&ImpCmd::OnFinish,this,&MainWindow::OnCmdFinish);
+        connect(mCmd,&ImpCmd::OnError,this,&MainWindow::OnTakeError);
+
         mCmd->GetProcess()->waitForStarted();
         if(!mCmd->Message.isEmpty())
             AddToLog(mCmd->Message);
@@ -1160,6 +1162,41 @@ void MainWindow::OnLogs(QString &inLog,QString &Err)
     AddToLog(Error,Err);
     ScrollToNewLog();
 
+}
+
+void MainWindow::OnTakeError(QProcess::ProcessError &Err)
+{
+    switch (Err)
+    {
+        case QProcess::ProcessError::Crashed:{
+            qDebug() << "Crash Error" << Qt::endl;
+
+            break;
+        }
+        case QProcess::ProcessError::Timedout:{
+            qDebug() << "Time Out Error" << Qt::endl;
+
+            break;
+            }
+        case QProcess::ProcessError::UnknownError:{
+            qDebug() << "Unknow Error" << Qt::endl;
+
+            break;
+        }
+        case QProcess::FailedToStart:{
+            qDebug() << "Failure Error" << Qt::endl;
+            break;
+        }
+        case QProcess::ReadError: {
+            qDebug() << "Reading Error" << Qt::endl;
+            break;
+        }
+        case QProcess::WriteError:{
+            qDebug() << "Write Error" << Qt::endl;
+            break;
+
+        }
+    }
 }
 
 void MainWindow::OnSoftWereChanged(const QString & textchanged)

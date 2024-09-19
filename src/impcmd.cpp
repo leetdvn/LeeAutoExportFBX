@@ -34,7 +34,7 @@ void ImpCmd::MayExecuteExp()
 
     MExProcess = new QProcess();
     connect(MExProcess,&QProcess::readyReadStandardOutput,this,&ImpCmd::ReadLogs);
-    connect(MExProcess,&QProcess::errorOccurred,this,&ImpCmd::OnError);
+    connect(MExProcess,&QProcess::errorOccurred,this,&ImpCmd::OnExpError);
     connect(MExProcess,&QProcess::finished,this,&ImpCmd::OnExpFinish);
 
     MExProcess->start(Cmd);
@@ -91,7 +91,8 @@ void ImpCmd::OnExpFinish()
 
 void ImpCmd::OnExpError()
 {
-    emit OnError();
+    QProcess::ProcessError mError = MExProcess->error();
+    emit OnError(mError);
 }
 
 void ImpCmd::ReadLogs()

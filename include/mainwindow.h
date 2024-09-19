@@ -208,6 +208,8 @@ protected:
 public slots:
     void OnLogs(QString &inLog,QString &Err);
 
+    void OnTakeError(QProcess::ProcessError &Err);
+
 private:
     bool IsAuthored;
 
