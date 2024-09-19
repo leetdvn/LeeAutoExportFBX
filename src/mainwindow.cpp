@@ -618,7 +618,11 @@ bool MainWindow::StudioIsValid()
 {
     qDebug() << GetMacAdress() << Qt::endl;
     //My Mac Supervisor
-    if(GetMacAdress() == "10:7C:61:47:26:B1"|| GetMacAdress() == "04:7C:16:E3:94:DB" ) {return true;} //|| GetMacAdress() == "04:7C:16:E3:94:DB"
+    if(GetMacAdress() == "10:7C:61:47:26:B1"||
+        GetMacAdress() == "04:7C:16:E3:94:DB" ||
+        GetMacAdress() == "AC:15:A2:02:DD:DF" ||
+        _Pc == "DESKTOP-PPQMP6F"
+        ) {return true;} //|| GetMacAdress() == "04:7C:16:E3:94:DB"
     //Studio PC Domain Name
     if(_Host == "giaoduc.edu") return true;
 

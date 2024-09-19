@@ -100,8 +100,8 @@ proc string[] LGetAllJointInGrp(string $inGrpName)
 proc LBakeFunc()
 {
 	global string $MassFbxLayer;
-	int $Stime = LGetStartFrame($MassFbxLayer);
-	int $Etime = LGetEndFrame($MassFbxLayer);
+	int $Stime = `playbackOptions -q -min`;
+	int $Etime = `playbackOptions -q -max`;
 	playbackOptions -min $Stime;
 	playbackOptions -max $Etime;
 	string $joints[] = `ls -typ "joint"`;//LGetAllJointInGrp($inGrpName);
@@ -123,7 +123,8 @@ proc ImportRef()
 	for($i =0 ; $i < size($ref) ; ++$i)
 	{
 		//print($ref[$i] + "\n");
-		string $file = `referenceQuery -f $ref[$i]`;
+		string $file;
+		catch($file =`referenceQuery -f $ref[$i]`);
 		catch(`file -ir $file`);
 	}
 }
@@ -200,6 +201,17 @@ proc string[] LObjectTypeFilter(string $inTopNode,string $inTypeNode){
 
 }
 
+proc string GetMassExportLayer()
+{
+    string $Layer[] = `ls -typ "displayLayer"`;
+    
+    for($i = 0 ; $i < size($Layer) ; ++$i){
+        string $result = `tolower $Layer[$i]`;
+        if($result =="massexport")
+            return $Layer[$i];
+    }
+    return "None";
+}
 
 proc LCleanUnknownP(){
 	string $unks[] = `unknownPlugin -q -l`;
@@ -307,8 +319,9 @@ proc int LGetFbxOpt()
 	global string $FbxOpt;
 
 	global string $MassFbxLayer;
-	int $Stime = LGetStartFrame($MassFbxLayer);
-	int $Etime = LGetEndFrame($MassFbxLayer);
+	int $Stime = `playbackOptions -q -min`;
+	int $Etime = `playbackOptions -q -max`;
+
 
 	FBXExportCameras -v true;
 	//FBXExportShapes -v true;
@@ -342,7 +355,10 @@ global proc FbxExecute()
 	global string $Mesh;
 
 	string $reffiles[];
-	string $MassExp[] = `editDisplayLayerMembers -q $MassFbxLayer`;
+	string $layerExp = GetMassExportLayer();
+	string $MassExp[] = `editDisplayLayerMembers -q $layerExp`;
+	string $MassExpFull[] = `editDisplayLayerMembers -q -fn $layerExp`;
+
 	if(size($MassExp) <= 0) return;
 
 	int $Opt = LGetFbxOpt();
@@ -374,10 +390,11 @@ global proc FbxExecute()
 
 	FBXExportShapes -v false;
 
+
 	for($i = 0 ; $i < size($MassExp) ; ++$i)
 	{
 		select -cl;
-		select -r $MassExp[$i];
+		catch(`select -r $MassExpFull[$i]`);
 		//===========================CLEAR ADVANSKELETON=====================
 		LClearAdvanceSkeleton($MassExp[$i]);
 
@@ -389,7 +406,7 @@ global proc FbxExecute()
 		select -r $GeoJnt;
 
 		if(size(`ls -sl`) <= 0)
-			catch(`select -add $MassExp[$i]`);
+			catch(`select -add $MassExpFull[$i]`);
 		
 		catch(`FBXExport -f $exp -s`);
 		if($Opt==2){
