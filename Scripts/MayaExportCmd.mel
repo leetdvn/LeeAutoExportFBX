@@ -117,6 +117,28 @@ proc LBakeFunc()
 
 }
 
+proc LBakeSingleObject(string $inObject)
+{
+	if(!LObjectExists($inObject)) return;
+
+	select -cl;
+	string $joints[] = `listRelatives -ad -f -typ "joint" $inObject`;
+	if(size($joints) <= 0 ) return;
+	print("===========================START BAKE SINGLE OBJECT=======================\n");
+
+	int $Stime = `playbackOptions -q -min`;
+	int $Etime = `playbackOptions -q -max`;
+	playbackOptions -min $Stime;
+	playbackOptions -max $Etime;
+	
+	string $timeRange = $Stime + ":" + $Etime;
+	select -r $joints;
+	//print(`ls -sl`);
+	bakeResults -t $timeRange -sm true;
+	print("===========================BAKE DONE=============================\n");
+}
+
+
 proc ImportRef()
 {
 	string $ref[] = `ls -typ "reference"`;
@@ -257,7 +279,7 @@ proc LCleanUpFiles(){
 	cleanUpScene(3);
 	//===========================BAKE ANIM===========================
 	print("=============================DELETE CONTRAINS=================================\n");
-	LBakeFunc();
+	//LBakeFunc();
 	//===========================REF IMPORT===========================
 	//ImportRef();
 	//===========================DELETE CONTRAINS=====================
@@ -410,9 +432,10 @@ global proc FbxExecute()
 
 	for($i = 0 ; $i < size($MassExp) ; ++$i)
 	{
-		select -cl;
 
 		if(!IsValidObject($MassExpFull[$i])) continue;
+		LBakeSingleObject($MassExpFull[$i]);
+		select -cl;
 
 		catch(`select -r $MassExpFull[$i]`);
 		//===========================CLEAR ADVANSKELETON=====================
