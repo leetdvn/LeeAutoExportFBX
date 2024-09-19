@@ -99,6 +99,8 @@ proc string[] LGetAllJointInGrp(string $inGrpName)
 
 proc LBakeFunc()
 {
+	print("===========================START BAKE=======================\n");
+
 	global string $MassFbxLayer;
 	int $Stime = `playbackOptions -q -min`;
 	int $Etime = `playbackOptions -q -max`;
@@ -214,8 +216,9 @@ proc string GetMassExportLayer()
 }
 
 proc LCleanUnknownP(){
-	string $unks[] = `unknownPlugin -q -l`;
 
+	string $unks[] = `unknownPlugin -q -l`;
+	print("=============================Remove unknowPlugins=============================\n");
 	for($plugin in $unks){
 		if($plugin !="redshift4maya"){
 			catch(`unknownPlugin -r $plugin`);
@@ -225,8 +228,9 @@ proc LCleanUnknownP(){
 }
 
 proc LCleanUnknowNode(){
-	string $nodes[] = `ls -typ "unknown"`;
 
+	print("=============================Clear unknowNode=============================\n");
+	string $nodes[] = `ls -typ "unknown"`;
 	for($node in $nodes)
 	{
 		catch(`lockNode -l off $node`);
@@ -252,22 +256,22 @@ proc LCleanUpFiles(){
 	print("=============================CleanUp Scene====================================\n");
 	cleanUpScene(3);
 	//===========================BAKE ANIM===========================
-	print("===========================DELETE CONTRAINS=======================\n");
+	print("=============================DELETE CONTRAINS=================================\n");
 	LBakeFunc();
 	//===========================REF IMPORT===========================
 	//ImportRef();
 	//===========================DELETE CONTRAINS=====================
-	print("===========================DELETE CONTRAINS=======================\n");
+	print("=============================DELETE CONTRAINS=================================\n");
 	for($i = 0 ; $i < size($ListConstraint) ; ++$i)
 		LClearContraints($ListConstraint[$i]);
 	
 	//===========================Clear unknowNode============================
-	print("=============================Clear unknowNode=============================\n");
 	LCleanUnknowNode();
+	print("=============================Clear unknowNode Completed=======================\n");
 
 	//===========================Remove unknowPlugins============================
-	print("=============================Remove unknowPlugins=============================\n");
 	LCleanUnknownP();
+	print("===========================unknowPlugins is Removed=============================\n");
 
 	//===========================Clear Sets============================
 	print("=============================Clear Sets=============================\n");
@@ -291,6 +295,7 @@ proc string GetRefFile(string $inRefObject){
 global proc LExportReferenceFile(string $inFile, string $inSelectObj)
 {
 
+	print("=============================Export Base Skeletal=============================\n");
 	string $Split[] = LSplitString($inSelectObj);
 
 	if($inFile == "") return;
@@ -347,6 +352,18 @@ proc int LGetFbxOpt()
 	return 0;
 }
 
+proc int IsValidObject(string $inObject){
+	if($inObject == "" || !LObjectExists($inObject)) return 0;
+
+	string $expType[] = {"mesh","joint"};
+
+	for($typ in $expType){
+		string $listObjs[] = `listRelatives -ad -typ $typ $inObject`;
+		if(size($listObjs) > 0) return 1;
+	}
+	return 0;
+}
+
 global proc FbxExecute()
 {
 	global string $MassFbxLayer;
@@ -394,6 +411,9 @@ global proc FbxExecute()
 	for($i = 0 ; $i < size($MassExp) ; ++$i)
 	{
 		select -cl;
+
+		if(!IsValidObject($MassExpFull[$i])) continue;
+
 		catch(`select -r $MassExpFull[$i]`);
 		//===========================CLEAR ADVANSKELETON=====================
 		LClearAdvanceSkeleton($MassExp[$i]);
@@ -410,8 +430,8 @@ global proc FbxExecute()
 		
 		catch(`FBXExport -f $exp -s`);
 		if($Opt==2){
-			$BaseSkeletals[$i] = $MassExp[$i];
-			$reffiles[$i] = GetRefFile($MassExp[$i]);
+			$BaseSkeletals[$i] = $MassExpFull[$i];
+			$reffiles[$i] = GetRefFile($MassExpFull[$i]);
 		}
 
 		if(`file -q -ex $exp`)

@@ -975,6 +975,9 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
         AddToLog(Completed,CompleteText);
     }
 
+
+    ui->LeeLog->clear();
+
     if(!ui->LeeDebugContent->isChecked()){
         ImpCmd* iCmd = ListCmds[completedId-1];
         iCmd->ClearOnFinish();
