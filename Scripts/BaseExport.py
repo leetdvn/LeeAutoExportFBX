@@ -18,8 +18,10 @@ class BaseSkeletal():
         #scn = bpy.context.scene
         #scn.arp_export_rig_type = 'mped'
         # types: 'humanoid' for humanoid characters, 'mped' for universal skeletons
-
-        bpy.context.scene.arp_engine_type = 'unreal'
+        try:
+            bpy.context.scene.arp_engine_type = 'unreal'
+        except:
+            bpy.context.scene.arp_engine_type = 'UNREAL'
         # other useful settings
         # scn.arp_keep_bend_bones = True
         # scn.arp_units_x100 = True
@@ -36,7 +38,10 @@ class BaseSkeletal():
         bpy.context.scene.arp_ge_sel_only = True
 
         # run export
-        bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)
+        try:
+            bpy.ops.arp.arp_export_fbx_panel(filepath=fileoutput)
+        except:
+            bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)
 
     def set_active_object(self,object_name):
         try:

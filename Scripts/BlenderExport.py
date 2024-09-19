@@ -138,7 +138,10 @@ class MassExportFbx():
         #scn.arp_export_rig_type = 'mped'
         # types: 'humanoid' for humanoid characters, 'mped' for universal skeletons
 
-        bpy.context.scene.arp_engine_type = 'unreal'
+        try:
+            bpy.context.scene.arp_engine_type = 'unreal'
+        except:
+            bpy.context.scene.arp_engine_type = 'UNREAL'
         # other useful settings
         # scn.arp_keep_bend_bones = True
         # scn.arp_units_x100 = True
@@ -155,7 +158,11 @@ class MassExportFbx():
         bpy.context.scene.arp_ge_sel_only = True
 
         # run export
-        bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)
+        try:
+            bpy.ops.arp.arp_export_fbx_panel(filepath=fileoutput)
+        except:
+            bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)
+
 
     def ArpIsLoaded(self):
         '''
@@ -193,7 +200,7 @@ class MassExportFbx():
         text= f.read()
         f.close()
 
-        Libs= MassFbx.GetAllLibraries()
+        Libs= self.MassFbx.GetAllLibraries()
         transientPath= []
         for i,lib in enumerate(Libs):
             scr = bpy.path.display_name(lib.filepath)
@@ -242,11 +249,13 @@ class MassExportFbx():
 
         ##=================BAKE====================
 
-        #bpy.ops.object.make_local(type='ALL')
+        if str("%3").startswith("On"):
+            bpy.ops.object.make_local(type='ALL')
+
 
         for arm in armature:
             self.ClearSelection()
-            Geos = MassFbx.GetAllGeometryAttachedArmature(arm)
+            Geos = self.MassFbx.GetAllGeometryAttachedArmature(arm)
             arm.make_local()
             for geo in Geos:
                 try:
@@ -278,22 +287,6 @@ class MassExportFbx():
         #     if pyf.closed:
         #         os.remove(f)
 
-# fbx_Addon = '%2'
-# MassFbx = MassExportFbx()
-# MassFbx.LeeMassExport(fbx_Addon)
-
-
-import bpy
-import math
-import addon_utils
-from pathlib import Path
-import os
-Addons = ['auto_rig_pro-master','Animation_Layers','Multikey']
-BAddons = [mod.__name__ for mod in addon_utils.modules()]
-checkloaded =False
-for addon in Addons:
-    if addon not in BAddons: continue
-        
-    checkloaded = addon_utils.check(addon)[1]
-    print("check : " ,checkloaded)
-    str("").format()
+fbx_Addon = '%2'
+MassFbx = MassExportFbx()
+MassFbx.LeeMassExport(fbx_Addon)
