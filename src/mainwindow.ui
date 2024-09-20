@@ -75,6 +75,17 @@ color:rgb(250, 250, 125);</string>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3"/>
       </item>
+      <item alignment="Qt::AlignmentFlag::AlignHCenter">
+       <widget class="QLabel" name="ExpCurrentFile">
+        <property name="styleSheet">
+         <string notr="true">font: 700 9pt &quot;Times New Roman&quot;;
+color:rgb(0, 255, 255);</string>
+        </property>
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QTextEdit" name="LeeLog">
         <property name="enabled">

@@ -106,6 +106,7 @@ void MainWindow::InfoEnv()
                          "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font><br>";
 
     logStr += MASSINFO.arg(_Pc,_Users,_Host =="" || _Host.isEmpty() || _Host.isNull() ? "empty" : _Host);
+    ui->ExpCurrentFile->setText(QString("Exporting File : None"));
     if(!IsAuthored) return;
     AddToLog(logStr,"white",true);
 }
@@ -1013,7 +1014,6 @@ void MainWindow::OnCmdStarted()
 
 void MainWindow::ImplementExport(int fileNumber)
 {
-
     {
         if(fileNumber >= EpSourceFiles.count()||
             fileNumber < 0){
@@ -1029,6 +1029,8 @@ void MainWindow::ImplementExport(int fileNumber)
         QString finalExpDir = MakeTreeDirectory(EpSourceFiles[fileNumber],
                             ui->SourceFolderText->toPlainText(),
                             ui->ExportFolderText->toPlainText(),IsMakeBase);
+
+        ui->ExpCurrentFile->setText(QString("Exporting File : %1").arg(EpSourceFiles[fileNumber]));
         //Maya Exp Refactored..
         ImpCmd* mCmd = new ImpCmd(EpSourceFiles[fileNumber],finalExpDir);
 
@@ -1169,32 +1171,34 @@ void MainWindow::OnTakeError(QProcess::ProcessError &Err)
     switch (Err)
     {
         case QProcess::ProcessError::Crashed:{
-            qDebug() << "Crash Error" << Qt::endl;
-
+            AddToLog(LogType::Error,"Crash Error");
             break;
         }
         case QProcess::ProcessError::Timedout:{
             qDebug() << "Time Out Error" << Qt::endl;
+            AddToLog(LogType::Error,"Time Out Error");
 
             break;
             }
         case QProcess::ProcessError::UnknownError:{
             qDebug() << "Unknow Error" << Qt::endl;
-
+            AddToLog(LogType::Error,"Unknow Error");
             break;
         }
         case QProcess::FailedToStart:{
             qDebug() << "Failure Error" << Qt::endl;
+            AddToLog(LogType::Error,"Failure Error");
             break;
         }
         case QProcess::ReadError: {
             qDebug() << "Reading Error" << Qt::endl;
+            AddToLog(LogType::Error,"Reading Error");
             break;
         }
         case QProcess::WriteError:{
             qDebug() << "Write Error" << Qt::endl;
+            AddToLog(LogType::Error,"Write Error");
             break;
-
         }
     }
 }

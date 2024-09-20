@@ -111,7 +111,7 @@ proc LBakeFunc()
 	string $timeRange = $Stime + ":" + $Etime;
 	select -r $joints;
 	//print(`ls -sl`);
-	bakeSimulation -t $timeRange;
+	bakeResults -t $timeRange -sm true;
 	//bakeResults -simulation on -t $timeRange $joints;
 	print("===========================BAKE DONE=======================\n");
 
@@ -138,7 +138,6 @@ proc LBakeSingleObject(string $inObject)
 	print("===========================BAKE DONE=============================\n");
 }
 
-
 proc ImportRef()
 {
 	string $ref[] = `ls -typ "reference"`;
@@ -149,9 +148,47 @@ proc ImportRef()
 		//print($ref[$i] + "\n");
 		string $file;
 		catch($file =`referenceQuery -f $ref[$i]`);
-		catch(`file -ir $file`);
+		int $isLoaded=0;
+		catch($isLoaded = `referenceQuery -il $ref[$i]`);
+		if($isLoaded && $file !="")
+			catch(`file -ir $file`);
 	}
 }
+
+//check Selected object
+proc int IsSelected(string $inObject){
+	if(!LObjectExists($inObject)) return 0;
+
+	string $selection[] = `ls -sl`;
+	if(size($selection) <= 0) return 0;
+
+	for($obj in $selection){
+		if($obj==$inObject) return 1;
+	}
+	return 0;
+}
+
+//Get Infulent Geo
+proc GetInfluentObject(string $inObject){
+	if(!LObjectExists($inObject)) return;
+
+	string $Inf[];
+	catch($Inf = `listRelatives -ad -typ "mesh" $inObject`);
+	if(size($Inf) <= 0) return;
+
+	for($mesh in $Inf){
+		string $jnts[];
+		catch($jnts= `skinCluster -q -inf $mesh`);
+		if(size($jnts) <= 0) continue;
+
+		for($jnt in $jnts)
+		{
+			if(IsSelected($jnt)) continue;
+			catch(`select -add $jnt`);
+		}
+	}
+}
+
 
 
 proc LClearAdvanceSkeleton(string $inAdvGrp)
@@ -256,7 +293,8 @@ proc LCleanUnknowNode(){
 	for($node in $nodes)
 	{
 		catch(`lockNode -l off $node`);
-		catch(`delete $node`);
+		if($node !="standardSurface1")
+			catch(`delete $node`);
 		print("delete unknowNode : " + $node + "\n");
 	}
 }
@@ -279,7 +317,7 @@ proc LCleanUpFiles(){
 	cleanUpScene(3);
 	//===========================BAKE ANIM===========================
 	print("=============================DELETE CONTRAINS=================================\n");
-	//LBakeFunc();
+	LBakeFunc();
 	//===========================REF IMPORT===========================
 	//ImportRef();
 	//===========================DELETE CONTRAINS=====================
@@ -294,11 +332,10 @@ proc LCleanUpFiles(){
 	//===========================Remove unknowPlugins============================
 	LCleanUnknownP();
 	print("===========================unknowPlugins is Removed=============================\n");
-
-	//===========================Clear Sets============================
-	print("=============================Clear Sets=============================\n");
+	select -cl;
 	//LClearListSet();
 
+	
 }
 
 proc string GetRefFile(string $inRefObject){
@@ -377,7 +414,7 @@ proc int LGetFbxOpt()
 proc int IsValidObject(string $inObject){
 	if($inObject == "" || !LObjectExists($inObject)) return 0;
 
-	string $expType[] = {"mesh","joint"};
+	string $expType[] = {"mesh","joint","camera"};
 
 	for($typ in $expType){
 		string $listObjs[] = `listRelatives -ad -typ $typ $inObject`;
@@ -406,6 +443,7 @@ global proc FbxExecute()
 		ImportRef();
 
 	//Log List File Export
+	select -cl;
 	for($i = 0 ; $i < size($MassExp) ; ++$i){
 		string $Str[] = LSplitString($MassExp[$i]);
 		string $exp = "%1" + $Str[0] + ".fbx" ;
@@ -416,8 +454,14 @@ global proc FbxExecute()
 			if($baseFbx !="")
 				print("ListFbx : " + $baseFbx + "\n");
 		}
-		LBakeSingleObject($MassExpFull[$i]);
-
+		//LBakeSingleObject($MassExpFull[$i]);
+		//Select all 
+		if($i == 0){
+			select -r `listRelatives -ad -typ "joint" $MassExpFull[$i]`;
+		}
+		else{
+			select -add `listRelatives -ad -typ "joint" $MassExpFull[$i]`;
+		}
 	}
 
 	//clean up file
@@ -440,17 +484,18 @@ global proc FbxExecute()
 
 		catch(`select -r $MassExpFull[$i]`);
 		//===========================CLEAR ADVANSKELETON=====================
-		LClearAdvanceSkeleton($MassExp[$i]);
+		LClearAdvanceSkeleton($MassExpFull[$i]);
 
-		string $Str[] = LSplitString($MassExp[$i]);
-		string $exp = "%1" + $Str[0] + ".fbx" ;
+		string $Str[] = LSplitString($MassExpFull[$i]);
+		string $exp = "%1" + substituteAllString($Str[0],"|","") + ".fbx" ;
 		
-		
-		string $GeoJnt[] = LAdvanceSkeletonGeoJoint($MassExp[$i],$addMesh);
+		string $GeoJnt[] = LAdvanceSkeletonGeoJoint($MassExpFull[$i],$addMesh);
 		select -r $GeoJnt;
 
-		if(size(`ls -sl`) <= 0)
+		if(size(`ls -sl`) <= 0){
 			catch(`select -add $MassExpFull[$i]`);
+			GetInfluentObject($MassExpFull[$i]);
+		}
 		
 		catch(`FBXExport -f $exp -s`);
 		if($Opt==2){
