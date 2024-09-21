@@ -193,7 +193,7 @@ protected:
 
     bool isError=false;
 
-    void OnCmdFinish(QStringList inFbxList);
+    void OnCmdFinish(int exitCode, QProcess::ExitStatus exitStatus,QStringList inFbxList);
 
     void OnCmdStarted();
 
@@ -210,6 +210,7 @@ public slots:
 
     void OnTakeError(QProcess::ProcessError &Err);
 
+    void OnStateChanged(QProcess::ProcessState newState);
 private:
     bool IsAuthored;
 

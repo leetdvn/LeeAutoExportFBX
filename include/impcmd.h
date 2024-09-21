@@ -41,11 +41,13 @@ public:
 signals:
     void OnStart();
 
-    void OnFinish(QStringList Logs);
+    void OnFinish(int exitCode, QProcess::ExitStatus exitStatus,QStringList Logs);
 
     void OnError(QProcess::ProcessError &Error);
 
     void OnReadLogs(QString&,QString&);
+
+    void OnPStateChanged(QProcess::ProcessState newState);
 
 private:
 
@@ -62,11 +64,13 @@ private:
 private slots:
     void OnExpStart();
 
-    void OnExpFinish();
+    void OnExpFinish(int exitCode, QProcess::ExitStatus exitStatus);
 
     void OnExpError();
 
     void ReadLogs();
+
+    void OnStateChanged();
 };
 
 #endif // IMPCMD_H

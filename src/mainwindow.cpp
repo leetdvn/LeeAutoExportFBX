@@ -928,7 +928,7 @@ SoftwereType MainWindow::GetSoftWareType()
     return None;
 }
 
-void MainWindow::OnCmdFinish(QStringList inFbxList) {
+void MainWindow::OnCmdFinish(int exitCode, QProcess::ExitStatus exitStatus,QStringList inFbxList) {
 
     //Command Id
     int idx = completedId;
@@ -978,6 +978,20 @@ void MainWindow::OnCmdFinish(QStringList inFbxList) {
 
 
     ui->LeeLog->clear();
+
+    switch (exitStatus) {
+        case QProcess::ExitStatus::CrashExit:{
+            QString message = QString("Crash Exit Code : %1").arg(exitCode);
+            AddToLog(Error,message);
+            break;
+        }
+        case QProcess::ExitStatus::NormalExit:{
+            QString message = QString("Export Done Exit Code : %1").arg(exitCode);
+            AddToLog(Error,message);
+            break;
+        }
+    }
+
 
     if(!ui->LeeDebugContent->isChecked()){
         ImpCmd* iCmd = ListCmds[completedId-1];
@@ -1077,6 +1091,8 @@ void MainWindow::ImplementExport(int fileNumber)
 
         connect(mCmd,&ImpCmd::OnFinish,this,&MainWindow::OnCmdFinish);
         connect(mCmd,&ImpCmd::OnError,this,&MainWindow::OnTakeError);
+        connect(mCmd,&ImpCmd::OnPStateChanged,this,&MainWindow::OnStateChanged);
+
 
         mCmd->GetProcess()->waitForStarted();
         if(!mCmd->Message.isEmpty())
@@ -1198,6 +1214,26 @@ void MainWindow::OnTakeError(QProcess::ProcessError &Err)
         case QProcess::WriteError:{
             qDebug() << "Write Error" << Qt::endl;
             AddToLog(LogType::Error,"Write Error");
+            break;
+        }
+    }
+}
+
+void MainWindow::OnStateChanged(QProcess::ProcessState newState)
+{
+    QString message="State Changed : %1";
+
+    switch (newState) {
+        case QProcess::ProcessState::NotRunning:{
+            AddToLog(Warning,message.arg("Not Runing"));
+            break;
+        }
+        case QProcess::ProcessState::Running:{
+            AddToLog(Warning,message.arg("Runing"));
+            break;
+        }
+        case QProcess::ProcessState::Starting:{
+            AddToLog(Warning,message.arg("Starting"));
             break;
         }
     }

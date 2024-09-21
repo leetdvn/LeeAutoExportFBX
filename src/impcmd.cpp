@@ -83,10 +83,10 @@ void ImpCmd::OnExpStart()
     emit OnStart();
 }
 
-void ImpCmd::OnExpFinish()
+void ImpCmd::OnExpFinish(int exitCode, QProcess::ExitStatus exitStatus)
 {
 
-    emit OnFinish(ExportResult);
+    emit OnFinish(exitCode,exitStatus,ExportResult);
 }
 
 void ImpCmd::OnExpError()
@@ -132,6 +132,11 @@ void ImpCmd::ReadLogs()
     //qDebug() << line << Qt::endl;
 
     //emit OnReadLogs(line);
+}
+
+void ImpCmd::OnStateChanged()
+{
+    emit OnPStateChanged(MExProcess->state());
 }
 
 void ImpCmd::SetProgram(const QString inMayaPath,const QString inBlenderPath)
