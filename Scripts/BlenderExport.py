@@ -223,12 +223,16 @@ class MassExportFbx():
                 #print("Command  : " ,iCmd ,infoCmd)
 
 
+    def GetMassFbxCollection(self,inCollection=str):
+        collections = bpy.data.collections
+        for i,obj in enumerate(collections):
+            if str(obj.name).lower() == inCollection: return obj.name,obj
         
     ####################MASSEXPORT FUNC###########################################
     def LeeMassExport(self,Fbx_platform='AutoRigPro'):
-        Export = "MassExport"
-        col = bpy.data.collections[Export]
-
+        Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
+        #col = bpy.data.collections[Export]
+        
         #self.ArpIsLoaded()
         # if not self.ArpIsLoaded():
         #     print("AutoRigPro Addons: is Not Found..")
