@@ -259,7 +259,7 @@ class MassExportFbx():
 
         for arm in armature:
             self.ClearSelection()
-            Geos = self.MassFbx.GetAllGeometryAttachedArmature(arm)
+            Geos = self.GetAllGeometryAttachedArmature(arm)
             arm.make_local()
             for geo in Geos:
                 try:
