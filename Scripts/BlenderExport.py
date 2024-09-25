@@ -177,8 +177,9 @@ class MassExportFbx():
             if addon not in BAddons: continue
             
             checkloaded = addon_utils.check(addon)[1]
-            print("check : " ,checkloaded)
-            if not checkloaded:
+            if checkloaded and addon.endswith("Layers"):
+                addon_utils.disable(addon)
+            elif not checkloaded:
                 try:
                     checkloaded = addon_utils.enable(addon)
                     return checkloaded
@@ -233,10 +234,9 @@ class MassExportFbx():
         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
         #col = bpy.data.collections[Export]
         
-        #self.ArpIsLoaded()
-        # if not self.ArpIsLoaded():
-        #     print("AutoRigPro Addons: is Not Found..")
-        #     return
+        self.ArpIsLoaded()
+        print("Addon Checked...")
+
         #bpy.ops.object.make_local(type='ALL')
         try:
             bpy.ops.object.mode_set(mode = 'OBJECT')
