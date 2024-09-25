@@ -88,6 +88,17 @@ proc LClearListSet()
 	}
 }
 
+proc LReloadReference()
+{
+	string $ref[] = `ls -typ "reference"`;
+	for($r in $ref){
+		int $isLoaded;
+		catch($isLoaded = `referenceQuery -il $r`);
+		if($isLoaded == 0)
+			catch(`file -lr $r`);
+	}
+}
+
 proc string[] LGetAllJointInGrp(string $inGrpName)
 {
 	string $results[];
@@ -432,11 +443,14 @@ global proc FbxExecute()
 
 	string $reffiles[];
 	string $layerExp = GetMassExportLayer();
+	if($layerExp=="None") return;
 	string $MassExp[] = `editDisplayLayerMembers -q $layerExp`;
 	string $MassExpFull[] = `editDisplayLayerMembers -q -fn $layerExp`;
 
 	if(size($MassExp) <= 0) return;
 
+	LReloadReference();
+	
 	int $Opt = LGetFbxOpt();
 
 	if($FbxOpt !="BaseSkeleton")
