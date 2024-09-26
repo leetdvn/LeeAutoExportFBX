@@ -25,7 +25,7 @@ class MassExportFbx():
 
     def GetObjectsInCollection(self,collection):
         if collection is None: return []
-        return collection.all_objects
+        return [obj for obj in collection.all_objects if obj.visible_get()]
 
     def OpenBlenderFile(self,path):
         iPath = Path(path)
@@ -235,7 +235,6 @@ class MassExportFbx():
         #col = bpy.data.collections[Export]
         
         self.ArpIsLoaded()
-        print("Addon Checked...")
 
         #bpy.ops.object.make_local(type='ALL')
         try:
