@@ -29,6 +29,12 @@
 #include <leetreemodel.h>
 #include <QTextEdit>
 #include <QSortFilterProxyModel>
+#include <QNetworkAccessManager>
+#include <QEventLoop>
+#include <QNetworkProxy>
+#include <qnetworkreply.h>
+#include <QNetworkInformation>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -183,13 +189,15 @@ protected:
 
     QString LastCompletedFile;
 
-    QString _Pc,_Users,_Host;
+    QString _Pc,_Users,_Host,_AuthorName;
     bool isRunning=false;
 
     int TotalFiles=0;
     int TotalFbx;
     int completedId=0;
     bool isMultiThread=false;
+
+    int NumberCount = 0;
 
     bool isError=false;
 
@@ -205,14 +213,25 @@ protected:
 
     void OnRevealFolder();
 
+    bool IsValidAPI(QString inUrl,QString inMacHost);
+
+    ///Check Internet Reachability
+    bool IsOnline();
+    ///NetWork Api
+
+    void LeeUpdateFuntions();
+
+
 public slots:
     void OnLogs(QString &inLog,QString &Err);
 
     void OnTakeError(QProcess::ProcessError &Err);
 
     void OnStateChanged(QProcess::ProcessState newState);
+
 private:
     bool IsAuthored;
 
+    QTimer* TimeUpdate=nullptr;
 };
 #endif // MAINWINDOW_H

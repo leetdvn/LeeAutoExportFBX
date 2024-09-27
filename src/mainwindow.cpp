@@ -3,6 +3,7 @@
 #include "./ui_FbxOptions.h"
 #include "./ui_Maintain.h"
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -82,6 +83,15 @@ MainWindow::MainWindow(QWidget *parent)
     ImplementTreeView();
 
 
+    //Loop Update Functions;
+
+   // QTimer *timer = new QTimer(this);
+
+    TimeUpdate = new QTimer(this);
+    connect(TimeUpdate, &QTimer::timeout, this, &MainWindow::LeeUpdateFuntions);
+    TimeUpdate->start(2000.f);
+
+
 }
 
 #pragma region Init
@@ -107,7 +117,15 @@ void MainWindow::InfoEnv()
 
     logStr += MASSINFO.arg(_Pc,_Users,_Host =="" || _Host.isEmpty() || _Host.isNull() ? "empty" : _Host);
     ui->ExpCurrentFile->setText(QString("Exporting File : None"));
-    if(!IsAuthored) return;
+    if(!IsAuthored) {
+        this->setDisabled(true);
+        return;
+    }
+
+    // bool ValidNetwork = IsOnline() ?
+    //                         IsValidAPI(LEEARTURL,GetMacAdress()) :
+    //                         false;
+
     AddToLog(logStr,"white",true);
 }
 
@@ -618,14 +636,31 @@ QString MainWindow::GetMacAdress()
 bool MainWindow::StudioIsValid()
 {
     qDebug() << GetMacAdress() << Qt::endl;
-    //My Mac Supervisor
-    if(GetMacAdress() == "10:7C:61:47:26:B1"||
-        GetMacAdress() == "04:7C:16:E3:94:DB" ||
-        GetMacAdress() == "AC:15:A2:02:DD:DF" ||
-        _Pc == "DESKTOP-PPQMP6F"
-        ) {return true;} //|| GetMacAdress() == "04:7C:16:E3:94:DB"
-    //Studio PC Domain Name
-    if(_Host == "giaoduc.edu") return true;
+
+    if(!IsOnline()){
+        AddToLog(Error,"Net Message : Network Connection failse please check your internet connection..");
+
+        return false;
+    }
+
+    QString HostLower = _Host.toLower();
+
+    QStringList Ids = {GetMacAdress(),HostLower,_Pc};
+
+
+    if(Ids.length() <=0) return false;
+
+    for(auto Id : Ids)  {
+        if(IsValidAPI(LEEARTURL,Id)) return true;
+    }
+
+    // if(GetMacAdress() == "10:7C:61:47:26:B1"||
+    //     GetMacAdress() == "04:7C:16:E3:94:DB" ||
+    //     GetMacAdress() == "AC:15:A2:02:DD:DF" ||
+    //     _Pc == "DESKTOP-PPQMP6F"
+    //     ) {return true;} //|| GetMacAdress() == "04:7C:16:E3:94:DB"
+    // //Studio PC Domain Name
+    // if(_Host.toLower() == "giaoduc.edu") return true;
 
     QString LogAuthor =  "Error : You cannot use the software without the consent of Lee.";
 
@@ -1157,6 +1192,98 @@ void MainWindow::OnRevealFolder()
 
     QDesktopServices::openUrl( QUrl::fromLocalFile(path) );
 }
+
+bool MainWindow::IsValidAPI(const QString inUrl,const QString inMacHost)
+{
+
+    ///https://raw.githubusercontent.com/leetdvn/GiantyTest/refs/heads/main/LeeArtLisences.json
+    if(inUrl.isEmpty()) return false;
+
+    QEventLoop eventloop;
+    QNetworkAccessManager networkManager;
+
+    QUrl url(inUrl);
+
+    QNetworkRequest request(url);
+
+    QNetworkReply* reply = networkManager.get(request);
+
+    QString result="NetworkDebug : ";
+    connect(reply,&QNetworkReply::finished,&eventloop,&QEventLoop::quit);
+    eventloop.exec();
+    QString ReplyText= reply->readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(ReplyText.toUtf8());
+    QJsonObject obj = doc.object();
+    QJsonValue value = obj.value(QString("LeeArt"));
+
+    QJsonArray arr = value.toArray();
+    for(auto elm : arr){
+        QJsonObject obj = elm.toObject();
+        QJsonValue val = obj.value("ID");
+
+        if(val.toString()==inMacHost)
+        {
+            _AuthorName = val.toString();
+            qDebug() << "Network Validated.. : " << val.toString() << Qt::endl;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool MainWindow::IsOnline()
+{
+    if ( QNetworkInformation::loadDefaultBackend() && QNetworkInformation::loadBackendByFeatures(QNetworkInformation::Feature::Reachability ) ) {
+        QNetworkInformation* net_info = QNetworkInformation::instance();
+        if ( nullptr != net_info ) {
+            if(net_info->reachability() == QNetworkInformation::Reachability::Online) {
+                qDebug() << "Device is Online";
+                return true;
+            }
+            else {
+                qDebug() << "Device is offline";
+            }
+        }
+    }
+    return false;
+}
+
+void MainWindow::LeeUpdateFuntions()
+{
+
+    if(IsAuthored){
+        TimeUpdate->stop();
+        TimeUpdate->deleteLater();
+        TimeUpdate= nullptr;
+        return;
+    }
+
+    IsAuthored = StudioIsValid();
+    if(IsAuthored){
+        ui->LeeLog->clear();
+        this->setEnabled(true);
+        InfoEnv();
+
+    }
+    else{
+        AddToLog(Error,"Net Message : Network Connection failse please check your internet connection..");
+        qDebug() << "Count Update : " << NumberCount << Qt::endl;
+        NumberCount++;
+
+    }
+    // while(true){
+    //     QTimer::singleShot(Instance->NumberCount, Instance,LeeUpdateFuntions);
+    //     Instance->NumberCount++;
+    // }
+
+    // while(true){
+    //     LDelay(1);
+    //     qDebug() << "Count Update : " << NumberCount << Qt::endl;
+    //     NumberCount++;
+    // }
+
+}
+
 
 void MainWindow::OnLogs(QString &inLog,QString &Err)
 {
