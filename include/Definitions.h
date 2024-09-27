@@ -53,6 +53,6 @@
 #define MASSINFO QString("PC : %1 <br>USERS : %2 <br>DOMAIN : %4")
 
 //Mass Info
-#define LEEARTURL QString("https://raw.githubusercontent.com/leetdvn/GiantyTest/refs/heads/main/LeeArtLisences.json")
+#define LEEARTURL QString("https://raw.githubusercontent.com/leetdvn/UEFakeAPIData/refs/heads/main/LeeArtLisences.json")
 
 #endif
