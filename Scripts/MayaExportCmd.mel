@@ -71,7 +71,7 @@ proc LClearListSet()
 	string $ListSets[] = `ls -sets`;
 	if(size($ListSets) <= 0) return;
 
-	string $CantDelete[] = {"defaultLightSet","defaultObjectSet","initialParticleSE","initialShadingGroup"};
+	string $CantDelete[] = {"defaultLightSet","defaultObjectSet","initialParticleSE","initialShadingGroup","standardSurface1"};
 
 	for($i = 0 ; $i< size($ListSets);++$i){
 		int $isDelete=0;
@@ -449,8 +449,6 @@ global proc FbxExecute()
 
 	if(size($MassExp) <= 0) return;
 
-	LReloadReference();
-	
 	int $Opt = LGetFbxOpt();
 
 	if($FbxOpt !="BaseSkeleton")
