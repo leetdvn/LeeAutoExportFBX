@@ -8,10 +8,12 @@ import os
 class MassExportFbx():
 
     def __init__(self) -> None:
-        self.ExportDir=str('%1{fName}')
+        self.ExportDir=str('%1{prefix}_{fName}_{suffix}')
         self.ScriptDir=str('%4{py}')
         self.blProgram =str('%5')
         self.Skeletal = str('%6')
+        self.prefix =str('%7')
+        self.suffix=str('%8')
         pass
 
     def GetSelections(self):
@@ -268,7 +270,7 @@ class MassExportFbx():
                     self.set_active_object(geo.name)
 
             self.set_active_object(arm.name)
-            expPath = str(self.ExportDir).format(fName=arm.name) + ".fbx"
+            expPath = str(self.ExportDir).format(fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
             if Fbx_platform=="Blender":
                 bpy.ops.export_scene.fbx(filepath=expPath,
                                             use_selection=True,

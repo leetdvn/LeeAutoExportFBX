@@ -1091,6 +1091,9 @@ void MainWindow::ImplementExport(int fileNumber)
         mCmd->SetSourceDir(ui->SourceFolderText->toPlainText());
         //Set Program
         mCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
+        //set prefix and suffix
+        mCmd->setProperty("prefix",QString(ui->linePrefix->toPlainText() + "_"));
+        mCmd->setProperty("suffix",QString("_" + ui->lineSuffix->toPlainText()));
         //Set Id
         mCmd->SetExpId(EpCount+1);
         //Set Blender Kit
@@ -1283,7 +1286,6 @@ void MainWindow::LeeUpdateFuntions()
     // }
 
 }
-
 
 void MainWindow::OnLogs(QString &inLog,QString &Err)
 {

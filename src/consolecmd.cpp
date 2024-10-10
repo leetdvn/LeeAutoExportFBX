@@ -119,10 +119,13 @@ void ConsoleCmd::SetScriptPlatForm()
     QString BlKit = property("FbxKit").toString();
     QString FbxOpt = property("FbxOpt").toString();
     QString Mesh = property("Mesh").toString();
+    //preifx suffix
+    QString prefix = property("prefix").toString();
+    QString suffix = property("suffix").toString();
 
     QString sContent = BaseScr.endsWith(".py") ?
-                        ScriptCont.arg(MExportDir,BlKit,Mesh,MASSFBXDIR+ "Scripts/",BProgram,FbxOpt):
-                        ScriptCont.arg(MExportDir,FbxOpt,Mesh);
+                        ScriptCont.arg(MExportDir,BlKit,Mesh,MASSFBXDIR+ "Scripts/",BProgram,FbxOpt,prefix,suffix):
+                        ScriptCont.arg(MExportDir,FbxOpt,Mesh,prefix,suffix);
 
 
     QFile Script(ScriptPath);

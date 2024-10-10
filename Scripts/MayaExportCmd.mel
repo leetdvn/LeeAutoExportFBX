@@ -16,6 +16,8 @@ global string $BaseSkeletals[];
 
 global string $FbxOpt= "%2";
 global string $Mesh = "%3";
+global string $prefix="%4";
+global string $suffix="%5";
 
 proc int LObjectExists(string $inobjectname)
 {
@@ -440,6 +442,8 @@ global proc FbxExecute()
 	global string $FbxOpt;
 	global string $BaseSkeletals[];
 	global string $Mesh;
+	global string $prefix;
+	global string $suffix;
 
 	string $reffiles[];
 	string $layerExp = GetMassExportLayer();
@@ -499,7 +503,7 @@ global proc FbxExecute()
 		LClearAdvanceSkeleton($MassExpFull[$i]);
 
 		string $Str[] = LSplitString($MassExpFull[$i]);
-		string $exp = "%1" + substituteAllString($Str[0],"|","") + ".fbx" ;
+		string $exp = $prefix +  "%1" + substituteAllString($Str[0],"|","") +  $suffix + ".fbx" ;
 		
 		string $GeoJnt[] = LAdvanceSkeletonGeoJoint($MassExpFull[$i],$addMesh);
 		select -r $GeoJnt;
