@@ -1092,12 +1092,9 @@ void MainWindow::ImplementExport(int fileNumber)
         //Set Program
         mCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
         //set prefix and suffix
-        if(!ui->linePrefix->toPlainText().isEmpty() || ui->linePrefix->toPlainText() !=""){
-            mCmd->setProperty("prefix",QString(ui->linePrefix->toPlainText() + "_"));
-        }
-        if(!ui->lineSuffix->toPlainText().isEmpty() || ui->lineSuffix->toPlainText() !=""){
-            mCmd->setProperty("suffix",QString("_" + ui->lineSuffix->toPlainText()));
-        }
+        QString prefix = ExtractShotName(EpSourceFiles[fileNumber]);
+        mCmd->setProperty("prefix",prefix);
+
         //Set Id
         mCmd->SetExpId(EpCount+1);
         //Set Blender Kit
@@ -1289,6 +1286,23 @@ void MainWindow::LeeUpdateFuntions()
     //     NumberCount++;
     // }
 
+}
+
+QString MainWindow::ExtractShotName(const QString inFilename)
+{
+    QStringList split = inFilename.split("/");
+    QString endstr = split[split.count()-1];
+    QStringList fExtension={".ma",".mb",".blend"};
+
+    for(auto ex : fExtension)
+        endstr.replace(ex,"");
+
+    endstr = endstr.toLower();
+    split = endstr.split("sh");
+
+    qDebug() << split[split.count()-1] << Qt::endl;
+
+    return split[split.count()-1];
 }
 
 void MainWindow::OnLogs(QString &inLog,QString &Err)

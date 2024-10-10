@@ -503,7 +503,7 @@ global proc FbxExecute()
 		LClearAdvanceSkeleton($MassExpFull[$i]);
 
 		string $Str[] = LSplitString($MassExpFull[$i]);
-		string $exp = $prefix +  "%1" + substituteAllString($Str[0],"|","") +  $suffix + ".fbx" ;
+		string $exp = "%1" + $prefix + substituteAllString($Str[0],"|","") +  $suffix + ".fbx" ;
 		
 		string $GeoJnt[] = LAdvanceSkeletonGeoJoint($MassExpFull[$i],$addMesh);
 		select -r $GeoJnt;

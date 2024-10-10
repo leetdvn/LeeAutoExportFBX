@@ -221,6 +221,7 @@ protected:
 
     void LeeUpdateFuntions();
 
+    QString ExtractShotName(const QString inFilename);
 
 public slots:
     void OnLogs(QString &inLog,QString &Err);
@@ -233,5 +234,6 @@ private:
     bool IsAuthored;
 
     QTimer* TimeUpdate=nullptr;
+
 };
 #endif // MAINWINDOW_H
