@@ -1092,8 +1092,12 @@ void MainWindow::ImplementExport(int fileNumber)
         //Set Program
         mCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
         //set prefix and suffix
-        mCmd->setProperty("prefix",QString(ui->linePrefix->toPlainText() + "_"));
-        mCmd->setProperty("suffix",QString("_" + ui->lineSuffix->toPlainText()));
+        if(!ui->linePrefix->toPlainText().isEmpty() || ui->linePrefix->toPlainText() !=""){
+            mCmd->setProperty("prefix",QString(ui->linePrefix->toPlainText() + "_"));
+        }
+        if(!ui->lineSuffix->toPlainText().isEmpty() || ui->lineSuffix->toPlainText() !=""){
+            mCmd->setProperty("suffix",QString("_" + ui->lineSuffix->toPlainText()));
+        }
         //Set Id
         mCmd->SetExpId(EpCount+1);
         //Set Blender Kit
