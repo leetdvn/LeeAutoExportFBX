@@ -109,7 +109,7 @@ class MassExportFbx():
         col = bpy.data.collections[Collection]
         armature = self.GetObjectTypes(col,'ARMATURE')
             
-        for bone in armature:
+        for i,bone in enumerate(armature):
             self.set_active_object(bone.name)
             bpy.ops.object.mode_set(mode = 'POSE')
             startf,endf = self.GetStartEndFrame(bone)
@@ -121,6 +121,7 @@ class MassExportFbx():
             ###Bake###########
             a = bone.animation_data.action
             if not a: continue
+
             bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
 
             print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, startf, endf))
@@ -230,7 +231,21 @@ class MassExportFbx():
         collections = bpy.data.collections
         for i,obj in enumerate(collections):
             if str(obj.name).lower() == inCollection: return obj.name,obj
-        
+    
+    def BlenderExport(self,expPath,isCamera=False):
+        if not expPath: return
+        Exportypes={}
+        if isCamera: Exportypes = {'CAMERA'}
+        else: Exportypes={'ARMATURE','MESH','OTHER'}
+
+        bpy.ops.export_scene.fbx(filepath=expPath,
+                            use_selection=True,
+                            object_types=Exportypes,
+                            use_custom_props=True,
+                            bake_anim_force_startend_keying=False,
+                            use_mesh_modifiers=True
+                            )
+
     ####################MASSEXPORT FUNC###########################################
     def LeeMassExport(self,Fbx_platform='AutoRigPro'):
         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
@@ -244,6 +259,19 @@ class MassExportFbx():
         except: pass
 
         armature = self.GetObjectTypes(col,'ARMATURE')
+        
+        cameras = self.GetObjectTypes(col,'CAMERA')
+
+        for cam in cameras:
+            self.set_active_object(cam.name)
+            startf,endf = self.GetStartEndFrame(cam)
+            print("Frame : ",startf,endf)
+            startf = math.ceil(startf)
+            endf = math.ceil(endf)
+            bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
+            expPath = str(self.ExportDir).format(fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+            if cam: self.BlenderExport(expPath,True)
+
 
         if armature.__len__() <= 0: return
         
@@ -271,6 +299,7 @@ class MassExportFbx():
 
             self.set_active_object(arm.name)
             expPath = str(self.ExportDir).format(fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+
             if Fbx_platform=="Blender":
                 bpy.ops.export_scene.fbx(filepath=expPath,
                                             use_selection=True,

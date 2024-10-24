@@ -1082,7 +1082,6 @@ void MainWindow::ImplementExport(int fileNumber)
         ui->ExpCurrentFile->setText(QString("Exporting File : %1").arg(EpSourceFiles[fileNumber]));
         //Maya Exp Refactored..
         ImpCmd* mCmd = new ImpCmd(EpSourceFiles[fileNumber],finalExpDir);
-
         //Base Skeletal
         mCmd->SetExportSkeletal(uiOpt->EBaseSkeleton->isChecked());
 
@@ -1290,7 +1289,11 @@ void MainWindow::LeeUpdateFuntions()
 
 QString MainWindow::ExtractShotName(const QString inFilename)
 {
-    QStringList split = inFilename.split("/");
+    if(inFilename.isEmpty() || inFilename.isNull()) return QString();
+
+    QString tolower = inFilename.toLower();
+    QString result = "sh";
+    QStringList split = tolower.split("/");
     QString endstr = split[split.count()-1];
     QStringList fExtension={".ma",".mb",".blend"};
 
@@ -1298,11 +1301,11 @@ QString MainWindow::ExtractShotName(const QString inFilename)
         endstr.replace(ex,"");
 
     endstr = endstr.toLower();
-    split = endstr.split("sh");
+    split = endstr.split(result);
 
-    qDebug() << split[split.count()-1] << Qt::endl;
+    qDebug() <<"ExtractFile " << "Sh" + split[split.count()-1] << Qt::endl;
 
-    return split[split.count()-1];
+    return QString(result + split[split.count()-1] + "_");
 }
 
 void MainWindow::OnLogs(QString &inLog,QString &Err)

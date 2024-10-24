@@ -213,6 +213,8 @@ protected:
 
     void OnRevealFolder();
 
+    QString MakeShotName(const QString infilename);
+
     bool IsValidAPI(QString inUrl,QString inMacHost);
 
     ///Check Internet Reachability

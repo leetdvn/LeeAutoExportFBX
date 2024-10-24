@@ -337,69 +337,6 @@ color:rgb(255, 255, 255);</string>
         </item>
        </layout>
       </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="spacing">
-         <number>10</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="FbxPrefix">
-          <property name="styleSheet">
-           <string notr="true">font: 700 9pt &quot;Times New Roman&quot;;
-color:rgb(255, 255, 255);</string>
-          </property>
-          <property name="text">
-           <string>Name Prefix</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QTextEdit" name="linePrefix">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font: 700 9pt &quot;Times New Roman&quot;;
-color:rgb(255, 255, 255);</string>
-          </property>
-          <property name="placeholderText">
-           <string>prefixname_fbxname_suffixname</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="FbxSuffix">
-          <property name="styleSheet">
-           <string notr="true">font: 700 9pt &quot;Times New Roman&quot;;
-color:rgb(255, 255, 255);</string>
-          </property>
-          <property name="text">
-           <string>Name Suffix</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QTextEdit" name="lineSuffix">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font: 700 9pt &quot;Times New Roman&quot;;
-color:rgb(255, 255, 255);</string>
-          </property>
-          <property name="placeholderText">
-           <string>prefixname_fbxname_suffixname</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
      </layout>
     </item>
     <item row="3" column="0">
