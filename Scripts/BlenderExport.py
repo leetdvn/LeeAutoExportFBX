@@ -112,17 +112,17 @@ class MassExportFbx():
         for i,bone in enumerate(armature):
             self.set_active_object(bone.name)
             bpy.ops.object.mode_set(mode = 'POSE')
-            startf,endf = self.GetStartEndFrame(bone)
-            startf = math.ceil(startf)
-            endf = math.ceil(endf)
+     
 
             #========Loop Action =================
-            # for a in bpy.data.actions:
+            for a in bpy.data.actions:
             ###Bake###########
-            a = bone.animation_data.action
-            if not a: continue
-
-            bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+                if not a: continue
+                #bpy.context.object.animation_data.action = a
+                startf,endf = self.GetStartEndFrame(bone)
+                startf = math.ceil(startf)
+                endf = math.ceil(endf)
+                bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
 
             print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, startf, endf))
 
@@ -157,9 +157,10 @@ class MassExportFbx():
         #scn.arp_export_twist = True
         #scn.arp_fix_fbx_matrix=True
         #scn.arp_ge_sel_only =True
+        bpy.context.scene.arp_export_name_string = "Baked_Layer"
         bpy.context.scene.arp_apply_mods = True
         bpy.context.scene.arp_ge_sel_only = True
-
+        bpy.context.scene.arp_bake_actions = True
         # run export
         try:
             bpy.ops.arp.arp_export_fbx_panel(filepath=fileoutput)
@@ -181,7 +182,15 @@ class MassExportFbx():
             
             checkloaded = addon_utils.check(addon)[1]
             if checkloaded and addon.endswith("Layers"):
-                addon_utils.disable(addon)
+                #addon_utils.disable(addon)
+                pass
+                # try:
+                #     bpy.context.object.als.layer_index=0
+                #     bpy.context.object.als.operator='MERGE'
+                #     bpy.context.object.als.direction='ALL'
+                #     bpy.ops.anim.layers_merge_down()
+                # except:
+                #     pass
             elif not checkloaded:
                 try:
                     checkloaded = addon_utils.enable(addon)
@@ -246,11 +255,22 @@ class MassExportFbx():
                             use_mesh_modifiers=True
                             )
 
+
+    def BakeAnimLayer(self,arm):
+        if arm is None or not arm.als.turn_on: return
+        arm.als.operator='NEW'
+        arm.als.direction='ALL'
+        bpy.ops.anim.layers_merge_down()
+        print("Leetdvn : ",arm.name)
+
     ####################MASSEXPORT FUNC###########################################
     def LeeMassExport(self,Fbx_platform='AutoRigPro'):
         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
         #col = bpy.data.collections[Export]
-        
+        bpy.context.object.als.operator='NEW'
+        bpy.context.object.als.direction='ALL'
+        bpy.ops.anim.layers_merge_down()
+
         self.ArpIsLoaded()
 
         #bpy.ops.object.make_local(type='ALL')
@@ -275,7 +295,7 @@ class MassExportFbx():
 
         if armature.__len__() <= 0: return
         
-        self.LeeBakeFunc(Export)
+        #self.LeeBakeFunc(Export)
 
         if self.Skeletal.endswith("BaseSkeleton"):
             self.InitScriptExpSkeletal()
@@ -288,6 +308,7 @@ class MassExportFbx():
 
         for arm in armature:
             self.ClearSelection()
+            self.BakeAnimLayer(arm) #bake animation Layer
             Geos = self.GetAllGeometryAttachedArmature(arm)
             arm.make_local()
             for geo in Geos:
@@ -298,6 +319,8 @@ class MassExportFbx():
                     self.set_active_object(geo.name)
 
             self.set_active_object(arm.name)
+            
+
             expPath = str(self.ExportDir).format(fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
 
             if Fbx_platform=="Blender":
@@ -323,4 +346,4 @@ class MassExportFbx():
 
 fbx_Addon = '%2'
 MassFbx = MassExportFbx()
-MassFbx.LeeMassExport(fbx_Addon)
+MassFbx.LeeMassExport(fbx_Addon   )
