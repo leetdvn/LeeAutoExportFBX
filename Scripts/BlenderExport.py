@@ -280,9 +280,15 @@ class MassExportFbx():
     def LeeMassExport(self,Fbx_platform='AutoRigPro'):
         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
         #col = bpy.data.collections[Export]
-        bpy.context.object.als.operator='NEW'
-        bpy.context.object.als.direction='ALL'
-        bpy.ops.anim.layers_merge_down()
+        try:
+            bpy.context.object.als.operator='MERGE'
+            bpy.context.object.als.direction='ALL'
+            bpy.ops.anim.layers_merge_down()
+        except:
+            pass
+        finally:
+            pass
+        
         self.ArpIsLoaded()
         #bpy.ops.object.make_local(type='ALL')
         try:
