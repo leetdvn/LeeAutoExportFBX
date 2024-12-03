@@ -33,10 +33,11 @@ armature = GetObjectTypes(col,'ARMATURE')
 bpy.context.object.als.operator='MERGE'
 bpy.context.object.als.direction='ALL'
 bpy.ops.anim.layers_merge_down()
-# for arm in armature:
-#     if arm.als.turn_on:
-#         #bpy.context.object.als.layer_index=0
-#         #print(arm.name,arm.Anim_Layers[arm.als.layer_index])
+for arm in armature:
+    if arm.als.turn_on:
+        #bpy.context.object.als.layer_index=0
+        print(arm.name,arm.Anim_Layers[arm.als.layer_index])
+        print(arm.name,arm.Anim_Layers)
 #         #print(bpy.ops.anim.layers_merge_down())
 #         arm.als.operator='NEW'
 #         arm.als.direction='ALL'

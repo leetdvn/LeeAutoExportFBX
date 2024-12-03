@@ -111,22 +111,23 @@ class MassExportFbx():
             
         for i,bone in enumerate(armature):
             self.set_active_object(bone.name)
-            bpy.ops.object.mode_set(mode = 'POSE')
+            self.BakeAnimLayer(bone)
+            # bpy.ops.object.mode_set(mode = 'POSE')
      
 
-            #========Loop Action =================
-            for a in bpy.data.actions:
-            ###Bake###########
-                if not a: continue
-                #bpy.context.object.animation_data.action = a
-                startf,endf = self.GetStartEndFrame(bone)
-                startf = math.ceil(startf)
-                endf = math.ceil(endf)
-                bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+            # #========Loop Action =================
+            # for a in bpy.data.actions:
+            # ###Bake###########
+            #     if not a: continue
+            #     #bpy.context.object.animation_data.action = a
+            #     startf,endf = self.GetStartEndFrame(bone)
+            #     startf = math.ceil(startf)
+            #     endf = math.ceil(endf)
+            #     bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
 
-            print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, startf, endf))
+            # print ("Action: {}, First frame: {}, Second frame: {}".format(a.name, startf, endf))
 
-        bpy.ops.object.mode_set(mode = 'OBJECT')
+        #bpy.ops.object.mode_set(mode = 'OBJECT')
 
     ##===================AutoRigProInterGrade======================
     def LeeArpExport(self,fileoutput):
@@ -157,10 +158,13 @@ class MassExportFbx():
         #scn.arp_export_twist = True
         #scn.arp_fix_fbx_matrix=True
         #scn.arp_ge_sel_only =True
-        bpy.context.scene.arp_export_name_string = "Baked_Layer"
         bpy.context.scene.arp_apply_mods = True
         bpy.context.scene.arp_ge_sel_only = True
-        bpy.context.scene.arp_bake_actions = True
+        #bpy.context.scene.arp_bake_actions = True
+        bpy.context.scene.arp_frame_range_type='SCENE'
+        #bpy.context.scene.arp_only_containing=True
+        bpy.context.scene.arp_fix_fbx_rot=True
+        bpy.context.scene.arp_bake_only_active=True
         # run export
         try:
             bpy.ops.arp.arp_export_fbx_panel(filepath=fileoutput)
@@ -189,6 +193,7 @@ class MassExportFbx():
                 #     bpy.context.object.als.operator='MERGE'
                 #     bpy.context.object.als.direction='ALL'
                 #     bpy.ops.anim.layers_merge_down()
+                #     addon_utils.disable(addon)
                 # except:
                 #     pass
             elif not checkloaded:
@@ -258,10 +263,18 @@ class MassExportFbx():
 
     def BakeAnimLayer(self,arm):
         if arm is None or not arm.als.turn_on: return
-        arm.als.operator='NEW'
-        arm.als.direction='ALL'
-        bpy.ops.anim.layers_merge_down()
-        print("Leetdvn : ",arm.name)
+        # arm.als.layer_index=0
+        # arm.als.operator='NEW'
+        # arm.als.direction='ALL'
+        #arm.Anim_Layers[0].name = str("{bone}_{MassLayer}").format(bone=arm.name,MassLayer="MassLayer")
+        bpy.context.scene.arp_export_name_string = "Baked_Layer" #arm.Anim_Layers[0].name
+        arm.als.turn_on=False
+
+    def GetAddonLayerName(self,arm):
+        if arm is None or not arm.als.turn_on: return
+        #arm.Anim_Layers[0].name = str("{bone}_{MassLayer}").format(bone=arm.name,MassLayer="MassLayer")
+        bpy.context.scene.arp_export_name_string = "Baked_Layer"
+        arm.als.turn_on=False
 
     ####################MASSEXPORT FUNC###########################################
     def LeeMassExport(self,Fbx_platform='AutoRigPro'):
@@ -270,9 +283,7 @@ class MassExportFbx():
         bpy.context.object.als.operator='NEW'
         bpy.context.object.als.direction='ALL'
         bpy.ops.anim.layers_merge_down()
-
         self.ArpIsLoaded()
-
         #bpy.ops.object.make_local(type='ALL')
         try:
             bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -295,7 +306,8 @@ class MassExportFbx():
 
         if armature.__len__() <= 0: return
         
-        #self.LeeBakeFunc(Export)
+        ##self.LeeBakeFunc(Export)
+        # self.ArpIsLoaded()
 
         if self.Skeletal.endswith("BaseSkeleton"):
             self.InitScriptExpSkeletal()
@@ -333,6 +345,7 @@ class MassExportFbx():
                                             )
                 
             elif Fbx_platform=="AutoRigPro":
+                #self.LeeArpExport(expPath)
                 try:
                     self.LeeArpExport(expPath)
                     print("Exported  : " + expPath + "\n")
