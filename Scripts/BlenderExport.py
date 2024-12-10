@@ -123,46 +123,30 @@ class MassExportFbx():
         armature = self.GetObjectTypes(col,'ARMATURE')
             
         for bone in armature:
-            self.set_active_object(bone.name)
-            bpy.ops.object.mode_set(mode = 'POSE')
-            startf,endf = self.GetStartEndFrame(bone)
-            startf = math.ceil(startf)
-            endf = math.ceil(endf)
-
-            #========Loop Action =================
-            # for a in bpy.data.actions:
-            ###Bake###########
-            a = bone.animation_data.action
-            if not a: continue
-            bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
-
-            info = str("Baking Action : {}").format(a.name)
-            print (info)
-
-        bpy.ops.object.mode_set(mode = 'OBJECT')
+            self.LeeArmatureBake(bone)
 
     def LeeArmatureBake(self,arm):
         if arm is None: return
-            
+        
+        self.set_active_object(arm.name)
         #active Armature and Change to POSE MODE
         bpy.ops.object.mode_set(mode = 'POSE')
-    
-        for bone in arm.data.bones:
-            bone.select=True
-        #========Loop Action =================
         ###Bake###########
-        #bpy.context.object.animation_data.action = a
-
-
         startf,endf = self.GetStartEndFrame(arm)
         startf = math.ceil(startf)
         endf = math.ceil(endf)
-        bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'},)
 
+        act = arm.animation_data.action
+        if not act: return
+
+        bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+
+        info = str("Baking Action : {}").format(act.name)
+        print (info)
         #Back to Object Mode
-        try:
-            bpy.ops.object.mode_set(mode = 'OBJECT')
-        except: pass
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+
+
     ##===================AutoRigProInterGrade======================
     def LeeArpExport(self,fileoutput):
         '''
@@ -193,22 +177,22 @@ class MassExportFbx():
         #scn.arp_fix_fbx_matrix=True
         #scn.arp_ge_sel_only =True
         #=======================================
-        # bpy.context.scene.arp_ge_sel_only = True
-        # #bpy.context.scene.arp_bake_actions = True
-        # bpy.context.scene.arp_frame_range_type='SCENE'
-        # bpy.context.scene.arp_bake_only_active=True
-        # bpy.context.scene.arp_only_containing=True
-        # #bpy.context.scene.arp_fix_fbx_rot=True
-        # #bpy.context.scene.arp_rename_for_ue=True
-        # #bpy.context.scene.arp_ge_sel_bones_only=True
-        # bpy.context.scene.arp_apply_mods = True
-        # bpy.context.scene.arp_fix_fbx_rot=True
-        # bpy.context.scene.arp_export_tex=False
+        bpy.context.scene.arp_ge_sel_only = True
+        #bpy.context.scene.arp_bake_actions = True
+        bpy.context.scene.arp_frame_range_type='SCENE'
+        bpy.context.scene.arp_bake_only_active=True
+        bpy.context.scene.arp_only_containing=True
+        #bpy.context.scene.arp_fix_fbx_rot=True
+        bpy.context.scene.arp_rename_for_ue=True
+        #bpy.context.scene.arp_ge_sel_bones_only=True
+        bpy.context.scene.arp_apply_mods = True
+        bpy.context.scene.arp_fix_fbx_rot=True
+        bpy.context.scene.arp_export_tex=False
 
         #===================================
-        bpy.context.scene.arp_apply_mods = True
-        bpy.context.scene.arp_ge_sel_only = True
-
+        # bpy.context.scene.arp_apply_mods = True
+        # bpy.context.scene.arp_ge_sel_only = True
+        # bpy.context.scene.arp_rename_for_ue=True
         # run export
         try:
             bpy.ops.arp.arp_export_fbx_panel(filepath=fileoutput)
@@ -314,25 +298,18 @@ class MassExportFbx():
         if arm is None or not arm.als.turn_on: return
         #bpy.context.object.als.layer_index=len(arm.Anim_Layers)-1
         #arm.als.blend_types='COMBINE'
-        #self.LeeArmatureBake(arm)
         self.set_active_object(arm)
-        #self.SetActiveAllBoneInAmature(arm)
         #self.LeeArmatureBake(arm)
-        for bone in arm.data.bones:
-            bone.select=True
             
-        arm.als.operator='MERGE'
+        arm.als.operator='NEW'
         arm.als.direction='ALL'
         bpy.ops.anim.layers_merge_down()
+        #arm.Anim_Layers[len(arm.Anim_Layers)-1].lock=False
         NewLayerName = str("Bake_{bone}").format(bone=arm.name)
         arm.Anim_Layers[len(arm.Anim_Layers)-1].name = NewLayerName
         bpy.context.scene.arp_export_name_string = NewLayerName
-            # arm.als.update()
-            # for i,layer in enumerate(arm.Anim_Layers):
-            #     if str(layer.name).startswith("Baked"):
-            #         arm.Anim_Layers[i].name = "MassExport"
-        #arm.Anim_Layers[0].name
-        #
+
+
         arm.als.turn_on=False
 
 
@@ -343,8 +320,8 @@ class MassExportFbx():
         try:
             for x in range(7):
                 arm.data.layers[x]=True
-            bpy.ops.anim.bones_in_layer()
         except: pass
+
         bpy.ops.object.mode_set(mode = 'POSE')
         bpy.ops.pose.select_all(action='SELECT')
         bpy.ops.pose.bone_layers(layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
@@ -392,7 +369,7 @@ class MassExportFbx():
 
 
         if armature.__len__() <= 0: return
-        self.LeeBakeFunc(Export)
+        #self.LeeBakeFunc(Export)
         # self.ArpIsLoaded()
         if self.Skeletal.endswith("BaseSkeleton"):
             self.InitScriptExpSkeletal()
@@ -402,8 +379,8 @@ class MassExportFbx():
             bpy.ops.object.make_local(type='ALL')
 
         for arm in armature:
-            self.ClearSelection()
-            #self.BakeAnimLayer(arm) #bake animation Layer
+            #self.ClearSelection()
+            self.BakeAnimLayer(arm) #bake animation Layer
             Geos = self.GetAllGeometryAttachedArmature(arm)
             arm.make_local()
             for geo in Geos:
@@ -423,21 +400,21 @@ class MassExportFbx():
                                             object_types={'ARMATURE','MESH','OTHER'},
                                             use_custom_props=True,
                                             bake_anim_force_startend_keying=False,
-                                            use_mesh_modifiers=True
+                                            use_mesh_modifiers=False,
+                                            use_visible=True
                                             )
                 
             elif Fbx_platform=="AutoRigPro":
                 #self.LeeArpExport(expPath)
+                for bone in arm.data.bones:
+                    bone.select=True
+
                 try:
                     self.LeeArpExport(expPath)
                     print("Exported  : " + expPath + "\n")
                 except:
                     print("Issue Export: " + expPath)
-        #print(ChildCollections)
-        # for f in transientPath:
-        #     pyf = open(f)
-        #     if pyf.closed:
-        #         os.remove(f)
+
 
 fbx_Addon = '%2'
 MassFbx = MassExportFbx()

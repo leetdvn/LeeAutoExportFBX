@@ -338,6 +338,8 @@ void MainWindow::OnExportClicked()
     {
         bool Confirm = ShowMessageConfirmBox();
         if(!Confirm) return;
+        ui->LeeLog->clear();
+        TotalFbx=0;
         uiOpt->LeeSoft->setCurrentText("Maya & Blender");
         QStringList checkeditems = LeeModel->GetCheckedItem();
         EpSourceFiles = GetFileNameFromDir(ui->SourceFolderText->toPlainText(),checkeditems);
@@ -379,9 +381,9 @@ void MainWindow::OnExportClicked()
 
         #pragma omp parallel
         {
-            #pragma omp parallel for
-            for(int i = 0 ; i < EpSourceFiles.count() ; ++i)
-                ImplementExport(i);
+            //#pragma omp parallel for
+            //for(int i = 0 ; i < EpSourceFiles.count()/5 ; ++i)
+            //    ImplementExport(i);
 
         }
 
@@ -1035,12 +1037,18 @@ void MainWindow::OnCmdFinish(int exitCode, QProcess::ExitStatus exitStatus,QStri
     }
 
 
+    QStringList fbxs{},FbxFillters{};
+    FbxFillters <<"*.fbx";
+    GetFilesInDir(LeeCurrentExpDir,fbxs,FbxFillters);
+    TotalFbx+=fbxs.count();
+
     if(completedId == TotalFiles)
     {
         //TotalFbx = FbxCompletedCount();
         //enable Export Btn
         ui->ExportExecute->setEnabled(true);
         AddToLog(Warning,QString("Total Export Files : %1").arg(TotalFiles));
+
         AddToLog(Warning,QString("Total Fbx : %1").arg(TotalFbx));
         //FbxCompletedCount();
         ui->progressBar->setFormat("Done Job %p%");
@@ -1075,13 +1083,13 @@ void MainWindow::ImplementExport(int fileNumber)
 
         bool IsMakeBase = uiOpt->EBaseSkeleton->isChecked();
 
-        QString finalExpDir = MakeTreeDirectory(EpSourceFiles[fileNumber],
+        LeeCurrentExpDir = MakeTreeDirectory(EpSourceFiles[fileNumber],
                             ui->SourceFolderText->toPlainText(),
                             ui->ExportFolderText->toPlainText(),IsMakeBase);
 
         ui->ExpCurrentFile->setText(QString("Exporting File : %1").arg(EpSourceFiles[fileNumber]));
         //Maya Exp Refactored..
-        ImpCmd* mCmd = new ImpCmd(EpSourceFiles[fileNumber],finalExpDir);
+        ImpCmd* mCmd = new ImpCmd(EpSourceFiles[fileNumber],LeeCurrentExpDir);
         //Base Skeletal
         mCmd->SetExportSkeletal(uiOpt->EBaseSkeleton->isChecked());
 
@@ -1319,7 +1327,7 @@ void MainWindow::OnLogs(QString &inLog,QString &Err)
 
     if(iLog.startsWith("Exported")){
         AddToLog(LogType::Completed,iLog);
-        TotalFbx++;
+        //TotalFbx++;
         ScrollToNewLog();
     }
 

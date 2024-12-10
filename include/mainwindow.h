@@ -237,5 +237,6 @@ private:
 
     QTimer* TimeUpdate=nullptr;
 
+    QString LeeCurrentExpDir;
 };
 #endif // MAINWINDOW_H
