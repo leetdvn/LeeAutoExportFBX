@@ -129,8 +129,7 @@ class MassExportFbx():
         if arm is None: return
         
         self.set_active_object(arm.name)
-        #active Armature and Change to POSE MODE
-        bpy.ops.object.mode_set(mode = 'POSE')
+        bpy.data.objects[arm.name].select_set(True)
         ###Bake###########
         startf,endf = self.GetStartEndFrame(arm)
         startf = math.ceil(startf)
@@ -138,6 +137,18 @@ class MassExportFbx():
 
         act = arm.animation_data.action
         if not act: return
+
+        # for iAct in bpy.data.actions:
+        #     if not self.isArmatureAction(iAct,arm): continue
+            #active Armature and Change to POSE MODE
+        bpy.ops.object.mode_set(mode = 'POSE')
+        try:
+            bpy.ops.anim.bones_in_layers()
+        except: pass
+
+        # for bone in arm.data.bones:
+        #     bone.select=True
+            #bpy.data.objects[bone.name].select_set(True)
 
         bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
 
@@ -186,7 +197,7 @@ class MassExportFbx():
         bpy.context.scene.arp_rename_for_ue=True
         #bpy.context.scene.arp_ge_sel_bones_only=True
         bpy.context.scene.arp_apply_mods = True
-        bpy.context.scene.arp_fix_fbx_rot=True
+        bpy.context.scene.arp_fix_fbx_rot=False
         bpy.context.scene.arp_export_tex=False
 
         #===================================
@@ -295,21 +306,32 @@ class MassExportFbx():
 
 
     def BakeAnimLayer(self,arm):
-        if arm is None or not arm.als.turn_on: return
+        if arm is None: return
+        #select Layer 0
         #bpy.context.object.als.layer_index=len(arm.Anim_Layers)-1
-        #arm.als.blend_types='COMBINE'
         self.set_active_object(arm)
-        #self.LeeArmatureBake(arm)
-            
-        arm.als.operator='NEW'
-        arm.als.direction='ALL'
-        bpy.ops.anim.layers_merge_down()
-        #arm.Anim_Layers[len(arm.Anim_Layers)-1].lock=False
+        #Set Select Armature 
+        bpy.data.objects[arm.name].select_set(True)
+        LayerCount=len(arm.Anim_Layers)
+
+        print('check als : ',arm.als.turn_on,arm.name)
+        ##Count Layer  > 0
+        if LayerCount > 1:
+            bpy.context.object.als.layer_index=len(arm.Anim_Layers)-1
+            bpy.context.object.als.operator='MERGE'
+            bpy.context.object.als.direction='ALL'
+            result={}
+            try:
+                result = bpy.ops.anim.layers_merge_down()
+            except:
+                if result.values() =='FINISHED':
+                    print(result.values())
+                pass
+            arm.Anim_Layers.update()
+
         NewLayerName = str("Bake_{bone}").format(bone=arm.name)
-        arm.Anim_Layers[len(arm.Anim_Layers)-1].name = NewLayerName
+        arm.Anim_Layers[0].name = NewLayerName
         bpy.context.scene.arp_export_name_string = NewLayerName
-
-
         arm.als.turn_on=False
 
 
@@ -367,7 +389,6 @@ class MassExportFbx():
             expPath = str(self.ExportDir).format(fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
             if cam: self.BlenderExport(expPath,True)
 
-
         if armature.__len__() <= 0: return
         #self.LeeBakeFunc(Export)
         # self.ArpIsLoaded()
@@ -380,7 +401,8 @@ class MassExportFbx():
 
         for arm in armature:
             #self.ClearSelection()
-            self.BakeAnimLayer(arm) #bake animation Layer
+            if arm.als.turn_on:
+                self.BakeAnimLayer(arm) #bake animation Layer
             Geos = self.GetAllGeometryAttachedArmature(arm)
             arm.make_local()
             for geo in Geos:

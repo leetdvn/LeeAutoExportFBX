@@ -61,20 +61,17 @@ bpy.context.scene.arp_only_containing=True
 for i,arm in enumerate(armature):
     if arm.als.turn_on:
         set_active_object(arm.name)
-        bpy.context.object.als.layer_index=len(arm.Anim_Layers)-1
         # for i,bone in enumerate(arm.data.bones):
         #     arm.data.bones.active= bone
         #     print('Bone Hide',bone.name)
-
+        print(arm.name)
+        bpy.context.object.als.operator='MERGE'
+        bpy.context.object.als.direction='ALL'
+        result = bpy.ops.anim.layers_merge_down()
+        arm.Anim_Layers.update()
         #print(arm.data.animation_data)
         #print(bpy.context.active_object.animation_data.action)
-        print(bpy.context.object.data.layers[1])
-        #bpy.ops.object.mode_set(mode = 'OBJECT')        
-            #bone.hide = False
-        arm.als.operator='NEW'
-        arm.als.direction='ALL'
-        bpy.ops.anim.layers_merge_down()
-        #arm.Anim_Layers.update()
+        print(result)
         arm.Anim_Layers[len(arm.Anim_Layers)-1].name = str("Baked_{armName}").format(armName=arm.name)
         bpy.context.scene.arp_export_name_string = str("Baked_{armName}").format(armName=arm.name)
 
