@@ -1,6 +1,6 @@
 import bpy
 import addon_utils
-
+import math
 
 def GetMassFbxCollection(inCollection=str):
     collections = bpy.data.collections
@@ -45,6 +45,47 @@ def SelectAllObjsInCollection(inCollection):
         except:
             pass
     return objecsList
+def GetStartEndFrame(inBone):
+    if inBone is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
+
+    act = inBone.animation_data.action
+    
+    if act is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
+
+    return act.frame_range[0],act.frame_range[1]
+
+def LeeArmatureBake(arm):
+    if arm is None: return
+    
+    set_active_object(arm.name)
+    bpy.data.objects[arm.name].select_set(True)
+    ###Bake###########
+    startf,endf = GetStartEndFrame(arm)
+    startf = math.ceil(startf)
+    endf = math.ceil(endf)
+
+    act = arm.animation_data.action
+    if not act: return
+
+    # for iAct in bpy.data.actions:
+    #     if not self.isArmatureAction(iAct,arm): continue
+        #active Armature and Change to POSE MODE
+    bpy.ops.object.mode_set(mode = 'POSE')
+    try:
+        bpy.ops.anim.bones_in_layers()
+    except: pass
+
+    # for bone in arm.data.bones:
+    #     bone.select=True
+        #bpy.data.objects[bone.name].select_set(True)
+
+    bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+
+    info = str("Baking Action : {}").format(act.name)
+    print (info)
+    #Back to Object Mode
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
 # for mod in addon_utils.modules():
 #     if mod.bl_info.get('name')== "Animation Layers":
 #         print(mod.bl_info.get('name'))

@@ -129,7 +129,6 @@ class MassExportFbx():
         if arm is None: return
         
         self.set_active_object(arm.name)
-        bpy.data.objects[arm.name].select_set(True)
         ###Bake###########
         startf,endf = self.GetStartEndFrame(arm)
         startf = math.ceil(startf)
@@ -144,19 +143,23 @@ class MassExportFbx():
         bpy.ops.object.mode_set(mode = 'POSE')
         try:
             bpy.ops.anim.bones_in_layers()
-        except: pass
+        except: 
+            print("Exceptions : Bone In Layer")
+            return
+
 
         # for bone in arm.data.bones:
         #     bone.select=True
             #bpy.data.objects[bone.name].select_set(True)
 
-        bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+        bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True,use_current_action=True, bake_types={'POSE'})
 
         info = str("Baking Action : {}").format(act.name)
         print (info)
         #Back to Object Mode
         bpy.ops.object.mode_set(mode = 'OBJECT')
-
+        #bpy.ops.anim.remove_anim_layer()
+        arm.Anim_Layers[len(arm.Anim_Layers)-1].delete()
 
     ##===================AutoRigProInterGrade======================
     def LeeArpExport(self,fileoutput):
@@ -192,12 +195,10 @@ class MassExportFbx():
         #bpy.context.scene.arp_bake_actions = True
         bpy.context.scene.arp_frame_range_type='SCENE'
         bpy.context.scene.arp_bake_only_active=True
-        bpy.context.scene.arp_only_containing=True
-        #bpy.context.scene.arp_fix_fbx_rot=True
-        bpy.context.scene.arp_rename_for_ue=True
-        #bpy.context.scene.arp_ge_sel_bones_only=True
+        bpy.context.scene.arp_fix_fbx_rot=True
+        #bpy.context.scene.arp_rename_for_ue=True
         bpy.context.scene.arp_apply_mods = True
-        bpy.context.scene.arp_fix_fbx_rot=False
+        bpy.context.scene.arp_fix_fbx_rot=True
         bpy.context.scene.arp_export_tex=False
 
         #===================================
@@ -205,6 +206,7 @@ class MassExportFbx():
         # bpy.context.scene.arp_ge_sel_only = True
         # bpy.context.scene.arp_rename_for_ue=True
         # run export
+
         try:
             bpy.ops.arp.arp_export_fbx_panel(filepath=fileoutput)
         except:
@@ -317,20 +319,22 @@ class MassExportFbx():
         print('check als : ',arm.als.turn_on,arm.name)
         ##Count Layer  > 0
         if LayerCount > 1:
-            bpy.context.object.als.layer_index=len(arm.Anim_Layers)-1
+            # for x in range(LayerCount):
+            #     if x > 0:
+            #         bpy.context.object.als.layer_index=x
+            #         self.LeeArmatureBake(arm)
             bpy.context.object.als.operator='MERGE'
             bpy.context.object.als.direction='ALL'
             result={}
             try:
                 result = bpy.ops.anim.layers_merge_down()
             except:
-                if result.values() =='FINISHED':
-                    print(result.values())
+               #if result.values() =='FINISHED':
+                print(result.values())
                 pass
             arm.Anim_Layers.update()
-
         NewLayerName = str("Bake_{bone}").format(bone=arm.name)
-        arm.Anim_Layers[0].name = NewLayerName
+        arm.Anim_Layers[LayerCount-1].name = NewLayerName
         bpy.context.scene.arp_export_name_string = NewLayerName
         arm.als.turn_on=False
 
@@ -379,6 +383,7 @@ class MassExportFbx():
         
         cameras = self.GetObjectTypes(col,'CAMERA')
 
+        print('=================EXPORT CAMERA====================')
         for cam in cameras:
             self.set_active_object(cam.name)
             startf,endf = self.GetStartEndFrame(cam)
@@ -389,6 +394,8 @@ class MassExportFbx():
             expPath = str(self.ExportDir).format(fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
             if cam: self.BlenderExport(expPath,True)
 
+        print('=================END EXPORT CAMERA====================')
+
         if armature.__len__() <= 0: return
         #self.LeeBakeFunc(Export)
         # self.ArpIsLoaded()
@@ -398,6 +405,8 @@ class MassExportFbx():
         ##=================BAKE====================
         if str("%3").startswith("On"):
             bpy.ops.object.make_local(type='ALL')
+
+        print('=================EXPORT ARMATURES====================')
 
         for arm in armature:
             #self.ClearSelection()
@@ -437,6 +446,7 @@ class MassExportFbx():
                 except:
                     print("Issue Export: " + expPath)
 
+        print('=================END EXPORT ARMATURES====================')
 
 fbx_Addon = '%2'
 MassFbx = MassExportFbx()
