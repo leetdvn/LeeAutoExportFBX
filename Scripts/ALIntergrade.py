@@ -70,16 +70,13 @@ def LeeArmatureBake(arm):
     # for iAct in bpy.data.actions:
     #     if not self.isArmatureAction(iAct,arm): continue
         #active Armature and Change to POSE MODE
-    bpy.ops.object.mode_set(mode = 'POSE')
-    try:
-        bpy.ops.anim.bones_in_layers()
-    except: pass
+
 
     # for bone in arm.data.bones:
     #     bone.select=True
         #bpy.data.objects[bone.name].select_set(True)
-
-    bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+    arm.Anim_Layers[0].disable=True
+    #bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
 
     info = str("Baking Action : {}").format(act.name)
     print (info)
@@ -96,8 +93,6 @@ armature = GetObjectTypes(col,'ARMATURE')
 # bpy.context.object.als.operator='NEW'
 # bpy.ops.anim.layers_merge_down()
 #bpy.context.object.als.blend_types='COMBINE'
-bpy.context.scene.arp_bake_only_active=False
-bpy.context.scene.arp_only_containing=True
 
 for i,arm in enumerate(armature):
     if arm.als.turn_on:
@@ -105,17 +100,8 @@ for i,arm in enumerate(armature):
         # for i,bone in enumerate(arm.data.bones):
         #     arm.data.bones.active= bone
         #     print('Bone Hide',bone.name)
-        print(arm.name)
-        bpy.context.object.als.operator='MERGE'
-        bpy.context.object.als.direction='ALL'
-        result = bpy.ops.anim.layers_merge_down()
-        arm.Anim_Layers.update()
-        #print(arm.data.animation_data)
-        #print(bpy.context.active_object.animation_data.action)
-        print(result)
-        arm.Anim_Layers[len(arm.Anim_Layers)-1].name = str("Baked_{armName}").format(armName=arm.name)
-        bpy.context.scene.arp_export_name_string = str("Baked_{armName}").format(armName=arm.name)
-
+        arm.Anim_Layers[0].mute=True
+        #print()
             # if bone.active: continue
             # bone.active=True
         #try:
@@ -124,28 +110,5 @@ for i,arm in enumerate(armature):
         # bpy.ops.anim.layers_merge_down()
         #bpy.context.object.als.layer_index=0
         #info = str("Layer Number : {LayerNum}").format(LayerNum)
-        for layer in arm.Anim_Layers:
-            print(str("Layer :  {LayerName} BoneArm : {Arm} index : {idx}").format(LayerName=layer,Arm=arm.name,idx=arm.als.layer_index))
         #print(arm.name,arm.Anim_Layers[arm.als.layer_index])
         #print(arm.name,arm.Anim_Layers)
-#         #print(bpy.ops.anim.layers_merge_down())
-#         arm.als.operator='NEW'
-#         arm.als.direction='ALL'
-#         print(arm.als.layer_index,arm.als.data_type)
-#         print(bpy.ops.anim.layers_merge_down())
-# al = bpy.types.Object.als
-# for obj in GetSelections():
-#     if not obj.als.turn_on:
-#         print(obj.als.turn_on)
-bpy.context.scene.arp_apply_mods = True
-bpy.context.scene.arp_ge_sel_only = True
-#bpy.context.scene.arp_bake_actions = True
-bpy.context.scene.arp_frame_range_type='SCENE'
-bpy.context.scene.arp_bake_only_active=False
-bpy.context.scene.arp_only_containing=True
-#bpy.context.scene.arp_fix_fbx_rot=True
-bpy.context.scene.arp_rename_for_ue=True
-bpy.context.scene.arp_engine_type = 'unreal'
-bpy.context.scene.arp_apply_mods = False
-bpy.context.scene.arp_fix_fbx_rot=True
-bpy.context.scene.arp_export_tex=False

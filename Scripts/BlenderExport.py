@@ -67,7 +67,7 @@ class MassExportFbx():
         return objecsList
     
     def GetObjectTypes(self,inCollection,inType=''):
-        if not inType or not inCollection: return
+        if not inType or not inCollection: return []
 
         objects= self.GetObjectsInCollection(inCollection)
 
@@ -123,7 +123,11 @@ class MassExportFbx():
         armature = self.GetObjectTypes(col,'ARMATURE')
             
         for bone in armature:
-            self.LeeArmatureBake(bone)
+            if bone.als.turn_on:
+                self.ClearSelection()
+                self.BakeAnimLayer(bone) #bake animation Layer
+            # else
+            # self.LeeArmatureBake(bone)
 
     def LeeArmatureBake(self,arm):
         if arm is None: return
@@ -249,6 +253,21 @@ class MassExportFbx():
                     pass
         return checkloaded
 
+    def select_layer_bones(self,arm):
+        '''
+        Select Bone In Animation Layers ( nla tracks)
+        '''
+        if not arm.als.turn_on: return
+
+        strips = arm.animation_data.nla_tracks[arm.als.layer_index].strips
+        if len(strips) != 1 or strips[0].action is None:
+            return
+        for fcu in strips[0].action.fcurves:
+            if 'pose.bones' in fcu.data_path:
+                bone = fcu.data_path.split('"')[1]
+                if bone in arm.data.bones:
+                    arm.data.bones[bone].select = True
+
     def InitScriptExpSkeletal(self,scriptLoc=''):
         #dir = self.ScriptDir #os.path.dirname(os.path.abspath(__file__))
 
@@ -310,33 +329,40 @@ class MassExportFbx():
     def BakeAnimLayer(self,arm):
         if arm is None: return
         #select Layer 0
-        #bpy.context.object.als.layer_index=len(arm.Anim_Layers)-1
-        self.set_active_object(arm)
-        #Set Select Armature 
         bpy.data.objects[arm.name].select_set(True)
+        self.ClearSelection()
+        #Set Select Armature 
+        self.set_active_object(arm.name)
         LayerCount=len(arm.Anim_Layers)
 
-        print('check als : ',arm.als.turn_on,arm.name)
         ##Count Layer  > 0
         if LayerCount > 1:
-            # for x in range(LayerCount):
-            #     if x > 0:
-            #         bpy.context.object.als.layer_index=x
-            #         self.LeeArmatureBake(arm)
-            bpy.context.object.als.operator='MERGE'
-            bpy.context.object.als.direction='ALL'
-            result={}
+            bpy.ops.object.mode_set(mode = 'POSE')
+            #arm.als.layer_index=LayerCount-1
+            for i,bone in enumerate(arm.data.bones): bone.select=True; print(i)
+            bpy.context.object.als.layer_index=LayerCount-1
+            bpy.context.object.als.mergefcurves = True
+            bpy.context.object.als.baketype = 'AL'
+            bpy.context.scene.als.bake_range_type = 'SCENE'
+            #arm.als.blend_type='MULTIPLY'
+            arm.als.operator='MERGE'
+            arm.als.direction='ALL'
+            #bpy.ops.anim.layers_merge_down()
+            result = None
             try:
                 result = bpy.ops.anim.layers_merge_down()
+                if 'FINISHED' in result:
+                    print(str('merge all Animation {}').format(arm.name))
             except:
-               #if result.values() =='FINISHED':
-                print(result.values())
+                print(str('merge all Animation failures {}').format(arm.name))
                 pass
             arm.Anim_Layers.update()
+            bpy.ops.object.mode_set(mode = 'OBJECT')
         NewLayerName = str("Bake_{bone}").format(bone=arm.name)
-        arm.Anim_Layers[LayerCount-1].name = NewLayerName
+        arm.Anim_Layers[0].name = NewLayerName
         bpy.context.scene.arp_export_name_string = NewLayerName
         arm.als.turn_on=False
+
 
 
     def SetActiveAllBoneInAmature(self,arm):
@@ -369,7 +395,7 @@ class MassExportFbx():
         arm.als.turn_on=False
 
     ####################MASSEXPORT FUNC###########################################
-    def LeeMassExport(self,Fbx_platform='AutoRigPro'):
+    def LeeMassExport(self,Fbx_platform='AutoRigPro',isTesting=False):
         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
         #col = bpy.data.collections[Export]
 
@@ -383,21 +409,23 @@ class MassExportFbx():
         
         cameras = self.GetObjectTypes(col,'CAMERA')
 
-        print('=================EXPORT CAMERA====================')
-        for cam in cameras:
-            self.set_active_object(cam.name)
-            startf,endf = self.GetStartEndFrame(cam)
-            print("Frame : ",startf,endf)
-            startf = math.ceil(startf)
-            endf = math.ceil(endf)
-            bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
-            expPath = str(self.ExportDir).format(fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
-            if cam: self.BlenderExport(expPath,True)
+        if not isTesting:
+            print('=================EXPORT CAMERA====================')
+            for cam in cameras:
+                self.set_active_object(cam.name)
+                startf,endf = self.GetStartEndFrame(cam)
+                print("Frame : ",startf,endf)
+                startf = math.ceil(startf)
+                endf = math.ceil(endf)
+                bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
+                expPath = str(self.ExportDir).format(fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+                if cam: self.BlenderExport(expPath,True)
 
-        print('=================END EXPORT CAMERA====================')
+            print('=================END EXPORT CAMERA====================')
 
         if armature.__len__() <= 0: return
-        #self.LeeBakeFunc(Export)
+
+        self.LeeBakeFunc(Export)
         # self.ArpIsLoaded()
         if self.Skeletal.endswith("BaseSkeleton"):
             self.InitScriptExpSkeletal()
@@ -408,10 +436,8 @@ class MassExportFbx():
 
         print('=================EXPORT ARMATURES====================')
 
-        for arm in armature:
-            #self.ClearSelection()
-            if arm.als.turn_on:
-                self.BakeAnimLayer(arm) #bake animation Layer
+        for i,arm in enumerate(armature):
+            #self.ClearSelection()         
             Geos = self.GetAllGeometryAttachedArmature(arm)
             arm.make_local()
             for geo in Geos:
@@ -450,4 +476,5 @@ class MassExportFbx():
 
 fbx_Addon = '%2'
 MassFbx = MassExportFbx()
-MassFbx.LeeMassExport(fbx_Addon   )
+isDebug=False
+MassFbx.LeeMassExport(fbx_Addon,isDebug)
