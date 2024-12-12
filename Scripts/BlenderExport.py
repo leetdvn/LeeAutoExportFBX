@@ -1,13 +1,15 @@
 from LeetdMassExport import MassExportFbx
 MassFbx = MassExportFbx()
-expdir='%1' #1
-scriptdir='%4' #4
-prefix='%7'#7
-suffix='%8' #8
-blprogram='%5' #5
+expdir='%1' #1 export directory
+scriptdir='%4' #4 location Script directory
+prefix='%7'#7 name file prefix
+suffix='%8' #8 name file suffix
+blprogram='%5' #5 
 skel='%6' #6
 leeGeo='%3' #3
 blAddon='%2' #2
+
+#requirement Init Directories
 '''
 Requirement Initialize Funtion with String Path and Definations
 '''

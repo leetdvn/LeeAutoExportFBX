@@ -3,24 +3,18 @@ import math
 import addon_utils
 from pathlib import Path
 import os
-from multiprocessing import Process
+
 
 class MassExportFbx():
-    ExportDir=''
-    ScriptDir=''
-    blProgram =''
-    Skeletal =''
-    prefix =''
-    suffix=''
-    MassGeo=''
+
     def __init__(self) -> None:
-        # self.ExportDir=str
-        # self.ScriptDir=str
-        # self.blProgram =str
-        # self.Skeletal = str
-        # self.prefix =str
-        # self.suffix=str
-        # self.MassGeo=str
+        self.ExportDir=str
+        self.ScriptDir=str
+        self.blProgram =str
+        self.Skeletal = str
+        self.prefix =str
+        self.suffix=str
+        self.MassGeo=str
         pass
 
     def SetInittDir(self,inExportDir=str,inScriptDir=str):
@@ -28,7 +22,7 @@ class MassExportFbx():
         Init Directories
         '''
         self.ExportDir = inExportDir
-        self.ScriptDir = inScriptDir
+        self.ScriptDir = inScriptDir + str('{py}')
 
     def SetStringFix(self,inPrefix=str,inSuffix=str,inSkel=str,inBlenderP=str):
         '''
@@ -147,14 +141,15 @@ class MassExportFbx():
         if Collection is None: return
         col = bpy.data.collections[Collection]
         armature = self.GetObjectTypes(col,'ARMATURE')
-
-
-        Processes = [Process(target=self.BakeAnimLayer(bone)) for i,bone in enumerate(armature) if bone.als.turn_on]  
-
-        for p in Processes: p.start()
-
-        for p in Processes: p.join()
-   
+            
+        for i,bone in enumerate(armature):
+            if isTest:
+                if i !=3: continue
+            if bone.als.turn_on:
+                self.ClearSelection()
+                self.BakeAnimLayer(bone) #bake animation Layer
+            # else
+            # self.LeeArmatureBake(bone)
 
     def LeeArmatureBake(self,arm):
         if arm is None: return
@@ -179,8 +174,8 @@ class MassExportFbx():
             return
 
 
-        for bone in arm.data.bones:
-            bone.select=True
+        # for bone in arm.data.bones:
+        #     bone.select=True
             #bpy.data.objects[bone.name].select_set(True)
 
         bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True,use_current_action=True, bake_types={'POSE'})
@@ -226,7 +221,6 @@ class MassExportFbx():
         #bpy.context.scene.arp_bake_actions = True
         bpy.context.scene.arp_frame_range_type='SCENE'
         bpy.context.scene.arp_bake_only_active=True
-        bpy.context.scene.arp_only_containing=True
         bpy.context.scene.arp_fix_fbx_rot=True
         #bpy.context.scene.arp_rename_for_ue=True
         bpy.context.scene.arp_apply_mods = True
@@ -260,7 +254,18 @@ class MassExportFbx():
             if addon not in BAddons: continue
             
             checkloaded = addon_utils.check(addon)[1]
-            if not checkloaded:
+            if checkloaded and addon.endswith("Layers"):
+                #addon_utils.disable(addon)
+                pass
+                # try:
+                #     bpy.context.object.als.layer_index=0
+                #     bpy.context.object.als.operator='MERGE'
+                #     bpy.context.object.als.direction='ALL'
+                #     bpy.ops.anim.layers_merge_down()
+                #     addon_utils.disable(addon)
+                # except:
+                #     pass
+            elif not checkloaded:
                 try:
                     checkloaded = addon_utils.enable(addon)
                     return checkloaded
@@ -288,8 +293,7 @@ class MassExportFbx():
     def InitScriptExpSkeletal(self,scriptLoc=''):
         #dir = self.ScriptDir #os.path.dirname(os.path.abspath(__file__))
 
-        baseScript = str(self.ScriptDir + '{py}')
-        SkeBaseScr  = str("{sdir}BaseExport.py").format(sdir=baseScript.format(py=""))
+        SkeBaseScr  = str("{sdir}BaseExport.py").format(sdir=self.ScriptDir.format(py=""))
 
         #Script Exists check
         #if not os.path.exists(SkeBaseScr): return
@@ -305,7 +309,7 @@ class MassExportFbx():
             if str(scr).endswith("Rig"):
                 srcPy = scr + ".py"
                 srcPy = str(srcPy).replace(" ","")
-                scrPath = str(self.ScriptDir + '{py}').format(py=srcPy)
+                scrPath = str(self.ScriptDir).format(py=srcPy)
                 fbxPath = self.ExportDir.format(fName=str("BaseSkeletal/" +scr))
                 f = open(scrPath,'w')
                 f.write(text.format(fbxpath=fbxPath))
@@ -318,7 +322,7 @@ class MassExportFbx():
                 infoCmd = os.system(iCmd)
                 print("Exported : " + fpath)
                 transientPath.append(scrPath)
-                print("Command  : " ,iCmd ,infoCmd)
+                #print("Command  : " ,iCmd ,infoCmd)
 
 
     def GetMassFbxCollection(self,inCollection=str):
@@ -359,14 +363,13 @@ class MassExportFbx():
         if LayerCount > 1:
             bpy.ops.object.mode_set(mode = 'POSE')
             #arm.als.layer_index=LayerCount-1
-            #for i,bone in enumerate(arm.data.bones): bone.select=True
-            #bpy.context.object.als.layer_index=LayerCount-1
-            self.select_layer_bones(arm)
+            for i,bone in enumerate(arm.data.bones): bone.select=True
+            bpy.context.object.als.layer_index=LayerCount-1
             bpy.context.object.als.mergefcurves = True
             bpy.context.object.als.baketype = 'AL'
             bpy.context.scene.als.bake_range_type = 'SCENE'
             #arm.als.blend_type='MULTIPLY'
-            arm.als.operator='NEW'
+            arm.als.operator='MERGE'
             arm.als.direction='ALL'
             #bpy.ops.anim.layers_merge_down()
             result = None
@@ -380,7 +383,7 @@ class MassExportFbx():
             arm.Anim_Layers.update()
             bpy.ops.object.mode_set(mode = 'OBJECT')
         NewLayerName = str("Bake_{bone}").format(bone=arm.name)
-        arm.Anim_Layers[len(arm.Anim_Layers)-1].name = NewLayerName
+        arm.Anim_Layers[0].name = NewLayerName
         bpy.context.scene.arp_export_name_string = NewLayerName
         arm.als.turn_on=False
 
@@ -398,10 +401,14 @@ class MassExportFbx():
         bpy.ops.object.mode_set(mode = 'POSE')
         bpy.ops.pose.select_all(action='SELECT')
         bpy.ops.pose.bone_layers(layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
+
+
         #print(bpy.context.object.data.layers[1])
         bones = [b for b in arm.data.bones]
         for b in bones:
             b.select=True
+
+
         bpy.ops.object.mode_set(mode = 'OBJECT')
 
 
@@ -438,7 +445,7 @@ class MassExportFbx():
                 startf = math.ceil(startf)
                 endf = math.ceil(endf)
                 bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
-                expPath = str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+                expPath = str(self.ExportDir).format(fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
                 if cam: self.BlenderExport(expPath,True)
 
             print('=================END EXPORT CAMERA====================')
@@ -457,7 +464,7 @@ class MassExportFbx():
         print('=================EXPORT ARMATURES====================')
 
         for i,arm in enumerate(armature):
-            self.ClearSelection()         
+            #self.ClearSelection()         
             Geos = self.GetAllGeometryAttachedArmature(arm)
             arm.make_local()
             for geo in Geos:
@@ -482,15 +489,37 @@ class MassExportFbx():
                                             )
                 
             elif Fbx_platform=="AutoRigPro":
+                #self.LeeArpExport(expPath)
                 for bone in arm.data.bones:
                     bone.select=True
 
                 try:
-                    if isTesting: continue
                     self.LeeArpExport(expPath)
                     print("Exported  : " + expPath + "\n")
-                    self.ClearSelection()         
                 except:
                     print("Issue Export: " + expPath)
 
         print('=================END EXPORT ARMATURES====================')
+
+
+
+#from LeetdMassExport import MassExportFbx
+MassFbx = MassExportFbx()
+expdir='C:/Users/thang/Documents/Exports/Kun_GLX_SS2_Ep11_Shot043_HIJK_F_V2/' #1
+scriptdir='C:/Users/thang/AppData/Local/LeeMassFbx/Scripts/' #4
+prefix='shot043_hijk_f_v21_'#7
+suffix='' #8
+blprogram='C:/Program Files/Blender Foundation/Blender 3.4/blender.exe' #5
+skel='AnimOnly' #6
+leeGeo='' #3
+blAddon='AutoRigPro' #2
+
+#requirement Init Directories
+'''
+Requirement Initialize Funtion with String Path and Definations
+'''
+MassFbx.SetInittDir(expdir,scriptdir)
+MassFbx.SetStringFix(prefix,suffix,skel,blprogram)
+MassFbx.SetMassGeo(leeGeo)
+isDebug=False
+MassFbx.LeeMassExport(blAddon,isDebug)

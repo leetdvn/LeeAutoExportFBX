@@ -17,3 +17,13 @@
 # self.Skeletal = str('%6')
 # self.prefix =str('%7')
 # self.suffix=str('%8')
+
+
+# def __init__(self) -> None:
+#     self.ExportDir=str('%1{prefix}_{fName}_{suffix}')
+#     self.ScriptDir=str('%4{py}')
+#     self.blProgram =str('%5')
+#     self.Skeletal = str('%6')
+#     self.prefix =str('%7')
+#     self.suffix=str('%8')
+#     pass

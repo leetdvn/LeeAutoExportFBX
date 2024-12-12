@@ -174,6 +174,14 @@ void MainWindow::InitPyd(QString inFolderPath)
 
     }
 
+
+    if (!QFile::exists(pydfileDes))
+    {
+        AddToLog("Restart Application with Administrator permission","red");
+
+        qDebug() << "Restart Application with Administrator permission" << Qt::endl;
+    }
+
 }
 
 #pragma endregion //

@@ -1969,6 +1969,14 @@ static int __Pyx__GetException(PyThreadState *tstate, PyObject **type, PyObject 
 static int __Pyx_GetException(PyObject **type, PyObject **value, PyObject **tb);
 #endif
 
+/* PyIntBinop.proto */
+#if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
+#else
+#define __Pyx_PyInt_AddObjC(op1, op2, intval, inplace, zerodivision_check)\
+    (inplace ? PyNumber_InPlaceAdd(op1, op2) : PyNumber_Add(op1, op2))
+#endif
+
 /* RaiseTooManyValuesToUnpack.proto */
 static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected);
 
@@ -1989,28 +1997,12 @@ static CYTHON_INLINE void __Pyx__ExceptionSwap(PyThreadState *tstate, PyObject *
 static CYTHON_INLINE void __Pyx_ExceptionSwap(PyObject **type, PyObject **value, PyObject **tb);
 #endif
 
-/* PyIntBinop.proto */
-#if !CYTHON_COMPILING_IN_PYPY
-static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
-#else
-#define __Pyx_PyInt_AddObjC(op1, op2, intval, inplace, zerodivision_check)\
-    (inplace ? PyNumber_InPlaceAdd(op1, op2) : PyNumber_Add(op1, op2))
-#endif
-
 /* PyObject_Str.proto */
 #define __Pyx_PyObject_Str(obj)\
     (likely(PyString_CheckExact(obj)) ? __Pyx_NewRef(obj) : PyObject_Str(obj))
 
 /* RaiseException.proto */
 static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause);
-
-/* PyIntBinop.proto */
-#if !CYTHON_COMPILING_IN_PYPY
-static PyObject* __Pyx_PyInt_SubtractObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
-#else
-#define __Pyx_PyInt_SubtractObjC(op1, op2, intval, inplace, zerodivision_check)\
-    (inplace ? PyNumber_InPlaceSubtract(op1, op2) : PyNumber_Subtract(op1, op2))
-#endif
 
 /* SetItemInt.proto */
 #define __Pyx_SetItemInt(o, i, v, type, is_signed, to_py_func, is_list, wraparound, boundscheck)\
@@ -2033,6 +2025,17 @@ static PyObject *__Pyx_ImportDottedModule_WalkParts(PyObject *module, PyObject *
 
 /* ImportFrom.proto */
 static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name);
+
+/* SetNameInClass.proto */
+#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030500A1 && PY_VERSION_HEX < 0x030d0000
+#define __Pyx_SetNameInClass(ns, name, value)\
+    (likely(PyDict_CheckExact(ns)) ? _PyDict_SetItem_KnownHash(ns, name, value, ((PyASCIIObject *) name)->hash) : PyObject_SetItem(ns, name, value))
+#elif CYTHON_COMPILING_IN_CPYTHON
+#define __Pyx_SetNameInClass(ns, name, value)\
+    (likely(PyDict_CheckExact(ns)) ? PyDict_SetItem(ns, name, value) : PyObject_SetItem(ns, name, value))
+#else
+#define __Pyx_SetNameInClass(ns, name, value)  PyObject_SetItem(ns, name, value)
+#endif
 
 /* IncludeStructmemberH.proto */
 #include <structmember.h>
@@ -2182,17 +2185,6 @@ static PyObject *__Pyx_CyFunction_New(PyMethodDef *ml,
                                       PyObject *module, PyObject *globals,
                                       PyObject* code);
 
-/* SetNameInClass.proto */
-#if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030500A1 && PY_VERSION_HEX < 0x030d0000
-#define __Pyx_SetNameInClass(ns, name, value)\
-    (likely(PyDict_CheckExact(ns)) ? _PyDict_SetItem_KnownHash(ns, name, value, ((PyASCIIObject *) name)->hash) : PyObject_SetItem(ns, name, value))
-#elif CYTHON_COMPILING_IN_CPYTHON
-#define __Pyx_SetNameInClass(ns, name, value)\
-    (likely(PyDict_CheckExact(ns)) ? PyDict_SetItem(ns, name, value) : PyObject_SetItem(ns, name, value))
-#else
-#define __Pyx_SetNameInClass(ns, name, value)  PyObject_SetItem(ns, name, value)
-#endif
-
 /* CalculateMetaclass.proto */
 static PyObject *__Pyx_CalculateMetaclass(PyTypeObject *metaclass, PyObject *bases);
 
@@ -2303,8 +2295,8 @@ int __pyx_module_is_main_LeetdMassExport = 0;
 /* Implementation of "LeetdMassExport" */
 /* #### Code section: global_var ### */
 static PyObject *__pyx_builtin_print;
-static PyObject *__pyx_builtin_open;
 static PyObject *__pyx_builtin_enumerate;
+static PyObject *__pyx_builtin_open;
 static PyObject *__pyx_builtin_range;
 /* #### Code section: string_decls ### */
 static const char __pyx_k_[] = "{}";
@@ -2314,6 +2306,7 @@ static const char __pyx_k_b[] = "b";
 static const char __pyx_k_f[] = "f";
 static const char __pyx_k_i[] = "i";
 static const char __pyx_k_m[] = "m";
+static const char __pyx_k_p[] = "p";
 static const char __pyx_k_r[] = "r";
 static const char __pyx_k_w[] = "w";
 static const char __pyx_k_x[] = "x";
@@ -2326,9 +2319,10 @@ static const char __pyx_k__7[] = "\\";
 static const char __pyx_k__8[] = "/";
 static const char __pyx_k_id[] = "id";
 static const char __pyx_k_os[] = "os";
-static const char __pyx_k_py[] = "{}{py}";
+static const char __pyx_k_py[] = "{py}";
 static const char __pyx_k_wm[] = "wm";
 static const char __pyx_k_ALL[] = "ALL";
+static const char __pyx_k_NEW[] = "NEW";
 static const char __pyx_k_Rig[] = "Rig";
 static const char __pyx_k_Str[] = "Str";
 static const char __pyx_k__15[] = "\n";
@@ -2342,6 +2336,7 @@ static const char __pyx_k_arp[] = "arp";
 static const char __pyx_k_bpy[] = "bpy";
 static const char __pyx_k_cam[] = "cam";
 static const char __pyx_k_col[] = "col";
+static const char __pyx_k_dir[] = "dir";
 static const char __pyx_k_doc[] = "__doc__";
 static const char __pyx_k_fbx[] = "fbx";
 static const char __pyx_k_fcu[] = "fcu";
@@ -2371,6 +2366,7 @@ static const char __pyx_k_file[] = "file";
 static const char __pyx_k_iCmd[] = "iCmd";
 static const char __pyx_k_info[] = "info";
 static const char __pyx_k_init[] = "__init__";
+static const char __pyx_k_join[] = "join";
 static const char __pyx_k_libs[] = "libs";
 static const char __pyx_k_main[] = "__main__";
 static const char __pyx_k_math[] = "math";
@@ -2389,7 +2385,6 @@ static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_text[] = "text";
 static const char __pyx_k_type[] = "type";
 static const char __pyx_k_Frame[] = "Frame : ";
-static const char __pyx_k_MERGE[] = "MERGE";
 static const char __pyx_k_OTHER[] = "OTHER";
 static const char __pyx_k_SCENE[] = "SCENE";
 static const char __pyx_k_Str_Y[] = "{Str} -Y";
@@ -2409,6 +2404,7 @@ static const char __pyx_k_range[] = "range";
 static const char __pyx_k_scene[] = "scene";
 static const char __pyx_k_split[] = "split";
 static const char __pyx_k_srcPy[] = "srcPy";
+static const char __pyx_k_start[] = "start";
 static const char __pyx_k_state[] = "state";
 static const char __pyx_k_super[] = "super";
 static const char __pyx_k_types[] = "types";
@@ -2416,7 +2412,6 @@ static const char __pyx_k_write[] = "write";
 static const char __pyx_k_Addons[] = "Addons";
 static const char __pyx_k_CAMERA[] = "CAMERA";
 static const char __pyx_k_Export[] = "Export";
-static const char __pyx_k_Layers[] = "Layers";
 static const char __pyx_k_OBJECT[] = "OBJECT";
 static const char __pyx_k_Object[] = "Object";
 static const char __pyx_k_SELECT[] = "SELECT";
@@ -2432,6 +2427,7 @@ static const char __pyx_k_import[] = "__import__";
 static const char __pyx_k_inBone[] = "inBone";
 static const char __pyx_k_inSkel[] = "inSkel";
 static const char __pyx_k_inType[] = "inType";
+static const char __pyx_k_isTest[] = "isTest";
 static const char __pyx_k_layers[] = "layers";
 static const char __pyx_k_module[] = "__module__";
 static const char __pyx_k_name_2[] = "__name__";
@@ -2444,12 +2440,15 @@ static const char __pyx_k_startf[] = "startf";
 static const char __pyx_k_strips[] = "strips";
 static const char __pyx_k_suffix[] = "suffix";
 static const char __pyx_k_system[] = "system";
+static const char __pyx_k_target[] = "target";
 static const char __pyx_k_unreal[] = "unreal";
 static const char __pyx_k_update[] = "update";
 static const char __pyx_k_BAddons[] = "BAddons";
 static const char __pyx_k_Blender[] = "Blender";
+static const char __pyx_k_Command[] = "Command  : ";
 static const char __pyx_k_MassFbx[] = "MassFbx";
 static const char __pyx_k_MassGeo[] = "MassGeo";
+static const char __pyx_k_Process[] = "Process";
 static const char __pyx_k_Scripts[] = "Scripts";
 static const char __pyx_k_abspath[] = "abspath";
 static const char __pyx_k_blender[] = "blender";
@@ -2487,6 +2486,7 @@ static const char __pyx_k_operator[] = "operator";
 static const char __pyx_k_qualname[] = "__qualname__";
 static const char __pyx_k_set_name[] = "__set_name__";
 static const char __pyx_k_ExportDir[] = "ExportDir";
+static const char __pyx_k_Processes[] = "Processes";
 static const char __pyx_k_ScriptDir[] = "ScriptDir";
 static const char __pyx_k_blProgram[] = "blProgram";
 static const char __pyx_k_blender_b[] = "\"{blender}\" -b ";
@@ -2509,6 +2509,7 @@ static const char __pyx_k_LayerCount[] = "LayerCount";
 static const char __pyx_k_SetMassGeo[] = "SetMassGeo";
 static const char __pyx_k_SkeBaseScr[] = "SkeBaseScr";
 static const char __pyx_k_bake_types[] = "bake_types";
+static const char __pyx_k_baseScript[] = "baseScript";
 static const char __pyx_k_blend_data[] = "blend_data";
 static const char __pyx_k_collection[] = "collection";
 static const char __pyx_k_fileoutput[] = "fileoutput";
@@ -2587,6 +2588,7 @@ static const char __pyx_k_bake_range_type[] = "bake_range_type";
 static const char __pyx_k_bones_in_layers[] = "bones_in_layers";
 static const char __pyx_k_inCollectioName[] = "inCollectioName";
 static const char __pyx_k_modules_refresh[] = "modules_refresh";
+static const char __pyx_k_multiprocessing[] = "multiprocessing";
 static const char __pyx_k_Animation_Layers[] = "Animation_Layers";
 static const char __pyx_k_EXPORT_ARMATURES[] = "=================EXPORT ARMATURES====================";
 static const char __pyx_k_GetStartEndFrame[] = "GetStartEndFrame";
@@ -2607,6 +2609,7 @@ static const char __pyx_k_sdir_BaseExport_py[] = "{sdir}BaseExport.py";
 static const char __pyx_k_select_layer_bones[] = "select_layer_bones";
 static const char __pyx_k_use_current_action[] = "use_current_action";
 static const char __pyx_k_use_mesh_modifiers[] = "use_mesh_modifiers";
+static const char __pyx_k_arp_only_containing[] = "arp_only_containing";
 static const char __pyx_k_auto_rig_pro_master[] = "auto_rig_pro-master";
 static const char __pyx_k_merge_all_Animation[] = "merge all Animation {}";
 static const char __pyx_k_END_EXPORT_ARMATURES[] = "=================END EXPORT ARMATURES====================";
@@ -2619,7 +2622,6 @@ static const char __pyx_k_arp_frame_range_type[] = "arp_frame_range_type";
 static const char __pyx_k_InitScriptExpSkeletal[] = "InitScriptExpSkeletal";
 static const char __pyx_k_GetObjectsInCollection[] = "GetObjectsInCollection";
 static const char __pyx_k_arp_export_name_string[] = "arp_export_name_string";
-static const char __pyx_k_prefix___fName___suffix[] = "{}{prefix}_{fName}_{suffix}";
 static const char __pyx_k_Exceptions_Bone_In_Layer[] = "Exceptions : Bone In Layer";
 static const char __pyx_k_MassExportFbx_SetMassGeo[] = "MassExportFbx.SetMassGeo";
 static const char __pyx_k_MassExportFbx_ArpIsLoaded[] = "MassExportFbx.ArpIsLoaded";
@@ -2635,6 +2637,7 @@ static const char __pyx_k_MassExportFbx_BakeAnimLayer[] = "MassExportFbx.BakeAni
 static const char __pyx_k_MassExportFbx_BlenderExport[] = "MassExportFbx.BlenderExport";
 static const char __pyx_k_MassExportFbx_GetSelections[] = "MassExportFbx.GetSelections";
 static const char __pyx_k_MassExportFbx_LeeMassExport[] = "MassExportFbx.LeeMassExport";
+static const char __pyx_k_dir_prefix___fName___suffix[] = "{dir}{prefix}_{fName}_{suffix}";
 static const char __pyx_k_MassExportFbx_ClearSelection[] = "MassExportFbx.ClearSelection";
 static const char __pyx_k_MassExportFbx_GetObjectTypes[] = "MassExportFbx.GetObjectTypes";
 static const char __pyx_k_merge_all_Animation_failures[] = "merge all Animation failures {}";
@@ -2658,7 +2661,7 @@ static const char __pyx_k_MassExportFbx_SetActiveAllBoneIn[] = "MassExportFbx.Se
 static const char __pyx_k_MassExportFbx_select_layer_bones[] = "MassExportFbx.select_layer_bones";
 static const char __pyx_k_Sorry_No_Collection_MassExport_C[] = "Sorry, No Collection MassExport Check your Animator Memer";
 /* #### Code section: decls ### */
-static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx___init__(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_15LeetdMassExport___defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_2SetInittDir(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_inExportDir, PyObject *__pyx_v_inScriptDir); /* proto */
 static PyObject *__pyx_pf_15LeetdMassExport_2__defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
@@ -2680,7 +2683,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_30GetStartEndFrame(C
 static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_32GetAllArmatureInColl(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_inCollectioName); /* proto */
 static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAttachedArmature(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_self, PyObject *__pyx_v_inARMATURE); /* proto */
 static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_self, PyObject *__pyx_v_inAct, PyObject *__pyx_v_inArmature); /* proto */
-static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_38LeeBakeFunc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_Collection); /* proto */
+static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_38LeeBakeFunc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_Collection, CYTHON_UNUSED PyObject *__pyx_v_isTest); /* proto */
 static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_arm); /* proto */
 static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_self, PyObject *__pyx_v_fileoutput); /* proto */
 static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_self); /* proto */
@@ -2745,6 +2748,7 @@ typedef struct {
   PyObject *__pyx_n_s_CAMERA;
   PyObject *__pyx_n_s_ClearSelection;
   PyObject *__pyx_n_s_Collection;
+  PyObject *__pyx_kp_s_Command;
   PyObject *__pyx_n_s_DESELECT;
   PyObject *__pyx_kp_s_END_EXPORT_ARMATURES;
   PyObject *__pyx_kp_s_END_EXPORT_CAMERA;
@@ -2773,7 +2777,6 @@ typedef struct {
   PyObject *__pyx_n_s_InitScriptExpSkeletal;
   PyObject *__pyx_kp_s_Issue_Export;
   PyObject *__pyx_n_s_LayerCount;
-  PyObject *__pyx_n_s_Layers;
   PyObject *__pyx_n_s_LeeArmatureBake;
   PyObject *__pyx_n_s_LeeArpExport;
   PyObject *__pyx_n_s_LeeBakeFunc;
@@ -2781,7 +2784,6 @@ typedef struct {
   PyObject *__pyx_n_s_LeetdMassExport;
   PyObject *__pyx_kp_s_LeetdMassExport_py;
   PyObject *__pyx_n_s_Libs;
-  PyObject *__pyx_n_s_MERGE;
   PyObject *__pyx_n_s_MESH;
   PyObject *__pyx_n_s_MassExportFbx;
   PyObject *__pyx_n_s_MassExportFbx_ArpIsLoaded;
@@ -2818,6 +2820,7 @@ typedef struct {
   PyObject *__pyx_n_s_MassFbx;
   PyObject *__pyx_n_s_MassGeo;
   PyObject *__pyx_n_s_Multikey;
+  PyObject *__pyx_n_s_NEW;
   PyObject *__pyx_n_s_NewLayerName;
   PyObject *__pyx_n_s_None;
   PyObject *__pyx_n_s_OBJECT;
@@ -2827,6 +2830,8 @@ typedef struct {
   PyObject *__pyx_n_s_OpenBlenderFile;
   PyObject *__pyx_n_s_POSE;
   PyObject *__pyx_n_s_Path;
+  PyObject *__pyx_n_s_Process;
+  PyObject *__pyx_n_s_Processes;
   PyObject *__pyx_n_s_Rig;
   PyObject *__pyx_n_s_SCENE;
   PyObject *__pyx_n_s_SELECT;
@@ -2875,6 +2880,7 @@ typedef struct {
   PyObject *__pyx_n_s_arp_fix_fbx_rot;
   PyObject *__pyx_n_s_arp_frame_range_type;
   PyObject *__pyx_n_s_arp_ge_sel_only;
+  PyObject *__pyx_n_s_arp_only_containing;
   PyObject *__pyx_n_s_asyncio_coroutines;
   PyObject *__pyx_kp_s_auto_rig_pro_master;
   PyObject *__pyx_n_s_b;
@@ -2883,6 +2889,7 @@ typedef struct {
   PyObject *__pyx_n_s_bake_range_type;
   PyObject *__pyx_n_s_bake_types;
   PyObject *__pyx_n_s_baketype;
+  PyObject *__pyx_n_s_baseScript;
   PyObject *__pyx_n_s_blProgram;
   PyObject *__pyx_n_s_blend_data;
   PyObject *__pyx_n_s_blender;
@@ -2909,6 +2916,8 @@ typedef struct {
   PyObject *__pyx_n_s_data_path;
   PyObject *__pyx_n_s_delete;
   PyObject *__pyx_n_s_dict;
+  PyObject *__pyx_n_s_dir;
+  PyObject *__pyx_kp_s_dir_prefix___fName___suffix;
   PyObject *__pyx_n_s_direction;
   PyObject *__pyx_n_s_display_name;
   PyObject *__pyx_n_s_doc;
@@ -2966,9 +2975,11 @@ typedef struct {
   PyObject *__pyx_n_s_isCamera;
   PyObject *__pyx_n_s_isCollection;
   PyObject *__pyx_n_s_isObjectType;
+  PyObject *__pyx_n_s_isTest;
   PyObject *__pyx_n_s_isTesting;
   PyObject *__pyx_n_s_is_coroutine;
   PyObject *__pyx_n_s_is_file;
+  PyObject *__pyx_n_s_join;
   PyObject *__pyx_n_s_layer;
   PyObject *__pyx_n_s_layer_index;
   PyObject *__pyx_n_s_layers;
@@ -2994,6 +3005,7 @@ typedef struct {
   PyObject *__pyx_n_s_module;
   PyObject *__pyx_n_s_modules;
   PyObject *__pyx_n_s_modules_refresh;
+  PyObject *__pyx_n_s_multiprocessing;
   PyObject *__pyx_n_s_name;
   PyObject *__pyx_n_s_name_2;
   PyObject *__pyx_n_s_nla;
@@ -3010,12 +3022,12 @@ typedef struct {
   PyObject *__pyx_n_s_operator;
   PyObject *__pyx_n_s_ops;
   PyObject *__pyx_n_s_os;
+  PyObject *__pyx_n_s_p;
   PyObject *__pyx_n_s_path;
   PyObject *__pyx_n_s_pathlib;
   PyObject *__pyx_n_s_pose;
   PyObject *__pyx_kp_s_pose_bones;
   PyObject *__pyx_n_s_prefix;
-  PyObject *__pyx_kp_s_prefix___fName___suffix;
   PyObject *__pyx_n_s_prepare;
   PyObject *__pyx_n_s_print;
   PyObject *__pyx_kp_s_py;
@@ -3045,6 +3057,7 @@ typedef struct {
   PyObject *__pyx_n_s_spec;
   PyObject *__pyx_n_s_split;
   PyObject *__pyx_n_s_srcPy;
+  PyObject *__pyx_n_s_start;
   PyObject *__pyx_n_s_startf;
   PyObject *__pyx_n_s_startswith;
   PyObject *__pyx_n_s_state;
@@ -3052,6 +3065,7 @@ typedef struct {
   PyObject *__pyx_n_s_suffix;
   PyObject *__pyx_n_s_super;
   PyObject *__pyx_n_s_system;
+  PyObject *__pyx_n_s_target;
   PyObject *__pyx_n_s_test;
   PyObject *__pyx_n_s_text;
   PyObject *__pyx_n_s_transientPath;
@@ -3211,6 +3225,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_CAMERA);
   Py_CLEAR(clear_module_state->__pyx_n_s_ClearSelection);
   Py_CLEAR(clear_module_state->__pyx_n_s_Collection);
+  Py_CLEAR(clear_module_state->__pyx_kp_s_Command);
   Py_CLEAR(clear_module_state->__pyx_n_s_DESELECT);
   Py_CLEAR(clear_module_state->__pyx_kp_s_END_EXPORT_ARMATURES);
   Py_CLEAR(clear_module_state->__pyx_kp_s_END_EXPORT_CAMERA);
@@ -3239,7 +3254,6 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_InitScriptExpSkeletal);
   Py_CLEAR(clear_module_state->__pyx_kp_s_Issue_Export);
   Py_CLEAR(clear_module_state->__pyx_n_s_LayerCount);
-  Py_CLEAR(clear_module_state->__pyx_n_s_Layers);
   Py_CLEAR(clear_module_state->__pyx_n_s_LeeArmatureBake);
   Py_CLEAR(clear_module_state->__pyx_n_s_LeeArpExport);
   Py_CLEAR(clear_module_state->__pyx_n_s_LeeBakeFunc);
@@ -3247,7 +3261,6 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_LeetdMassExport);
   Py_CLEAR(clear_module_state->__pyx_kp_s_LeetdMassExport_py);
   Py_CLEAR(clear_module_state->__pyx_n_s_Libs);
-  Py_CLEAR(clear_module_state->__pyx_n_s_MERGE);
   Py_CLEAR(clear_module_state->__pyx_n_s_MESH);
   Py_CLEAR(clear_module_state->__pyx_n_s_MassExportFbx);
   Py_CLEAR(clear_module_state->__pyx_n_s_MassExportFbx_ArpIsLoaded);
@@ -3284,6 +3297,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_MassFbx);
   Py_CLEAR(clear_module_state->__pyx_n_s_MassGeo);
   Py_CLEAR(clear_module_state->__pyx_n_s_Multikey);
+  Py_CLEAR(clear_module_state->__pyx_n_s_NEW);
   Py_CLEAR(clear_module_state->__pyx_n_s_NewLayerName);
   Py_CLEAR(clear_module_state->__pyx_n_s_None);
   Py_CLEAR(clear_module_state->__pyx_n_s_OBJECT);
@@ -3293,6 +3307,8 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_OpenBlenderFile);
   Py_CLEAR(clear_module_state->__pyx_n_s_POSE);
   Py_CLEAR(clear_module_state->__pyx_n_s_Path);
+  Py_CLEAR(clear_module_state->__pyx_n_s_Process);
+  Py_CLEAR(clear_module_state->__pyx_n_s_Processes);
   Py_CLEAR(clear_module_state->__pyx_n_s_Rig);
   Py_CLEAR(clear_module_state->__pyx_n_s_SCENE);
   Py_CLEAR(clear_module_state->__pyx_n_s_SELECT);
@@ -3341,6 +3357,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_arp_fix_fbx_rot);
   Py_CLEAR(clear_module_state->__pyx_n_s_arp_frame_range_type);
   Py_CLEAR(clear_module_state->__pyx_n_s_arp_ge_sel_only);
+  Py_CLEAR(clear_module_state->__pyx_n_s_arp_only_containing);
   Py_CLEAR(clear_module_state->__pyx_n_s_asyncio_coroutines);
   Py_CLEAR(clear_module_state->__pyx_kp_s_auto_rig_pro_master);
   Py_CLEAR(clear_module_state->__pyx_n_s_b);
@@ -3349,6 +3366,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_bake_range_type);
   Py_CLEAR(clear_module_state->__pyx_n_s_bake_types);
   Py_CLEAR(clear_module_state->__pyx_n_s_baketype);
+  Py_CLEAR(clear_module_state->__pyx_n_s_baseScript);
   Py_CLEAR(clear_module_state->__pyx_n_s_blProgram);
   Py_CLEAR(clear_module_state->__pyx_n_s_blend_data);
   Py_CLEAR(clear_module_state->__pyx_n_s_blender);
@@ -3375,6 +3393,8 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_data_path);
   Py_CLEAR(clear_module_state->__pyx_n_s_delete);
   Py_CLEAR(clear_module_state->__pyx_n_s_dict);
+  Py_CLEAR(clear_module_state->__pyx_n_s_dir);
+  Py_CLEAR(clear_module_state->__pyx_kp_s_dir_prefix___fName___suffix);
   Py_CLEAR(clear_module_state->__pyx_n_s_direction);
   Py_CLEAR(clear_module_state->__pyx_n_s_display_name);
   Py_CLEAR(clear_module_state->__pyx_n_s_doc);
@@ -3432,9 +3452,11 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_isCamera);
   Py_CLEAR(clear_module_state->__pyx_n_s_isCollection);
   Py_CLEAR(clear_module_state->__pyx_n_s_isObjectType);
+  Py_CLEAR(clear_module_state->__pyx_n_s_isTest);
   Py_CLEAR(clear_module_state->__pyx_n_s_isTesting);
   Py_CLEAR(clear_module_state->__pyx_n_s_is_coroutine);
   Py_CLEAR(clear_module_state->__pyx_n_s_is_file);
+  Py_CLEAR(clear_module_state->__pyx_n_s_join);
   Py_CLEAR(clear_module_state->__pyx_n_s_layer);
   Py_CLEAR(clear_module_state->__pyx_n_s_layer_index);
   Py_CLEAR(clear_module_state->__pyx_n_s_layers);
@@ -3460,6 +3482,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_module);
   Py_CLEAR(clear_module_state->__pyx_n_s_modules);
   Py_CLEAR(clear_module_state->__pyx_n_s_modules_refresh);
+  Py_CLEAR(clear_module_state->__pyx_n_s_multiprocessing);
   Py_CLEAR(clear_module_state->__pyx_n_s_name);
   Py_CLEAR(clear_module_state->__pyx_n_s_name_2);
   Py_CLEAR(clear_module_state->__pyx_n_s_nla);
@@ -3476,12 +3499,12 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_operator);
   Py_CLEAR(clear_module_state->__pyx_n_s_ops);
   Py_CLEAR(clear_module_state->__pyx_n_s_os);
+  Py_CLEAR(clear_module_state->__pyx_n_s_p);
   Py_CLEAR(clear_module_state->__pyx_n_s_path);
   Py_CLEAR(clear_module_state->__pyx_n_s_pathlib);
   Py_CLEAR(clear_module_state->__pyx_n_s_pose);
   Py_CLEAR(clear_module_state->__pyx_kp_s_pose_bones);
   Py_CLEAR(clear_module_state->__pyx_n_s_prefix);
-  Py_CLEAR(clear_module_state->__pyx_kp_s_prefix___fName___suffix);
   Py_CLEAR(clear_module_state->__pyx_n_s_prepare);
   Py_CLEAR(clear_module_state->__pyx_n_s_print);
   Py_CLEAR(clear_module_state->__pyx_kp_s_py);
@@ -3511,6 +3534,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_spec);
   Py_CLEAR(clear_module_state->__pyx_n_s_split);
   Py_CLEAR(clear_module_state->__pyx_n_s_srcPy);
+  Py_CLEAR(clear_module_state->__pyx_n_s_start);
   Py_CLEAR(clear_module_state->__pyx_n_s_startf);
   Py_CLEAR(clear_module_state->__pyx_n_s_startswith);
   Py_CLEAR(clear_module_state->__pyx_n_s_state);
@@ -3518,6 +3542,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_suffix);
   Py_CLEAR(clear_module_state->__pyx_n_s_super);
   Py_CLEAR(clear_module_state->__pyx_n_s_system);
+  Py_CLEAR(clear_module_state->__pyx_n_s_target);
   Py_CLEAR(clear_module_state->__pyx_n_s_test);
   Py_CLEAR(clear_module_state->__pyx_n_s_text);
   Py_CLEAR(clear_module_state->__pyx_n_s_transientPath);
@@ -3655,6 +3680,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_CAMERA);
   Py_VISIT(traverse_module_state->__pyx_n_s_ClearSelection);
   Py_VISIT(traverse_module_state->__pyx_n_s_Collection);
+  Py_VISIT(traverse_module_state->__pyx_kp_s_Command);
   Py_VISIT(traverse_module_state->__pyx_n_s_DESELECT);
   Py_VISIT(traverse_module_state->__pyx_kp_s_END_EXPORT_ARMATURES);
   Py_VISIT(traverse_module_state->__pyx_kp_s_END_EXPORT_CAMERA);
@@ -3683,7 +3709,6 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_InitScriptExpSkeletal);
   Py_VISIT(traverse_module_state->__pyx_kp_s_Issue_Export);
   Py_VISIT(traverse_module_state->__pyx_n_s_LayerCount);
-  Py_VISIT(traverse_module_state->__pyx_n_s_Layers);
   Py_VISIT(traverse_module_state->__pyx_n_s_LeeArmatureBake);
   Py_VISIT(traverse_module_state->__pyx_n_s_LeeArpExport);
   Py_VISIT(traverse_module_state->__pyx_n_s_LeeBakeFunc);
@@ -3691,7 +3716,6 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_LeetdMassExport);
   Py_VISIT(traverse_module_state->__pyx_kp_s_LeetdMassExport_py);
   Py_VISIT(traverse_module_state->__pyx_n_s_Libs);
-  Py_VISIT(traverse_module_state->__pyx_n_s_MERGE);
   Py_VISIT(traverse_module_state->__pyx_n_s_MESH);
   Py_VISIT(traverse_module_state->__pyx_n_s_MassExportFbx);
   Py_VISIT(traverse_module_state->__pyx_n_s_MassExportFbx_ArpIsLoaded);
@@ -3728,6 +3752,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_MassFbx);
   Py_VISIT(traverse_module_state->__pyx_n_s_MassGeo);
   Py_VISIT(traverse_module_state->__pyx_n_s_Multikey);
+  Py_VISIT(traverse_module_state->__pyx_n_s_NEW);
   Py_VISIT(traverse_module_state->__pyx_n_s_NewLayerName);
   Py_VISIT(traverse_module_state->__pyx_n_s_None);
   Py_VISIT(traverse_module_state->__pyx_n_s_OBJECT);
@@ -3737,6 +3762,8 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_OpenBlenderFile);
   Py_VISIT(traverse_module_state->__pyx_n_s_POSE);
   Py_VISIT(traverse_module_state->__pyx_n_s_Path);
+  Py_VISIT(traverse_module_state->__pyx_n_s_Process);
+  Py_VISIT(traverse_module_state->__pyx_n_s_Processes);
   Py_VISIT(traverse_module_state->__pyx_n_s_Rig);
   Py_VISIT(traverse_module_state->__pyx_n_s_SCENE);
   Py_VISIT(traverse_module_state->__pyx_n_s_SELECT);
@@ -3785,6 +3812,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_arp_fix_fbx_rot);
   Py_VISIT(traverse_module_state->__pyx_n_s_arp_frame_range_type);
   Py_VISIT(traverse_module_state->__pyx_n_s_arp_ge_sel_only);
+  Py_VISIT(traverse_module_state->__pyx_n_s_arp_only_containing);
   Py_VISIT(traverse_module_state->__pyx_n_s_asyncio_coroutines);
   Py_VISIT(traverse_module_state->__pyx_kp_s_auto_rig_pro_master);
   Py_VISIT(traverse_module_state->__pyx_n_s_b);
@@ -3793,6 +3821,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_bake_range_type);
   Py_VISIT(traverse_module_state->__pyx_n_s_bake_types);
   Py_VISIT(traverse_module_state->__pyx_n_s_baketype);
+  Py_VISIT(traverse_module_state->__pyx_n_s_baseScript);
   Py_VISIT(traverse_module_state->__pyx_n_s_blProgram);
   Py_VISIT(traverse_module_state->__pyx_n_s_blend_data);
   Py_VISIT(traverse_module_state->__pyx_n_s_blender);
@@ -3819,6 +3848,8 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_data_path);
   Py_VISIT(traverse_module_state->__pyx_n_s_delete);
   Py_VISIT(traverse_module_state->__pyx_n_s_dict);
+  Py_VISIT(traverse_module_state->__pyx_n_s_dir);
+  Py_VISIT(traverse_module_state->__pyx_kp_s_dir_prefix___fName___suffix);
   Py_VISIT(traverse_module_state->__pyx_n_s_direction);
   Py_VISIT(traverse_module_state->__pyx_n_s_display_name);
   Py_VISIT(traverse_module_state->__pyx_n_s_doc);
@@ -3876,9 +3907,11 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_isCamera);
   Py_VISIT(traverse_module_state->__pyx_n_s_isCollection);
   Py_VISIT(traverse_module_state->__pyx_n_s_isObjectType);
+  Py_VISIT(traverse_module_state->__pyx_n_s_isTest);
   Py_VISIT(traverse_module_state->__pyx_n_s_isTesting);
   Py_VISIT(traverse_module_state->__pyx_n_s_is_coroutine);
   Py_VISIT(traverse_module_state->__pyx_n_s_is_file);
+  Py_VISIT(traverse_module_state->__pyx_n_s_join);
   Py_VISIT(traverse_module_state->__pyx_n_s_layer);
   Py_VISIT(traverse_module_state->__pyx_n_s_layer_index);
   Py_VISIT(traverse_module_state->__pyx_n_s_layers);
@@ -3904,6 +3937,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_module);
   Py_VISIT(traverse_module_state->__pyx_n_s_modules);
   Py_VISIT(traverse_module_state->__pyx_n_s_modules_refresh);
+  Py_VISIT(traverse_module_state->__pyx_n_s_multiprocessing);
   Py_VISIT(traverse_module_state->__pyx_n_s_name);
   Py_VISIT(traverse_module_state->__pyx_n_s_name_2);
   Py_VISIT(traverse_module_state->__pyx_n_s_nla);
@@ -3920,12 +3954,12 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_operator);
   Py_VISIT(traverse_module_state->__pyx_n_s_ops);
   Py_VISIT(traverse_module_state->__pyx_n_s_os);
+  Py_VISIT(traverse_module_state->__pyx_n_s_p);
   Py_VISIT(traverse_module_state->__pyx_n_s_path);
   Py_VISIT(traverse_module_state->__pyx_n_s_pathlib);
   Py_VISIT(traverse_module_state->__pyx_n_s_pose);
   Py_VISIT(traverse_module_state->__pyx_kp_s_pose_bones);
   Py_VISIT(traverse_module_state->__pyx_n_s_prefix);
-  Py_VISIT(traverse_module_state->__pyx_kp_s_prefix___fName___suffix);
   Py_VISIT(traverse_module_state->__pyx_n_s_prepare);
   Py_VISIT(traverse_module_state->__pyx_n_s_print);
   Py_VISIT(traverse_module_state->__pyx_kp_s_py);
@@ -3955,6 +3989,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_spec);
   Py_VISIT(traverse_module_state->__pyx_n_s_split);
   Py_VISIT(traverse_module_state->__pyx_n_s_srcPy);
+  Py_VISIT(traverse_module_state->__pyx_n_s_start);
   Py_VISIT(traverse_module_state->__pyx_n_s_startf);
   Py_VISIT(traverse_module_state->__pyx_n_s_startswith);
   Py_VISIT(traverse_module_state->__pyx_n_s_state);
@@ -3962,6 +3997,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_suffix);
   Py_VISIT(traverse_module_state->__pyx_n_s_super);
   Py_VISIT(traverse_module_state->__pyx_n_s_system);
+  Py_VISIT(traverse_module_state->__pyx_n_s_target);
   Py_VISIT(traverse_module_state->__pyx_n_s_test);
   Py_VISIT(traverse_module_state->__pyx_n_s_text);
   Py_VISIT(traverse_module_state->__pyx_n_s_transientPath);
@@ -4109,6 +4145,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_CAMERA __pyx_mstate_global->__pyx_n_s_CAMERA
 #define __pyx_n_s_ClearSelection __pyx_mstate_global->__pyx_n_s_ClearSelection
 #define __pyx_n_s_Collection __pyx_mstate_global->__pyx_n_s_Collection
+#define __pyx_kp_s_Command __pyx_mstate_global->__pyx_kp_s_Command
 #define __pyx_n_s_DESELECT __pyx_mstate_global->__pyx_n_s_DESELECT
 #define __pyx_kp_s_END_EXPORT_ARMATURES __pyx_mstate_global->__pyx_kp_s_END_EXPORT_ARMATURES
 #define __pyx_kp_s_END_EXPORT_CAMERA __pyx_mstate_global->__pyx_kp_s_END_EXPORT_CAMERA
@@ -4137,7 +4174,6 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_InitScriptExpSkeletal __pyx_mstate_global->__pyx_n_s_InitScriptExpSkeletal
 #define __pyx_kp_s_Issue_Export __pyx_mstate_global->__pyx_kp_s_Issue_Export
 #define __pyx_n_s_LayerCount __pyx_mstate_global->__pyx_n_s_LayerCount
-#define __pyx_n_s_Layers __pyx_mstate_global->__pyx_n_s_Layers
 #define __pyx_n_s_LeeArmatureBake __pyx_mstate_global->__pyx_n_s_LeeArmatureBake
 #define __pyx_n_s_LeeArpExport __pyx_mstate_global->__pyx_n_s_LeeArpExport
 #define __pyx_n_s_LeeBakeFunc __pyx_mstate_global->__pyx_n_s_LeeBakeFunc
@@ -4145,7 +4181,6 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_LeetdMassExport __pyx_mstate_global->__pyx_n_s_LeetdMassExport
 #define __pyx_kp_s_LeetdMassExport_py __pyx_mstate_global->__pyx_kp_s_LeetdMassExport_py
 #define __pyx_n_s_Libs __pyx_mstate_global->__pyx_n_s_Libs
-#define __pyx_n_s_MERGE __pyx_mstate_global->__pyx_n_s_MERGE
 #define __pyx_n_s_MESH __pyx_mstate_global->__pyx_n_s_MESH
 #define __pyx_n_s_MassExportFbx __pyx_mstate_global->__pyx_n_s_MassExportFbx
 #define __pyx_n_s_MassExportFbx_ArpIsLoaded __pyx_mstate_global->__pyx_n_s_MassExportFbx_ArpIsLoaded
@@ -4182,6 +4217,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_MassFbx __pyx_mstate_global->__pyx_n_s_MassFbx
 #define __pyx_n_s_MassGeo __pyx_mstate_global->__pyx_n_s_MassGeo
 #define __pyx_n_s_Multikey __pyx_mstate_global->__pyx_n_s_Multikey
+#define __pyx_n_s_NEW __pyx_mstate_global->__pyx_n_s_NEW
 #define __pyx_n_s_NewLayerName __pyx_mstate_global->__pyx_n_s_NewLayerName
 #define __pyx_n_s_None __pyx_mstate_global->__pyx_n_s_None
 #define __pyx_n_s_OBJECT __pyx_mstate_global->__pyx_n_s_OBJECT
@@ -4191,6 +4227,8 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_OpenBlenderFile __pyx_mstate_global->__pyx_n_s_OpenBlenderFile
 #define __pyx_n_s_POSE __pyx_mstate_global->__pyx_n_s_POSE
 #define __pyx_n_s_Path __pyx_mstate_global->__pyx_n_s_Path
+#define __pyx_n_s_Process __pyx_mstate_global->__pyx_n_s_Process
+#define __pyx_n_s_Processes __pyx_mstate_global->__pyx_n_s_Processes
 #define __pyx_n_s_Rig __pyx_mstate_global->__pyx_n_s_Rig
 #define __pyx_n_s_SCENE __pyx_mstate_global->__pyx_n_s_SCENE
 #define __pyx_n_s_SELECT __pyx_mstate_global->__pyx_n_s_SELECT
@@ -4239,6 +4277,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_arp_fix_fbx_rot __pyx_mstate_global->__pyx_n_s_arp_fix_fbx_rot
 #define __pyx_n_s_arp_frame_range_type __pyx_mstate_global->__pyx_n_s_arp_frame_range_type
 #define __pyx_n_s_arp_ge_sel_only __pyx_mstate_global->__pyx_n_s_arp_ge_sel_only
+#define __pyx_n_s_arp_only_containing __pyx_mstate_global->__pyx_n_s_arp_only_containing
 #define __pyx_n_s_asyncio_coroutines __pyx_mstate_global->__pyx_n_s_asyncio_coroutines
 #define __pyx_kp_s_auto_rig_pro_master __pyx_mstate_global->__pyx_kp_s_auto_rig_pro_master
 #define __pyx_n_s_b __pyx_mstate_global->__pyx_n_s_b
@@ -4247,6 +4286,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_bake_range_type __pyx_mstate_global->__pyx_n_s_bake_range_type
 #define __pyx_n_s_bake_types __pyx_mstate_global->__pyx_n_s_bake_types
 #define __pyx_n_s_baketype __pyx_mstate_global->__pyx_n_s_baketype
+#define __pyx_n_s_baseScript __pyx_mstate_global->__pyx_n_s_baseScript
 #define __pyx_n_s_blProgram __pyx_mstate_global->__pyx_n_s_blProgram
 #define __pyx_n_s_blend_data __pyx_mstate_global->__pyx_n_s_blend_data
 #define __pyx_n_s_blender __pyx_mstate_global->__pyx_n_s_blender
@@ -4273,6 +4313,8 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_data_path __pyx_mstate_global->__pyx_n_s_data_path
 #define __pyx_n_s_delete __pyx_mstate_global->__pyx_n_s_delete
 #define __pyx_n_s_dict __pyx_mstate_global->__pyx_n_s_dict
+#define __pyx_n_s_dir __pyx_mstate_global->__pyx_n_s_dir
+#define __pyx_kp_s_dir_prefix___fName___suffix __pyx_mstate_global->__pyx_kp_s_dir_prefix___fName___suffix
 #define __pyx_n_s_direction __pyx_mstate_global->__pyx_n_s_direction
 #define __pyx_n_s_display_name __pyx_mstate_global->__pyx_n_s_display_name
 #define __pyx_n_s_doc __pyx_mstate_global->__pyx_n_s_doc
@@ -4330,9 +4372,11 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_isCamera __pyx_mstate_global->__pyx_n_s_isCamera
 #define __pyx_n_s_isCollection __pyx_mstate_global->__pyx_n_s_isCollection
 #define __pyx_n_s_isObjectType __pyx_mstate_global->__pyx_n_s_isObjectType
+#define __pyx_n_s_isTest __pyx_mstate_global->__pyx_n_s_isTest
 #define __pyx_n_s_isTesting __pyx_mstate_global->__pyx_n_s_isTesting
 #define __pyx_n_s_is_coroutine __pyx_mstate_global->__pyx_n_s_is_coroutine
 #define __pyx_n_s_is_file __pyx_mstate_global->__pyx_n_s_is_file
+#define __pyx_n_s_join __pyx_mstate_global->__pyx_n_s_join
 #define __pyx_n_s_layer __pyx_mstate_global->__pyx_n_s_layer
 #define __pyx_n_s_layer_index __pyx_mstate_global->__pyx_n_s_layer_index
 #define __pyx_n_s_layers __pyx_mstate_global->__pyx_n_s_layers
@@ -4358,6 +4402,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_module __pyx_mstate_global->__pyx_n_s_module
 #define __pyx_n_s_modules __pyx_mstate_global->__pyx_n_s_modules
 #define __pyx_n_s_modules_refresh __pyx_mstate_global->__pyx_n_s_modules_refresh
+#define __pyx_n_s_multiprocessing __pyx_mstate_global->__pyx_n_s_multiprocessing
 #define __pyx_n_s_name __pyx_mstate_global->__pyx_n_s_name
 #define __pyx_n_s_name_2 __pyx_mstate_global->__pyx_n_s_name_2
 #define __pyx_n_s_nla __pyx_mstate_global->__pyx_n_s_nla
@@ -4374,12 +4419,12 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_operator __pyx_mstate_global->__pyx_n_s_operator
 #define __pyx_n_s_ops __pyx_mstate_global->__pyx_n_s_ops
 #define __pyx_n_s_os __pyx_mstate_global->__pyx_n_s_os
+#define __pyx_n_s_p __pyx_mstate_global->__pyx_n_s_p
 #define __pyx_n_s_path __pyx_mstate_global->__pyx_n_s_path
 #define __pyx_n_s_pathlib __pyx_mstate_global->__pyx_n_s_pathlib
 #define __pyx_n_s_pose __pyx_mstate_global->__pyx_n_s_pose
 #define __pyx_kp_s_pose_bones __pyx_mstate_global->__pyx_kp_s_pose_bones
 #define __pyx_n_s_prefix __pyx_mstate_global->__pyx_n_s_prefix
-#define __pyx_kp_s_prefix___fName___suffix __pyx_mstate_global->__pyx_kp_s_prefix___fName___suffix
 #define __pyx_n_s_prepare __pyx_mstate_global->__pyx_n_s_prepare
 #define __pyx_n_s_print __pyx_mstate_global->__pyx_n_s_print
 #define __pyx_kp_s_py __pyx_mstate_global->__pyx_kp_s_py
@@ -4409,6 +4454,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_spec __pyx_mstate_global->__pyx_n_s_spec
 #define __pyx_n_s_split __pyx_mstate_global->__pyx_n_s_split
 #define __pyx_n_s_srcPy __pyx_mstate_global->__pyx_n_s_srcPy
+#define __pyx_n_s_start __pyx_mstate_global->__pyx_n_s_start
 #define __pyx_n_s_startf __pyx_mstate_global->__pyx_n_s_startf
 #define __pyx_n_s_startswith __pyx_mstate_global->__pyx_n_s_startswith
 #define __pyx_n_s_state __pyx_mstate_global->__pyx_n_s_state
@@ -4416,6 +4462,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_suffix __pyx_mstate_global->__pyx_n_s_suffix
 #define __pyx_n_s_super __pyx_mstate_global->__pyx_n_s_super
 #define __pyx_n_s_system __pyx_mstate_global->__pyx_n_s_system
+#define __pyx_n_s_target __pyx_mstate_global->__pyx_n_s_target
 #define __pyx_n_s_test __pyx_mstate_global->__pyx_n_s_test
 #define __pyx_n_s_text __pyx_mstate_global->__pyx_n_s_text
 #define __pyx_n_s_transientPath __pyx_mstate_global->__pyx_n_s_transientPath
@@ -4512,12 +4559,12 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_codeobj__80 __pyx_mstate_global->__pyx_codeobj__80
 /* #### Code section: module_code ### */
 
-/* "LeetdMassExport.py":10
- * class MassExportFbx():
- * 
+/* "LeetdMassExport.py":16
+ *     suffix=''
+ *     MassGeo=''
  *     def __init__(self) -> None:             # <<<<<<<<<<<<<<
- *         self.ExportDir=str
- *         self.ScriptDir=str
+ *         # self.ExportDir=str
+ *         # self.ScriptDir=str
  */
 
 /* Python wrapper */
@@ -4536,7 +4583,7 @@ PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ) {
-  PyObject *__pyx_v_self = 0;
+  CYTHON_UNUSED PyObject *__pyx_v_self = 0;
   #if !CYTHON_METH_FASTCALL
   CYTHON_UNUSED Py_ssize_t __pyx_nargs;
   #endif
@@ -4573,12 +4620,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 10, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 16, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "__init__") < 0)) __PYX_ERR(0, 10, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "__init__") < 0)) __PYX_ERR(0, 16, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
@@ -4589,7 +4636,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 10, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__init__", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 16, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -4616,98 +4663,19 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx___init__(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 1);
-
-  /* "LeetdMassExport.py":11
- * 
- *     def __init__(self) -> None:
- *         self.ExportDir=str             # <<<<<<<<<<<<<<
- *         self.ScriptDir=str
- *         self.blProgram =str
- */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_ExportDir, ((PyObject *)(&PyString_Type))) < 0) __PYX_ERR(0, 11, __pyx_L1_error)
-
-  /* "LeetdMassExport.py":12
- *     def __init__(self) -> None:
- *         self.ExportDir=str
- *         self.ScriptDir=str             # <<<<<<<<<<<<<<
- *         self.blProgram =str
- *         self.Skeletal = str
- */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_ScriptDir, ((PyObject *)(&PyString_Type))) < 0) __PYX_ERR(0, 12, __pyx_L1_error)
-
-  /* "LeetdMassExport.py":13
- *         self.ExportDir=str
- *         self.ScriptDir=str
- *         self.blProgram =str             # <<<<<<<<<<<<<<
- *         self.Skeletal = str
- *         self.prefix =str
- */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_blProgram, ((PyObject *)(&PyString_Type))) < 0) __PYX_ERR(0, 13, __pyx_L1_error)
-
-  /* "LeetdMassExport.py":14
- *         self.ScriptDir=str
- *         self.blProgram =str
- *         self.Skeletal = str             # <<<<<<<<<<<<<<
- *         self.prefix =str
- *         self.suffix=str
- */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_Skeletal, ((PyObject *)(&PyString_Type))) < 0) __PYX_ERR(0, 14, __pyx_L1_error)
-
-  /* "LeetdMassExport.py":15
- *         self.blProgram =str
- *         self.Skeletal = str
- *         self.prefix =str             # <<<<<<<<<<<<<<
- *         self.suffix=str
- *         self.MassGeo=str
- */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_prefix, ((PyObject *)(&PyString_Type))) < 0) __PYX_ERR(0, 15, __pyx_L1_error)
-
-  /* "LeetdMassExport.py":16
- *         self.Skeletal = str
- *         self.prefix =str
- *         self.suffix=str             # <<<<<<<<<<<<<<
- *         self.MassGeo=str
- *         pass
- */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_suffix, ((PyObject *)(&PyString_Type))) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
-
-  /* "LeetdMassExport.py":17
- *         self.prefix =str
- *         self.suffix=str
- *         self.MassGeo=str             # <<<<<<<<<<<<<<
- *         pass
- * 
- */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_MassGeo, ((PyObject *)(&PyString_Type))) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
-
-  /* "LeetdMassExport.py":10
- * class MassExportFbx():
- * 
- *     def __init__(self) -> None:             # <<<<<<<<<<<<<<
- *         self.ExportDir=str
- *         self.ScriptDir=str
- */
 
   /* function exit code */
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
-  goto __pyx_L0;
-  __pyx_L1_error:;
-  __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":20
+/* "LeetdMassExport.py":26
  *         pass
  * 
  *     def SetInittDir(self,inExportDir=str,inScriptDir=str):             # <<<<<<<<<<<<<<
@@ -4725,21 +4693,21 @@ static PyObject *__pyx_pf_15LeetdMassExport___defaults__(CYTHON_UNUSED PyObject 
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__defaults__", 1);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 20, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_inExportDir);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_inExportDir);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_inExportDir)) __PYX_ERR(0, 20, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_inExportDir)) __PYX_ERR(0, 26, __pyx_L1_error);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_inScriptDir);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_inScriptDir);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_inScriptDir)) __PYX_ERR(0, 20, __pyx_L1_error);
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 20, __pyx_L1_error)
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_inScriptDir)) __PYX_ERR(0, 26, __pyx_L1_error);
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_1);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1)) __PYX_ERR(0, 20, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1)) __PYX_ERR(0, 26, __pyx_L1_error);
   __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(Py_None);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None)) __PYX_ERR(0, 20, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None)) __PYX_ERR(0, 26, __pyx_L1_error);
   __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
@@ -4820,26 +4788,26 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 20, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 26, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_inExportDir);
           if (value) { values[1] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 20, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 26, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_inScriptDir);
           if (value) { values[2] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 20, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 26, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "SetInittDir") < 0)) __PYX_ERR(0, 20, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "SetInittDir") < 0)) __PYX_ERR(0, 26, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
@@ -4858,7 +4826,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("SetInittDir", 0, 1, 3, __pyx_nargs); __PYX_ERR(0, 20, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("SetInittDir", 0, 1, 3, __pyx_nargs); __PYX_ERR(0, 26, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -4888,84 +4856,30 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
 static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_2SetInittDir(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_inExportDir, PyObject *__pyx_v_inScriptDir) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  unsigned int __pyx_t_4;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("SetInittDir", 1);
 
-  /* "LeetdMassExport.py":24
+  /* "LeetdMassExport.py":30
  *         Init Directories
  *         '''
- *         self.ExportDir =str('{}{prefix}_{fName}_{suffix}').format(inExportDir)             # <<<<<<<<<<<<<<
- *         self.ScriptDir = str('{}{py}').format(inScriptDir)
+ *         self.ExportDir = inExportDir             # <<<<<<<<<<<<<<
+ *         self.ScriptDir = inScriptDir
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_prefix___fName___suffix, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 24, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = NULL;
-  __pyx_t_4 = 0;
-  #if CYTHON_UNPACK_METHODS
-  if (likely(PyMethod_Check(__pyx_t_2))) {
-    __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
-    if (likely(__pyx_t_3)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-      __Pyx_INCREF(__pyx_t_3);
-      __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_2, function);
-      __pyx_t_4 = 1;
-    }
-  }
-  #endif
-  {
-    PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_inExportDir};
-    __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
-    __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 24, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  }
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_ExportDir, __pyx_t_1) < 0) __PYX_ERR(0, 24, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_ExportDir, __pyx_v_inExportDir) < 0) __PYX_ERR(0, 30, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":25
+  /* "LeetdMassExport.py":31
  *         '''
- *         self.ExportDir =str('{}{prefix}_{fName}_{suffix}').format(inExportDir)
- *         self.ScriptDir = str('{}{py}').format(inScriptDir)             # <<<<<<<<<<<<<<
+ *         self.ExportDir = inExportDir
+ *         self.ScriptDir = inScriptDir             # <<<<<<<<<<<<<<
  * 
  *     def SetStringFix(self,inPrefix=str,inSuffix=str,inSkel=str,inBlenderP=str):
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_py, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 25, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = NULL;
-  __pyx_t_4 = 0;
-  #if CYTHON_UNPACK_METHODS
-  if (likely(PyMethod_Check(__pyx_t_2))) {
-    __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
-    if (likely(__pyx_t_3)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-      __Pyx_INCREF(__pyx_t_3);
-      __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_2, function);
-      __pyx_t_4 = 1;
-    }
-  }
-  #endif
-  {
-    PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_inScriptDir};
-    __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
-    __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 25, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  }
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_ScriptDir, __pyx_t_1) < 0) __PYX_ERR(0, 25, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_ScriptDir, __pyx_v_inScriptDir) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":20
+  /* "LeetdMassExport.py":26
  *         pass
  * 
  *     def SetInittDir(self,inExportDir=str,inScriptDir=str):             # <<<<<<<<<<<<<<
@@ -4977,9 +4891,6 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_2SetInittDir(CYTHON_
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
   __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.SetInittDir", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
@@ -4988,8 +4899,8 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_2SetInittDir(CYTHON_
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":27
- *         self.ScriptDir = str('{}{py}').format(inScriptDir)
+/* "LeetdMassExport.py":33
+ *         self.ScriptDir = inScriptDir
  * 
  *     def SetStringFix(self,inPrefix=str,inSuffix=str,inSkel=str,inBlenderP=str):             # <<<<<<<<<<<<<<
  *         '''
@@ -5006,27 +4917,27 @@ static PyObject *__pyx_pf_15LeetdMassExport_2__defaults__(CYTHON_UNUSED PyObject
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__defaults__", 1);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyTuple_New(4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 27, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inPrefix);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inPrefix);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inPrefix)) __PYX_ERR(0, 27, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inPrefix)) __PYX_ERR(0, 33, __pyx_L1_error);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inSuffix);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inSuffix);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inSuffix)) __PYX_ERR(0, 27, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inSuffix)) __PYX_ERR(0, 33, __pyx_L1_error);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inSkel);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inSkel);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 2, __Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inSkel)) __PYX_ERR(0, 27, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 2, __Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inSkel)) __PYX_ERR(0, 33, __pyx_L1_error);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inBlenderP);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inBlenderP);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 3, __Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inBlenderP)) __PYX_ERR(0, 27, __pyx_L1_error);
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 27, __pyx_L1_error)
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 3, __Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_self)->__pyx_arg_inBlenderP)) __PYX_ERR(0, 33, __pyx_L1_error);
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 33, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_1);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1)) __PYX_ERR(0, 27, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1)) __PYX_ERR(0, 33, __pyx_L1_error);
   __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(Py_None);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None)) __PYX_ERR(0, 27, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None)) __PYX_ERR(0, 33, __pyx_L1_error);
   __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
@@ -5115,40 +5026,40 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 33, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_inPrefix);
           if (value) { values[1] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 33, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_inSuffix);
           if (value) { values[2] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 33, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_inSkel);
           if (value) { values[3] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 33, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_inBlenderP);
           if (value) { values[4] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 33, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "SetStringFix") < 0)) __PYX_ERR(0, 27, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "SetStringFix") < 0)) __PYX_ERR(0, 33, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
@@ -5173,7 +5084,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("SetStringFix", 0, 1, 5, __pyx_nargs); __PYX_ERR(0, 27, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("SetStringFix", 0, 1, 5, __pyx_nargs); __PYX_ERR(0, 33, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5212,14 +5123,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_4SetStringFix(CYTHON
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("SetStringFix", 1);
 
-  /* "LeetdMassExport.py":31
+  /* "LeetdMassExport.py":37
  *         Init String Format Requirements
  *         '''
  *         self.prefix =str('{}').format(inPrefix)             # <<<<<<<<<<<<<<
  *         self.suffix=str('{}').format(inSuffix)
  *         self.Skeletal = str('{}').format(inSkel)
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 37, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -5239,21 +5150,21 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_4SetStringFix(CYTHON
     PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_inPrefix};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 37, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_prefix, __pyx_t_1) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_prefix, __pyx_t_1) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":32
+  /* "LeetdMassExport.py":38
  *         '''
  *         self.prefix =str('{}').format(inPrefix)
  *         self.suffix=str('{}').format(inSuffix)             # <<<<<<<<<<<<<<
  *         self.Skeletal = str('{}').format(inSkel)
  *         self.blProgram =str('{}').format(inBlenderP)
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -5273,21 +5184,21 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_4SetStringFix(CYTHON
     PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_inSuffix};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 38, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_suffix, __pyx_t_1) < 0) __PYX_ERR(0, 32, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_suffix, __pyx_t_1) < 0) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":33
+  /* "LeetdMassExport.py":39
  *         self.prefix =str('{}').format(inPrefix)
  *         self.suffix=str('{}').format(inSuffix)
  *         self.Skeletal = str('{}').format(inSkel)             # <<<<<<<<<<<<<<
  *         self.blProgram =str('{}').format(inBlenderP)
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 33, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 39, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -5307,21 +5218,21 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_4SetStringFix(CYTHON
     PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_inSkel};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 39, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_Skeletal, __pyx_t_1) < 0) __PYX_ERR(0, 33, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_Skeletal, __pyx_t_1) < 0) __PYX_ERR(0, 39, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":34
+  /* "LeetdMassExport.py":40
  *         self.suffix=str('{}').format(inSuffix)
  *         self.Skeletal = str('{}').format(inSkel)
  *         self.blProgram =str('{}').format(inBlenderP)             # <<<<<<<<<<<<<<
  * 
  *     def SetMassGeo(self,inMassGeo=str):
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -5341,15 +5252,15 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_4SetStringFix(CYTHON
     PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_inBlenderP};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 40, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_blProgram, __pyx_t_1) < 0) __PYX_ERR(0, 34, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_blProgram, __pyx_t_1) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":27
- *         self.ScriptDir = str('{}{py}').format(inScriptDir)
+  /* "LeetdMassExport.py":33
+ *         self.ScriptDir = inScriptDir
  * 
  *     def SetStringFix(self,inPrefix=str,inSuffix=str,inSkel=str,inBlenderP=str):             # <<<<<<<<<<<<<<
  *         '''
@@ -5371,7 +5282,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_4SetStringFix(CYTHON
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":36
+/* "LeetdMassExport.py":42
  *         self.blProgram =str('{}').format(inBlenderP)
  * 
  *     def SetMassGeo(self,inMassGeo=str):             # <<<<<<<<<<<<<<
@@ -5389,18 +5300,18 @@ static PyObject *__pyx_pf_15LeetdMassExport_4__defaults__(CYTHON_UNUSED PyObject
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__defaults__", 1);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(__pyx_defaults2, __pyx_self)->__pyx_arg_inMassGeo);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(__pyx_defaults2, __pyx_self)->__pyx_arg_inMassGeo);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(__pyx_defaults2, __pyx_self)->__pyx_arg_inMassGeo)) __PYX_ERR(0, 36, __pyx_L1_error);
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 36, __pyx_L1_error)
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(__pyx_defaults2, __pyx_self)->__pyx_arg_inMassGeo)) __PYX_ERR(0, 42, __pyx_L1_error);
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_1);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1)) __PYX_ERR(0, 36, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error);
   __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(Py_None);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None)) __PYX_ERR(0, 36, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None)) __PYX_ERR(0, 42, __pyx_L1_error);
   __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
@@ -5476,19 +5387,19 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 36, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_inMassGeo);
           if (value) { values[1] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 36, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "SetMassGeo") < 0)) __PYX_ERR(0, 36, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "SetMassGeo") < 0)) __PYX_ERR(0, 42, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
@@ -5504,7 +5415,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("SetMassGeo", 0, 1, 2, __pyx_nargs); __PYX_ERR(0, 36, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("SetMassGeo", 0, 1, 2, __pyx_nargs); __PYX_ERR(0, 42, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5539,16 +5450,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_6SetMassGeo(CYTHON_U
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("SetMassGeo", 1);
 
-  /* "LeetdMassExport.py":37
+  /* "LeetdMassExport.py":43
  * 
  *     def SetMassGeo(self,inMassGeo=str):
  *         self.MassGeo=inMassGeo             # <<<<<<<<<<<<<<
  * 
  *     def GetSelections(self):
  */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_MassGeo, __pyx_v_inMassGeo) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_MassGeo, __pyx_v_inMassGeo) < 0) __PYX_ERR(0, 43, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":36
+  /* "LeetdMassExport.py":42
  *         self.blProgram =str('{}').format(inBlenderP)
  * 
  *     def SetMassGeo(self,inMassGeo=str):             # <<<<<<<<<<<<<<
@@ -5568,7 +5479,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_6SetMassGeo(CYTHON_U
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":39
+/* "LeetdMassExport.py":45
  *         self.MassGeo=inMassGeo
  * 
  *     def GetSelections(self):             # <<<<<<<<<<<<<<
@@ -5629,12 +5540,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 39, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 45, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetSelections") < 0)) __PYX_ERR(0, 39, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetSelections") < 0)) __PYX_ERR(0, 45, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
@@ -5645,7 +5556,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("GetSelections", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 39, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("GetSelections", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 45, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5682,7 +5593,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_8GetSelections(CYTHO
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("GetSelections", 1);
 
-  /* "LeetdMassExport.py":40
+  /* "LeetdMassExport.py":46
  * 
  *     def GetSelections(self):
  *         return bpy.context.selected_objects             # <<<<<<<<<<<<<<
@@ -5690,19 +5601,19 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_8GetSelections(CYTHO
  *     def ClearSelection(self): return bpy.ops.object.select_all(action='DESELECT')
  */
   __Pyx_XDECREF(__pyx_r);
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 40, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_context); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 40, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_context); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_selected_objects); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 40, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_selected_objects); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":39
+  /* "LeetdMassExport.py":45
  *         self.MassGeo=inMassGeo
  * 
  *     def GetSelections(self):             # <<<<<<<<<<<<<<
@@ -5722,7 +5633,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_8GetSelections(CYTHO
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":42
+/* "LeetdMassExport.py":48
  *         return bpy.context.selected_objects
  * 
  *     def ClearSelection(self): return bpy.ops.object.select_all(action='DESELECT')             # <<<<<<<<<<<<<<
@@ -5783,12 +5694,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 48, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "ClearSelection") < 0)) __PYX_ERR(0, 42, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "ClearSelection") < 0)) __PYX_ERR(0, 48, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
@@ -5799,7 +5710,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("ClearSelection", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 42, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("ClearSelection", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 48, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5837,21 +5748,21 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_10ClearSelection(CYT
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("ClearSelection", 1);
   __Pyx_XDECREF(__pyx_r);
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_object); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_object); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_select_all); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_select_all); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_action, __pyx_n_s_DESELECT) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
-  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 42, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_action, __pyx_n_s_DESELECT) < 0) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5872,7 +5783,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_10ClearSelection(CYT
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":44
+/* "LeetdMassExport.py":50
  *     def ClearSelection(self): return bpy.ops.object.select_all(action='DESELECT')
  * 
  *     def isObjectType(self,inObject): return type(inObject) == bpy.types.Object             # <<<<<<<<<<<<<<
@@ -5936,7 +5847,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 44, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 50, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -5944,14 +5855,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 44, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 50, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("isObjectType", 1, 2, 2, 1); __PYX_ERR(0, 44, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("isObjectType", 1, 2, 2, 1); __PYX_ERR(0, 50, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "isObjectType") < 0)) __PYX_ERR(0, 44, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "isObjectType") < 0)) __PYX_ERR(0, 50, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -5964,7 +5875,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("isObjectType", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 44, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("isObjectType", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 50, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -6001,15 +5912,15 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_12isObjectType(CYTHO
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("isObjectType", 1);
   __Pyx_XDECREF(__pyx_r);
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_types); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_types); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_Object); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_Object); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyObject_RichCompare(((PyObject *)Py_TYPE(__pyx_v_inObject)), __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_t_2 = PyObject_RichCompare(((PyObject *)Py_TYPE(__pyx_v_inObject)), __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
@@ -6027,7 +5938,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_12isObjectType(CYTHO
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":46
+/* "LeetdMassExport.py":52
  *     def isObjectType(self,inObject): return type(inObject) == bpy.types.Object
  * 
  *     def isCollection(self,inObject): return type(inObject) == bpy.types.Collection             # <<<<<<<<<<<<<<
@@ -6091,7 +6002,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 46, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 52, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -6099,14 +6010,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 46, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 52, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("isCollection", 1, 2, 2, 1); __PYX_ERR(0, 46, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("isCollection", 1, 2, 2, 1); __PYX_ERR(0, 52, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "isCollection") < 0)) __PYX_ERR(0, 46, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "isCollection") < 0)) __PYX_ERR(0, 52, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -6119,7 +6030,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("isCollection", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 46, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("isCollection", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 52, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -6156,15 +6067,15 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_14isCollection(CYTHO
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("isCollection", 1);
   __Pyx_XDECREF(__pyx_r);
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_types); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_types); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_Collection); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_Collection); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyObject_RichCompare(((PyObject *)Py_TYPE(__pyx_v_inObject)), __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_t_2 = PyObject_RichCompare(((PyObject *)Py_TYPE(__pyx_v_inObject)), __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
@@ -6182,7 +6093,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_14isCollection(CYTHO
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":48
+/* "LeetdMassExport.py":54
  *     def isCollection(self,inObject): return type(inObject) == bpy.types.Collection
  * 
  *     def GetObjectsInCollection(self,collection):             # <<<<<<<<<<<<<<
@@ -6246,7 +6157,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 48, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 54, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -6254,14 +6165,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 48, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 54, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("GetObjectsInCollection", 1, 2, 2, 1); __PYX_ERR(0, 48, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("GetObjectsInCollection", 1, 2, 2, 1); __PYX_ERR(0, 54, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetObjectsInCollection") < 0)) __PYX_ERR(0, 48, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetObjectsInCollection") < 0)) __PYX_ERR(0, 54, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -6274,7 +6185,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("GetObjectsInCollection", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 48, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("GetObjectsInCollection", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 54, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -6319,7 +6230,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_16GetObjectsInCollec
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("GetObjectsInCollection", 1);
 
-  /* "LeetdMassExport.py":49
+  /* "LeetdMassExport.py":55
  * 
  *     def GetObjectsInCollection(self,collection):
  *         if collection is None: return []             # <<<<<<<<<<<<<<
@@ -6329,14 +6240,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_16GetObjectsInCollec
   __pyx_t_1 = (__pyx_v_collection == Py_None);
   if (__pyx_t_1) {
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 49, __pyx_L1_error)
+    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 55, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __pyx_r = __pyx_t_2;
     __pyx_t_2 = 0;
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":50
+  /* "LeetdMassExport.py":56
  *     def GetObjectsInCollection(self,collection):
  *         if collection is None: return []
  *         return [obj for obj in collection.all_objects if obj.visible_get()]             # <<<<<<<<<<<<<<
@@ -6345,18 +6256,18 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_16GetObjectsInCollec
  */
   __Pyx_XDECREF(__pyx_r);
   { /* enter inner scope */
-    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 50, __pyx_L6_error)
+    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 56, __pyx_L6_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_collection, __pyx_n_s_all_objects); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 50, __pyx_L6_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_collection, __pyx_n_s_all_objects); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 56, __pyx_L6_error)
     __Pyx_GOTREF(__pyx_t_3);
     if (likely(PyList_CheckExact(__pyx_t_3)) || PyTuple_CheckExact(__pyx_t_3)) {
       __pyx_t_4 = __pyx_t_3; __Pyx_INCREF(__pyx_t_4);
       __pyx_t_5 = 0;
       __pyx_t_6 = NULL;
     } else {
-      __pyx_t_5 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 50, __pyx_L6_error)
+      __pyx_t_5 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 56, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_6 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 50, __pyx_L6_error)
+      __pyx_t_6 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 56, __pyx_L6_error)
     }
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     for (;;) {
@@ -6365,28 +6276,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_16GetObjectsInCollec
           {
             Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_4);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 50, __pyx_L6_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 56, __pyx_L6_error)
             #endif
             if (__pyx_t_5 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_3 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_5); __Pyx_INCREF(__pyx_t_3); __pyx_t_5++; if (unlikely((0 < 0))) __PYX_ERR(0, 50, __pyx_L6_error)
+          __pyx_t_3 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_5); __Pyx_INCREF(__pyx_t_3); __pyx_t_5++; if (unlikely((0 < 0))) __PYX_ERR(0, 56, __pyx_L6_error)
           #else
-          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_4, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 50, __pyx_L6_error)
+          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_4, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 56, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
         } else {
           {
             Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_4);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 50, __pyx_L6_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 56, __pyx_L6_error)
             #endif
             if (__pyx_t_5 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_5); __Pyx_INCREF(__pyx_t_3); __pyx_t_5++; if (unlikely((0 < 0))) __PYX_ERR(0, 50, __pyx_L6_error)
+          __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_5); __Pyx_INCREF(__pyx_t_3); __pyx_t_5++; if (unlikely((0 < 0))) __PYX_ERR(0, 56, __pyx_L6_error)
           #else
-          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_4, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 50, __pyx_L6_error)
+          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_4, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 56, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
         }
@@ -6396,7 +6307,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_16GetObjectsInCollec
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 50, __pyx_L6_error)
+            else __PYX_ERR(0, 56, __pyx_L6_error)
           }
           break;
         }
@@ -6404,7 +6315,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_16GetObjectsInCollec
       }
       __Pyx_XDECREF_SET(__pyx_7genexpr__pyx_v_obj, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_7genexpr__pyx_v_obj, __pyx_n_s_visible_get); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 50, __pyx_L6_error)
+      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_7genexpr__pyx_v_obj, __pyx_n_s_visible_get); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 56, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_7);
       __pyx_t_8 = NULL;
       __pyx_t_9 = 0;
@@ -6424,14 +6335,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_16GetObjectsInCollec
         PyObject *__pyx_callargs[2] = {__pyx_t_8, NULL};
         __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_7, __pyx_callargs+1-__pyx_t_9, 0+__pyx_t_9);
         __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 50, __pyx_L6_error)
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 56, __pyx_L6_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       }
-      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 50, __pyx_L6_error)
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 56, __pyx_L6_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       if (__pyx_t_1) {
-        if (unlikely(__Pyx_ListComp_Append(__pyx_t_2, (PyObject*)__pyx_7genexpr__pyx_v_obj))) __PYX_ERR(0, 50, __pyx_L6_error)
+        if (unlikely(__Pyx_ListComp_Append(__pyx_t_2, (PyObject*)__pyx_7genexpr__pyx_v_obj))) __PYX_ERR(0, 56, __pyx_L6_error)
       }
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -6446,7 +6357,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_16GetObjectsInCollec
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":48
+  /* "LeetdMassExport.py":54
  *     def isCollection(self,inObject): return type(inObject) == bpy.types.Collection
  * 
  *     def GetObjectsInCollection(self,collection):             # <<<<<<<<<<<<<<
@@ -6470,7 +6381,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_16GetObjectsInCollec
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":52
+/* "LeetdMassExport.py":58
  *         return [obj for obj in collection.all_objects if obj.visible_get()]
  * 
  *     def OpenBlenderFile(self,path):             # <<<<<<<<<<<<<<
@@ -6534,7 +6445,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 52, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 58, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -6542,14 +6453,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 52, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 58, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("OpenBlenderFile", 1, 2, 2, 1); __PYX_ERR(0, 52, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("OpenBlenderFile", 1, 2, 2, 1); __PYX_ERR(0, 58, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "OpenBlenderFile") < 0)) __PYX_ERR(0, 52, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "OpenBlenderFile") < 0)) __PYX_ERR(0, 58, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -6562,7 +6473,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("OpenBlenderFile", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 52, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("OpenBlenderFile", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 58, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -6604,14 +6515,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_18OpenBlenderFile(CY
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("OpenBlenderFile", 1);
 
-  /* "LeetdMassExport.py":53
+  /* "LeetdMassExport.py":59
  * 
  *     def OpenBlenderFile(self,path):
  *         iPath = Path(path)             # <<<<<<<<<<<<<<
  *         if not iPath.is_file(): return
  *         bpy.ops.wm.open_mainfile(filepath=path)
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_Path); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 53, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_Path); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 59, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -6631,21 +6542,21 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_18OpenBlenderFile(CY
     PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_path};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 53, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __pyx_v_iPath = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":54
+  /* "LeetdMassExport.py":60
  *     def OpenBlenderFile(self,path):
  *         iPath = Path(path)
  *         if not iPath.is_file(): return             # <<<<<<<<<<<<<<
  *         bpy.ops.wm.open_mainfile(filepath=path)
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_iPath, __pyx_n_s_is_file); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 54, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_iPath, __pyx_n_s_is_file); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -6665,11 +6576,11 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_18OpenBlenderFile(CY
     PyObject *__pyx_callargs[2] = {__pyx_t_3, NULL};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 54, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 60, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
-  __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely((__pyx_t_5 < 0))) __PYX_ERR(0, 54, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely((__pyx_t_5 < 0))) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_6 = (!__pyx_t_5);
   if (__pyx_t_6) {
@@ -6678,34 +6589,34 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_18OpenBlenderFile(CY
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":55
+  /* "LeetdMassExport.py":61
  *         iPath = Path(path)
  *         if not iPath.is_file(): return
  *         bpy.ops.wm.open_mainfile(filepath=path)             # <<<<<<<<<<<<<<
  * 
  *     def GetAllLibraries(self):
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 61, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 61, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_wm); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_wm); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 61, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_open_mainfile); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_open_mainfile); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 61, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 61, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_filepath, __pyx_v_path) < 0) __PYX_ERR(0, 55, __pyx_L1_error)
-  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 55, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_filepath, __pyx_v_path) < 0) __PYX_ERR(0, 61, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 61, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":52
+  /* "LeetdMassExport.py":58
  *         return [obj for obj in collection.all_objects if obj.visible_get()]
  * 
  *     def OpenBlenderFile(self,path):             # <<<<<<<<<<<<<<
@@ -6729,7 +6640,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_18OpenBlenderFile(CY
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":57
+/* "LeetdMassExport.py":63
  *         bpy.ops.wm.open_mainfile(filepath=path)
  * 
  *     def GetAllLibraries(self):             # <<<<<<<<<<<<<<
@@ -6790,12 +6701,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 57, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 63, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetAllLibraries") < 0)) __PYX_ERR(0, 57, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetAllLibraries") < 0)) __PYX_ERR(0, 63, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
@@ -6806,7 +6717,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("GetAllLibraries", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 57, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("GetAllLibraries", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 63, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -6849,40 +6760,40 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_20GetAllLibraries(CY
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("GetAllLibraries", 1);
 
-  /* "LeetdMassExport.py":58
+  /* "LeetdMassExport.py":64
  * 
  *     def GetAllLibraries(self):
  *         libraries = bpy.context.blend_data.libraries             # <<<<<<<<<<<<<<
  *         libs = []
  *         for lib in libraries:
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 64, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_context); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_context); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 64, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_blend_data); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_blend_data); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 64, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_libraries); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_libraries); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 64, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_libraries = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":59
+  /* "LeetdMassExport.py":65
  *     def GetAllLibraries(self):
  *         libraries = bpy.context.blend_data.libraries
  *         libs = []             # <<<<<<<<<<<<<<
  *         for lib in libraries:
  *             libs.append(lib)
  */
-  __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 59, __pyx_L1_error)
+  __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 65, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_v_libs = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":60
+  /* "LeetdMassExport.py":66
  *         libraries = bpy.context.blend_data.libraries
  *         libs = []
  *         for lib in libraries:             # <<<<<<<<<<<<<<
@@ -6894,9 +6805,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_20GetAllLibraries(CY
     __pyx_t_3 = 0;
     __pyx_t_4 = NULL;
   } else {
-    __pyx_t_3 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_libraries); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 60, __pyx_L1_error)
+    __pyx_t_3 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_libraries); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 60, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_4)) {
@@ -6904,28 +6815,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_20GetAllLibraries(CY
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_2);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 60, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 66, __pyx_L1_error)
           #endif
           if (__pyx_t_3 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely((0 < 0))) __PYX_ERR(0, 60, __pyx_L1_error)
+        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely((0 < 0))) __PYX_ERR(0, 66, __pyx_L1_error)
         #else
-        __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 60, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       } else {
         {
           Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_2);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 60, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 66, __pyx_L1_error)
           #endif
           if (__pyx_t_3 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely((0 < 0))) __PYX_ERR(0, 60, __pyx_L1_error)
+        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely((0 < 0))) __PYX_ERR(0, 66, __pyx_L1_error)
         #else
-        __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 60, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       }
@@ -6935,7 +6846,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_20GetAllLibraries(CY
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 60, __pyx_L1_error)
+          else __PYX_ERR(0, 66, __pyx_L1_error)
         }
         break;
       }
@@ -6944,16 +6855,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_20GetAllLibraries(CY
     __Pyx_XDECREF_SET(__pyx_v_lib, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "LeetdMassExport.py":61
+    /* "LeetdMassExport.py":67
  *         libs = []
  *         for lib in libraries:
  *             libs.append(lib)             # <<<<<<<<<<<<<<
  *         return libs
  * 
  */
-    __pyx_t_5 = __Pyx_PyList_Append(__pyx_v_libs, __pyx_v_lib); if (unlikely(__pyx_t_5 == ((int)-1))) __PYX_ERR(0, 61, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyList_Append(__pyx_v_libs, __pyx_v_lib); if (unlikely(__pyx_t_5 == ((int)-1))) __PYX_ERR(0, 67, __pyx_L1_error)
 
-    /* "LeetdMassExport.py":60
+    /* "LeetdMassExport.py":66
  *         libraries = bpy.context.blend_data.libraries
  *         libs = []
  *         for lib in libraries:             # <<<<<<<<<<<<<<
@@ -6963,7 +6874,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_20GetAllLibraries(CY
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":62
+  /* "LeetdMassExport.py":68
  *         for lib in libraries:
  *             libs.append(lib)
  *         return libs             # <<<<<<<<<<<<<<
@@ -6975,7 +6886,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_20GetAllLibraries(CY
   __pyx_r = __pyx_v_libs;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":57
+  /* "LeetdMassExport.py":63
  *         bpy.ops.wm.open_mainfile(filepath=path)
  * 
  *     def GetAllLibraries(self):             # <<<<<<<<<<<<<<
@@ -6998,7 +6909,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_20GetAllLibraries(CY
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":64
+/* "LeetdMassExport.py":70
  *         return libs
  * 
  *     def set_active_object(self,object_name):             # <<<<<<<<<<<<<<
@@ -7062,7 +6973,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 64, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 70, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -7070,14 +6981,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 64, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 70, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("set_active_object", 1, 2, 2, 1); __PYX_ERR(0, 64, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("set_active_object", 1, 2, 2, 1); __PYX_ERR(0, 70, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "set_active_object") < 0)) __PYX_ERR(0, 64, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "set_active_object") < 0)) __PYX_ERR(0, 70, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -7090,7 +7001,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("set_active_object", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 64, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("set_active_object", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 70, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -7132,7 +7043,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_22set_active_object(
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("set_active_object", 1);
 
-  /* "LeetdMassExport.py":65
+  /* "LeetdMassExport.py":71
  * 
  *     def set_active_object(self,object_name):
  *         try:             # <<<<<<<<<<<<<<
@@ -7148,22 +7059,22 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_22set_active_object(
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "LeetdMassExport.py":66
+      /* "LeetdMassExport.py":72
  *     def set_active_object(self,object_name):
  *         try:
  *             bpy.context.view_layer.objects.active = bpy.data.objects.get(object_name)             # <<<<<<<<<<<<<<
  *             bpy.data.objects.get(object_name).select_set(state=1)
  *         except: pass
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 66, __pyx_L3_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 72, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_data); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L3_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_data); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 72, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_objects); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 66, __pyx_L3_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_objects); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 72, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_get); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L3_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_get); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 72, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __pyx_t_5 = NULL;
@@ -7184,41 +7095,41 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_22set_active_object(
         PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_v_object_name};
         __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_6, __pyx_callargs+1-__pyx_t_7, 1+__pyx_t_7);
         __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L3_error)
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 72, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_bpy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L3_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_bpy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 72, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_context); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 66, __pyx_L3_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_context); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 72, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_view_layer); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L3_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_view_layer); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 72, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_objects); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 66, __pyx_L3_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_objects); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 72, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      if (__Pyx_PyObject_SetAttrStr(__pyx_t_5, __pyx_n_s_active, __pyx_t_4) < 0) __PYX_ERR(0, 66, __pyx_L3_error)
+      if (__Pyx_PyObject_SetAttrStr(__pyx_t_5, __pyx_n_s_active, __pyx_t_4) < 0) __PYX_ERR(0, 72, __pyx_L3_error)
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-      /* "LeetdMassExport.py":67
+      /* "LeetdMassExport.py":73
  *         try:
  *             bpy.context.view_layer.objects.active = bpy.data.objects.get(object_name)
  *             bpy.data.objects.get(object_name).select_set(state=1)             # <<<<<<<<<<<<<<
  *         except: pass
  * 
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 67, __pyx_L3_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 73, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_data); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 67, __pyx_L3_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_data); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 73, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_objects); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 67, __pyx_L3_error)
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_objects); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 73, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_get); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 67, __pyx_L3_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_get); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 73, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __pyx_t_4 = NULL;
@@ -7239,23 +7150,23 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_22set_active_object(
         PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_v_object_name};
         __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_6, __pyx_callargs+1-__pyx_t_7, 1+__pyx_t_7);
         __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 67, __pyx_L3_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 73, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_select_set); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 67, __pyx_L3_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_select_set); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 73, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 67, __pyx_L3_error)
+      __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 73, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_5);
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_state, __pyx_int_1) < 0) __PYX_ERR(0, 67, __pyx_L3_error)
-      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 67, __pyx_L3_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_state, __pyx_int_1) < 0) __PYX_ERR(0, 73, __pyx_L3_error)
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 73, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "LeetdMassExport.py":65
+      /* "LeetdMassExport.py":71
  * 
  *     def set_active_object(self,object_name):
  *         try:             # <<<<<<<<<<<<<<
@@ -7272,7 +7183,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_22set_active_object(
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "LeetdMassExport.py":68
+    /* "LeetdMassExport.py":74
  *             bpy.context.view_layer.objects.active = bpy.data.objects.get(object_name)
  *             bpy.data.objects.get(object_name).select_set(state=1)
  *         except: pass             # <<<<<<<<<<<<<<
@@ -7291,7 +7202,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_22set_active_object(
     __pyx_L8_try_end:;
   }
 
-  /* "LeetdMassExport.py":64
+  /* "LeetdMassExport.py":70
  *         return libs
  * 
  *     def set_active_object(self,object_name):             # <<<<<<<<<<<<<<
@@ -7306,7 +7217,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_22set_active_object(
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":70
+/* "LeetdMassExport.py":76
  *         except: pass
  * 
  *     def SelectAllObjsInCollection(self,inCollection):             # <<<<<<<<<<<<<<
@@ -7370,7 +7281,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 70, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 76, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -7378,14 +7289,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 70, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 76, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("SelectAllObjsInCollection", 1, 2, 2, 1); __PYX_ERR(0, 70, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("SelectAllObjsInCollection", 1, 2, 2, 1); __PYX_ERR(0, 76, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "SelectAllObjsInCollection") < 0)) __PYX_ERR(0, 70, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "SelectAllObjsInCollection") < 0)) __PYX_ERR(0, 76, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -7398,7 +7309,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("SelectAllObjsInCollection", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 70, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("SelectAllObjsInCollection", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 76, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -7449,7 +7360,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("SelectAllObjsInCollection", 1);
 
-  /* "LeetdMassExport.py":71
+  /* "LeetdMassExport.py":77
  * 
  *     def SelectAllObjsInCollection(self,inCollection):
  *         if inCollection is None: return             # <<<<<<<<<<<<<<
@@ -7463,32 +7374,32 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":73
+  /* "LeetdMassExport.py":79
  *         if inCollection is None: return
  * 
  *         objecsList=bpy.context.selected_objects             # <<<<<<<<<<<<<<
  *         for obj in self.GetObjectsInCollection(inCollection):
  *             try:
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 79, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_context); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_context); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 79, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_selected_objects); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_selected_objects); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 79, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_objecsList = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":74
+  /* "LeetdMassExport.py":80
  * 
  *         objecsList=bpy.context.selected_objects
  *         for obj in self.GetObjectsInCollection(inCollection):             # <<<<<<<<<<<<<<
  *             try:
  *                 if obj.type == 'MESH' or obj.type=='ARMATURE':
  */
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectsInCollection); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 74, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectsInCollection); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_4 = NULL;
   __pyx_t_5 = 0;
@@ -7508,7 +7419,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
     PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_v_inCollection};
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_5, 1+__pyx_t_5);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 80, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
@@ -7517,9 +7428,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
     __pyx_t_6 = 0;
     __pyx_t_7 = NULL;
   } else {
-    __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 74, __pyx_L1_error)
+    __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 80, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 74, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 80, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   for (;;) {
@@ -7528,28 +7439,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_3);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 74, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 80, __pyx_L1_error)
           #endif
           if (__pyx_t_6 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 74, __pyx_L1_error)
+        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 80, __pyx_L1_error)
         #else
-        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 80, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       } else {
         {
           Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_3);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 74, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 80, __pyx_L1_error)
           #endif
           if (__pyx_t_6 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 74, __pyx_L1_error)
+        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 80, __pyx_L1_error)
         #else
-        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 80, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       }
@@ -7559,7 +7470,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 74, __pyx_L1_error)
+          else __PYX_ERR(0, 80, __pyx_L1_error)
         }
         break;
       }
@@ -7568,7 +7479,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
     __Pyx_XDECREF_SET(__pyx_v_obj, __pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":75
+    /* "LeetdMassExport.py":81
  *         objecsList=bpy.context.selected_objects
  *         for obj in self.GetObjectsInCollection(inCollection):
  *             try:             # <<<<<<<<<<<<<<
@@ -7584,40 +7495,40 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
       __Pyx_XGOTREF(__pyx_t_10);
       /*try:*/ {
 
-        /* "LeetdMassExport.py":76
+        /* "LeetdMassExport.py":82
  *         for obj in self.GetObjectsInCollection(inCollection):
  *             try:
  *                 if obj.type == 'MESH' or obj.type=='ARMATURE':             # <<<<<<<<<<<<<<
  *                     #bpy.context.scene.objects[obj.name]
  *                     #bpy.data.objects[obj.name].select_set(True)
  */
-        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_type); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 76, __pyx_L6_error)
+        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_type); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 82, __pyx_L6_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_11 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_n_s_MESH, Py_EQ)); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 76, __pyx_L6_error)
+        __pyx_t_11 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_n_s_MESH, Py_EQ)); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 82, __pyx_L6_error)
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         if (!__pyx_t_11) {
         } else {
           __pyx_t_1 = __pyx_t_11;
           goto __pyx_L15_bool_binop_done;
         }
-        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_type); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 76, __pyx_L6_error)
+        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_type); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 82, __pyx_L6_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_11 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_n_s_ARMATURE, Py_EQ)); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 76, __pyx_L6_error)
+        __pyx_t_11 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_n_s_ARMATURE, Py_EQ)); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 82, __pyx_L6_error)
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __pyx_t_1 = __pyx_t_11;
         __pyx_L15_bool_binop_done:;
         if (__pyx_t_1) {
 
-          /* "LeetdMassExport.py":79
+          /* "LeetdMassExport.py":85
  *                     #bpy.context.scene.objects[obj.name]
  *                     #bpy.data.objects[obj.name].select_set(True)
  *                     self.set_active_object(obj.name)             # <<<<<<<<<<<<<<
  *                     if obj.name is not None:
  *                         objecsList.append(obj.name)
  */
-          __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 79, __pyx_L6_error)
+          __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 85, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_4);
-          __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_name); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 79, __pyx_L6_error)
+          __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_name); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 85, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_12);
           __pyx_t_13 = NULL;
           __pyx_t_5 = 0;
@@ -7638,38 +7549,38 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
             __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_5, 1+__pyx_t_5);
             __Pyx_XDECREF(__pyx_t_13); __pyx_t_13 = 0;
             __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 79, __pyx_L6_error)
+            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 85, __pyx_L6_error)
             __Pyx_GOTREF(__pyx_t_2);
             __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
           }
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-          /* "LeetdMassExport.py":80
+          /* "LeetdMassExport.py":86
  *                     #bpy.data.objects[obj.name].select_set(True)
  *                     self.set_active_object(obj.name)
  *                     if obj.name is not None:             # <<<<<<<<<<<<<<
  *                         objecsList.append(obj.name)
  *                 #print("info : ",obj.type)
  */
-          __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_name); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 80, __pyx_L6_error)
+          __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_name); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 86, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_2);
           __pyx_t_1 = (__pyx_t_2 != Py_None);
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
           if (__pyx_t_1) {
 
-            /* "LeetdMassExport.py":81
+            /* "LeetdMassExport.py":87
  *                     self.set_active_object(obj.name)
  *                     if obj.name is not None:
  *                         objecsList.append(obj.name)             # <<<<<<<<<<<<<<
  *                 #print("info : ",obj.type)
  * 
  */
-            __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_name); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 81, __pyx_L6_error)
+            __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_name); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 87, __pyx_L6_error)
             __Pyx_GOTREF(__pyx_t_2);
-            __pyx_t_14 = __Pyx_PyObject_Append(__pyx_v_objecsList, __pyx_t_2); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 81, __pyx_L6_error)
+            __pyx_t_14 = __Pyx_PyObject_Append(__pyx_v_objecsList, __pyx_t_2); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 87, __pyx_L6_error)
             __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-            /* "LeetdMassExport.py":80
+            /* "LeetdMassExport.py":86
  *                     #bpy.data.objects[obj.name].select_set(True)
  *                     self.set_active_object(obj.name)
  *                     if obj.name is not None:             # <<<<<<<<<<<<<<
@@ -7678,7 +7589,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
  */
           }
 
-          /* "LeetdMassExport.py":76
+          /* "LeetdMassExport.py":82
  *         for obj in self.GetObjectsInCollection(inCollection):
  *             try:
  *                 if obj.type == 'MESH' or obj.type=='ARMATURE':             # <<<<<<<<<<<<<<
@@ -7687,7 +7598,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
  */
         }
 
-        /* "LeetdMassExport.py":75
+        /* "LeetdMassExport.py":81
  *         objecsList=bpy.context.selected_objects
  *         for obj in self.GetObjectsInCollection(inCollection):
  *             try:             # <<<<<<<<<<<<<<
@@ -7705,7 +7616,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "LeetdMassExport.py":85
+      /* "LeetdMassExport.py":91
  * 
  * 
  *             except:             # <<<<<<<<<<<<<<
@@ -7724,7 +7635,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
       __pyx_L13_try_end:;
     }
 
-    /* "LeetdMassExport.py":74
+    /* "LeetdMassExport.py":80
  * 
  *         objecsList=bpy.context.selected_objects
  *         for obj in self.GetObjectsInCollection(inCollection):             # <<<<<<<<<<<<<<
@@ -7734,7 +7645,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":87
+  /* "LeetdMassExport.py":93
  *             except:
  *                 pass
  *         return objecsList             # <<<<<<<<<<<<<<
@@ -7746,7 +7657,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
   __pyx_r = __pyx_v_objecsList;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":70
+  /* "LeetdMassExport.py":76
  *         except: pass
  * 
  *     def SelectAllObjsInCollection(self,inCollection):             # <<<<<<<<<<<<<<
@@ -7771,7 +7682,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_24SelectAllObjsInCol
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":89
+/* "LeetdMassExport.py":95
  *         return objecsList
  * 
  *     def GetObjectTypes(self,inCollection,inType=''):             # <<<<<<<<<<<<<<
@@ -7839,7 +7750,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 89, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -7847,21 +7758,21 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 89, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("GetObjectTypes", 0, 2, 3, 1); __PYX_ERR(0, 89, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("GetObjectTypes", 0, 2, 3, 1); __PYX_ERR(0, 95, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_inType);
           if (value) { values[2] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 89, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetObjectTypes") < 0)) __PYX_ERR(0, 89, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetObjectTypes") < 0)) __PYX_ERR(0, 95, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
@@ -7879,7 +7790,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("GetObjectTypes", 0, 2, 3, __pyx_nargs); __PYX_ERR(0, 89, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("GetObjectTypes", 0, 2, 3, __pyx_nargs); __PYX_ERR(0, 95, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -7926,41 +7837,41 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_26GetObjectTypes(CYT
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("GetObjectTypes", 1);
 
-  /* "LeetdMassExport.py":90
+  /* "LeetdMassExport.py":96
  * 
  *     def GetObjectTypes(self,inCollection,inType=''):
  *         if not inType or not inCollection: return []             # <<<<<<<<<<<<<<
  * 
  *         objects= self.GetObjectsInCollection(inCollection)
  */
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_inType); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 90, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_inType); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 96, __pyx_L1_error)
   __pyx_t_3 = (!__pyx_t_2);
   if (!__pyx_t_3) {
   } else {
     __pyx_t_1 = __pyx_t_3;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_v_inCollection); if (unlikely((__pyx_t_3 < 0))) __PYX_ERR(0, 90, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_v_inCollection); if (unlikely((__pyx_t_3 < 0))) __PYX_ERR(0, 96, __pyx_L1_error)
   __pyx_t_2 = (!__pyx_t_3);
   __pyx_t_1 = __pyx_t_2;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 90, __pyx_L1_error)
+    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 96, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_r = __pyx_t_4;
     __pyx_t_4 = 0;
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":92
+  /* "LeetdMassExport.py":98
  *         if not inType or not inCollection: return []
  * 
  *         objects= self.GetObjectsInCollection(inCollection)             # <<<<<<<<<<<<<<
  * 
  *         return [obj for obj in objects if obj.type == inType]
  */
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectsInCollection); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 92, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectsInCollection); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_t_6 = NULL;
   __pyx_t_7 = 0;
@@ -7980,14 +7891,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_26GetObjectTypes(CYT
     PyObject *__pyx_callargs[2] = {__pyx_t_6, __pyx_v_inCollection};
     __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_5, __pyx_callargs+1-__pyx_t_7, 1+__pyx_t_7);
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 92, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 98, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
   __pyx_v_objects = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":94
+  /* "LeetdMassExport.py":100
  *         objects= self.GetObjectsInCollection(inCollection)
  * 
  *         return [obj for obj in objects if obj.type == inType]             # <<<<<<<<<<<<<<
@@ -7996,16 +7907,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_26GetObjectTypes(CYT
  */
   __Pyx_XDECREF(__pyx_r);
   { /* enter inner scope */
-    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 94, __pyx_L8_error)
+    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 100, __pyx_L8_error)
     __Pyx_GOTREF(__pyx_t_4);
     if (likely(PyList_CheckExact(__pyx_v_objects)) || PyTuple_CheckExact(__pyx_v_objects)) {
       __pyx_t_5 = __pyx_v_objects; __Pyx_INCREF(__pyx_t_5);
       __pyx_t_8 = 0;
       __pyx_t_9 = NULL;
     } else {
-      __pyx_t_8 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_v_objects); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 94, __pyx_L8_error)
+      __pyx_t_8 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_v_objects); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 100, __pyx_L8_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_9 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 94, __pyx_L8_error)
+      __pyx_t_9 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 100, __pyx_L8_error)
     }
     for (;;) {
       if (likely(!__pyx_t_9)) {
@@ -8013,28 +7924,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_26GetObjectTypes(CYT
           {
             Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_5);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 94, __pyx_L8_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 100, __pyx_L8_error)
             #endif
             if (__pyx_t_8 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_6 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_8); __Pyx_INCREF(__pyx_t_6); __pyx_t_8++; if (unlikely((0 < 0))) __PYX_ERR(0, 94, __pyx_L8_error)
+          __pyx_t_6 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_8); __Pyx_INCREF(__pyx_t_6); __pyx_t_8++; if (unlikely((0 < 0))) __PYX_ERR(0, 100, __pyx_L8_error)
           #else
-          __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 94, __pyx_L8_error)
+          __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 100, __pyx_L8_error)
           __Pyx_GOTREF(__pyx_t_6);
           #endif
         } else {
           {
             Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_5);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 94, __pyx_L8_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 100, __pyx_L8_error)
             #endif
             if (__pyx_t_8 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_6 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_8); __Pyx_INCREF(__pyx_t_6); __pyx_t_8++; if (unlikely((0 < 0))) __PYX_ERR(0, 94, __pyx_L8_error)
+          __pyx_t_6 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_8); __Pyx_INCREF(__pyx_t_6); __pyx_t_8++; if (unlikely((0 < 0))) __PYX_ERR(0, 100, __pyx_L8_error)
           #else
-          __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 94, __pyx_L8_error)
+          __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 100, __pyx_L8_error)
           __Pyx_GOTREF(__pyx_t_6);
           #endif
         }
@@ -8044,7 +7955,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_26GetObjectTypes(CYT
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 94, __pyx_L8_error)
+            else __PYX_ERR(0, 100, __pyx_L8_error)
           }
           break;
         }
@@ -8052,14 +7963,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_26GetObjectTypes(CYT
       }
       __Pyx_XDECREF_SET(__pyx_8genexpr1__pyx_v_obj, __pyx_t_6);
       __pyx_t_6 = 0;
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr1__pyx_v_obj, __pyx_n_s_type); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 94, __pyx_L8_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr1__pyx_v_obj, __pyx_n_s_type); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 100, __pyx_L8_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_10 = PyObject_RichCompare(__pyx_t_6, __pyx_v_inType, Py_EQ); __Pyx_XGOTREF(__pyx_t_10); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 94, __pyx_L8_error)
+      __pyx_t_10 = PyObject_RichCompare(__pyx_t_6, __pyx_v_inType, Py_EQ); __Pyx_XGOTREF(__pyx_t_10); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 100, __pyx_L8_error)
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_10); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 94, __pyx_L8_error)
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_10); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 100, __pyx_L8_error)
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
       if (__pyx_t_1) {
-        if (unlikely(__Pyx_ListComp_Append(__pyx_t_4, (PyObject*)__pyx_8genexpr1__pyx_v_obj))) __PYX_ERR(0, 94, __pyx_L8_error)
+        if (unlikely(__Pyx_ListComp_Append(__pyx_t_4, (PyObject*)__pyx_8genexpr1__pyx_v_obj))) __PYX_ERR(0, 100, __pyx_L8_error)
       }
     }
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -8074,7 +7985,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_26GetObjectTypes(CYT
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":89
+  /* "LeetdMassExport.py":95
  *         return objecsList
  * 
  *     def GetObjectTypes(self,inCollection,inType=''):             # <<<<<<<<<<<<<<
@@ -8098,7 +8009,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_26GetObjectTypes(CYT
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":96
+/* "LeetdMassExport.py":102
  *         return [obj for obj in objects if obj.type == inType]
  * 
  *     def GetActionsFromBone(self,inBone):             # <<<<<<<<<<<<<<
@@ -8162,7 +8073,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 96, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 102, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -8170,14 +8081,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 96, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 102, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("GetActionsFromBone", 1, 2, 2, 1); __PYX_ERR(0, 96, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("GetActionsFromBone", 1, 2, 2, 1); __PYX_ERR(0, 102, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetActionsFromBone") < 0)) __PYX_ERR(0, 96, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetActionsFromBone") < 0)) __PYX_ERR(0, 102, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -8190,7 +8101,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("GetActionsFromBone", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 96, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("GetActionsFromBone", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 102, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -8228,7 +8139,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_28GetActionsFromBone
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("GetActionsFromBone", 1);
 
-  /* "LeetdMassExport.py":97
+  /* "LeetdMassExport.py":103
  * 
  *     def GetActionsFromBone(self,inBone):
  *         if inBone is None: return None             # <<<<<<<<<<<<<<
@@ -8242,7 +8153,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_28GetActionsFromBone
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":99
+  /* "LeetdMassExport.py":105
  *         if inBone is None: return None
  * 
  *         return inBone.animation_data.action             # <<<<<<<<<<<<<<
@@ -8250,16 +8161,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_28GetActionsFromBone
  *     def GetStartEndFrame(self,inBone):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_inBone, __pyx_n_s_animation_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 99, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_inBone, __pyx_n_s_animation_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 105, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_action); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 99, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_action); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 105, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":96
+  /* "LeetdMassExport.py":102
  *         return [obj for obj in objects if obj.type == inType]
  * 
  *     def GetActionsFromBone(self,inBone):             # <<<<<<<<<<<<<<
@@ -8279,7 +8190,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_28GetActionsFromBone
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":101
+/* "LeetdMassExport.py":107
  *         return inBone.animation_data.action
  * 
  *     def GetStartEndFrame(self,inBone):             # <<<<<<<<<<<<<<
@@ -8343,7 +8254,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 101, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 107, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -8351,14 +8262,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 101, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 107, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("GetStartEndFrame", 1, 2, 2, 1); __PYX_ERR(0, 101, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("GetStartEndFrame", 1, 2, 2, 1); __PYX_ERR(0, 107, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetStartEndFrame") < 0)) __PYX_ERR(0, 101, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetStartEndFrame") < 0)) __PYX_ERR(0, 107, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -8371,7 +8282,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("GetStartEndFrame", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 101, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("GetStartEndFrame", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 107, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -8411,7 +8322,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_30GetStartEndFrame(C
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("GetStartEndFrame", 1);
 
-  /* "LeetdMassExport.py":102
+  /* "LeetdMassExport.py":108
  * 
  *     def GetStartEndFrame(self,inBone):
  *         if inBone is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end             # <<<<<<<<<<<<<<
@@ -8421,34 +8332,34 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_30GetStartEndFrame(C
   __pyx_t_1 = (__pyx_v_inBone == Py_None);
   if (__pyx_t_1) {
     __Pyx_XDECREF(__pyx_r);
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 102, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_context); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 102, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_context); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_scene); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 102, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_scene); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_frame_start); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 102, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_frame_start); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 102, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_context); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 102, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_context); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_scene); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 102, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_scene); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_frame_end); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 102, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_frame_end); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 102, __pyx_L1_error)
+    __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_GIVEREF(__pyx_t_3);
-    if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_3)) __PYX_ERR(0, 102, __pyx_L1_error);
+    if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_3)) __PYX_ERR(0, 108, __pyx_L1_error);
     __Pyx_GIVEREF(__pyx_t_4);
-    if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_t_4)) __PYX_ERR(0, 102, __pyx_L1_error);
+    if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_t_4)) __PYX_ERR(0, 108, __pyx_L1_error);
     __pyx_t_3 = 0;
     __pyx_t_4 = 0;
     __pyx_r = __pyx_t_2;
@@ -8456,22 +8367,22 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_30GetStartEndFrame(C
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":104
+  /* "LeetdMassExport.py":110
  *         if inBone is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
  * 
  *         act = inBone.animation_data.action             # <<<<<<<<<<<<<<
  * 
  *         if act is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_inBone, __pyx_n_s_animation_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 104, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_inBone, __pyx_n_s_animation_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_action); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 104, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_action); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_act = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":106
+  /* "LeetdMassExport.py":112
  *         act = inBone.animation_data.action
  * 
  *         if act is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end             # <<<<<<<<<<<<<<
@@ -8481,34 +8392,34 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_30GetStartEndFrame(C
   __pyx_t_1 = (__pyx_v_act == Py_None);
   if (__pyx_t_1) {
     __Pyx_XDECREF(__pyx_r);
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 112, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_context); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_context); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 112, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_scene); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_scene); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 112, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_frame_start); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_frame_start); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 112, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 112, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_context); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_context); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 112, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_scene); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_scene); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 112, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_frame_end); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_frame_end); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 112, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 112, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_GIVEREF(__pyx_t_2);
-    if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_2)) __PYX_ERR(0, 106, __pyx_L1_error);
+    if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_2)) __PYX_ERR(0, 112, __pyx_L1_error);
     __Pyx_GIVEREF(__pyx_t_3);
-    if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_t_3)) __PYX_ERR(0, 106, __pyx_L1_error);
+    if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_t_3)) __PYX_ERR(0, 112, __pyx_L1_error);
     __pyx_t_2 = 0;
     __pyx_t_3 = 0;
     __pyx_r = __pyx_t_4;
@@ -8516,7 +8427,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_30GetStartEndFrame(C
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":108
+  /* "LeetdMassExport.py":114
  *         if act is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
  * 
  *         return act.frame_range[0],act.frame_range[1]             # <<<<<<<<<<<<<<
@@ -8524,29 +8435,29 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_30GetStartEndFrame(C
  *     def GetAllArmatureInColl(self,inCollectioName=''):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_frame_range); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_frame_range); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 114, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_4, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_4, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 114, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_frame_range); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_frame_range); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 114, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_4, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_4, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 114, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 114, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_GIVEREF(__pyx_t_3);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_3)) __PYX_ERR(0, 108, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_3)) __PYX_ERR(0, 114, __pyx_L1_error);
   __Pyx_GIVEREF(__pyx_t_2);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_t_2)) __PYX_ERR(0, 114, __pyx_L1_error);
   __pyx_t_3 = 0;
   __pyx_t_2 = 0;
   __pyx_r = __pyx_t_4;
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":101
+  /* "LeetdMassExport.py":107
  *         return inBone.animation_data.action
  * 
  *     def GetStartEndFrame(self,inBone):             # <<<<<<<<<<<<<<
@@ -8568,7 +8479,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_30GetStartEndFrame(C
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":110
+/* "LeetdMassExport.py":116
  *         return act.frame_range[0],act.frame_range[1]
  * 
  *     def GetAllArmatureInColl(self,inCollectioName=''):             # <<<<<<<<<<<<<<
@@ -8633,19 +8544,19 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 110, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 116, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_inCollectioName);
           if (value) { values[1] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 110, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 116, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetAllArmatureInColl") < 0)) __PYX_ERR(0, 110, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetAllArmatureInColl") < 0)) __PYX_ERR(0, 116, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
@@ -8661,7 +8572,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("GetAllArmatureInColl", 0, 1, 2, __pyx_nargs); __PYX_ERR(0, 110, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("GetAllArmatureInColl", 0, 1, 2, __pyx_nargs); __PYX_ERR(0, 116, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -8703,46 +8614,46 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_32GetAllArmatureInCo
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("GetAllArmatureInColl", 1);
 
-  /* "LeetdMassExport.py":111
+  /* "LeetdMassExport.py":117
  * 
  *     def GetAllArmatureInColl(self,inCollectioName=''):
  *         if not inCollectioName: return []             # <<<<<<<<<<<<<<
  *         col = bpy.data.collections[inCollectioName]
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_inCollectioName); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 111, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_inCollectioName); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 117, __pyx_L1_error)
   __pyx_t_2 = (!__pyx_t_1);
   if (__pyx_t_2) {
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 111, __pyx_L1_error)
+    __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 117, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_r = __pyx_t_3;
     __pyx_t_3 = 0;
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":112
+  /* "LeetdMassExport.py":118
  *     def GetAllArmatureInColl(self,inCollectioName=''):
  *         if not inCollectioName: return []
  *         col = bpy.data.collections[inCollectioName]             # <<<<<<<<<<<<<<
  * 
  *         return self.GetObjectTypes(col,'ARMATURE')
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 112, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 118, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_data); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 112, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_data); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 118, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_collections); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 112, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_collections); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 118, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_inCollectioName); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 112, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_inCollectioName); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 118, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_col = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":114
+  /* "LeetdMassExport.py":120
  *         col = bpy.data.collections[inCollectioName]
  * 
  *         return self.GetObjectTypes(col,'ARMATURE')             # <<<<<<<<<<<<<<
@@ -8750,7 +8661,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_32GetAllArmatureInCo
  *     def GetAllGeometryAttachedArmature(self,inARMATURE):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectTypes); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 114, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectTypes); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 120, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_5 = NULL;
   __pyx_t_6 = 0;
@@ -8770,7 +8681,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_32GetAllArmatureInCo
     PyObject *__pyx_callargs[3] = {__pyx_t_5, __pyx_v_col, __pyx_n_s_ARMATURE};
     __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_6, 2+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 114, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 120, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
@@ -8778,7 +8689,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_32GetAllArmatureInCo
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":110
+  /* "LeetdMassExport.py":116
  *         return act.frame_range[0],act.frame_range[1]
  * 
  *     def GetAllArmatureInColl(self,inCollectioName=''):             # <<<<<<<<<<<<<<
@@ -8800,7 +8711,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_32GetAllArmatureInCo
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":116
+/* "LeetdMassExport.py":122
  *         return self.GetObjectTypes(col,'ARMATURE')
  * 
  *     def GetAllGeometryAttachedArmature(self,inARMATURE):             # <<<<<<<<<<<<<<
@@ -8864,7 +8775,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 116, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 122, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -8872,14 +8783,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 116, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 122, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("GetAllGeometryAttachedArmature", 1, 2, 2, 1); __PYX_ERR(0, 116, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("GetAllGeometryAttachedArmature", 1, 2, 2, 1); __PYX_ERR(0, 122, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetAllGeometryAttachedArmature") < 0)) __PYX_ERR(0, 116, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetAllGeometryAttachedArmature") < 0)) __PYX_ERR(0, 122, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -8892,7 +8803,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("GetAllGeometryAttachedArmature", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 116, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("GetAllGeometryAttachedArmature", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 122, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -8941,26 +8852,26 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("GetAllGeometryAttachedArmature", 1);
 
-  /* "LeetdMassExport.py":117
+  /* "LeetdMassExport.py":123
  * 
  *     def GetAllGeometryAttachedArmature(self,inARMATURE):
  *         Geos = []             # <<<<<<<<<<<<<<
  *         if not inARMATURE: return Geos
  * 
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 117, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 123, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_Geos = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":118
+  /* "LeetdMassExport.py":124
  *     def GetAllGeometryAttachedArmature(self,inARMATURE):
  *         Geos = []
  *         if not inARMATURE: return Geos             # <<<<<<<<<<<<<<
  * 
  *         Geos = [obj for obj in bpy.data.objects if obj.type == 'MESH' and inARMATURE in [m.object for m in obj.modifiers if m.type == 'ARMATURE']]
  */
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_inARMATURE); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 118, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_inARMATURE); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 124, __pyx_L1_error)
   __pyx_t_3 = (!__pyx_t_2);
   if (__pyx_t_3) {
     __Pyx_XDECREF(__pyx_r);
@@ -8969,7 +8880,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":120
+  /* "LeetdMassExport.py":126
  *         if not inARMATURE: return Geos
  * 
  *         Geos = [obj for obj in bpy.data.objects if obj.type == 'MESH' and inARMATURE in [m.object for m in obj.modifiers if m.type == 'ARMATURE']]             # <<<<<<<<<<<<<<
@@ -8977,14 +8888,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
  *         print(Geos)
  */
   { /* enter inner scope */
-    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 120, __pyx_L6_error)
+    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 126, __pyx_L6_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 120, __pyx_L6_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 126, __pyx_L6_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_data); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 120, __pyx_L6_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_data); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 126, __pyx_L6_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_objects); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 120, __pyx_L6_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_objects); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 126, __pyx_L6_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     if (likely(PyList_CheckExact(__pyx_t_4)) || PyTuple_CheckExact(__pyx_t_4)) {
@@ -8992,9 +8903,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
       __pyx_t_6 = 0;
       __pyx_t_7 = NULL;
     } else {
-      __pyx_t_6 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 120, __pyx_L6_error)
+      __pyx_t_6 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 126, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 120, __pyx_L6_error)
+      __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 126, __pyx_L6_error)
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     for (;;) {
@@ -9003,28 +8914,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
           {
             Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_5);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 120, __pyx_L6_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 126, __pyx_L6_error)
             #endif
             if (__pyx_t_6 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_4 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 120, __pyx_L6_error)
+          __pyx_t_4 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 126, __pyx_L6_error)
           #else
-          __pyx_t_4 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 120, __pyx_L6_error)
+          __pyx_t_4 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 126, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_4);
           #endif
         } else {
           {
             Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_5);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 120, __pyx_L6_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 126, __pyx_L6_error)
             #endif
             if (__pyx_t_6 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 120, __pyx_L6_error)
+          __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 126, __pyx_L6_error)
           #else
-          __pyx_t_4 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 120, __pyx_L6_error)
+          __pyx_t_4 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 126, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_4);
           #endif
         }
@@ -9034,7 +8945,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 120, __pyx_L6_error)
+            else __PYX_ERR(0, 126, __pyx_L6_error)
           }
           break;
         }
@@ -9042,9 +8953,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
       }
       __Pyx_XDECREF_SET(__pyx_8genexpr2__pyx_v_obj, __pyx_t_4);
       __pyx_t_4 = 0;
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr2__pyx_v_obj, __pyx_n_s_type); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 120, __pyx_L6_error)
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr2__pyx_v_obj, __pyx_n_s_type); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 126, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_2 = (__Pyx_PyString_Equals(__pyx_t_4, __pyx_n_s_MESH, Py_EQ)); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 120, __pyx_L6_error)
+      __pyx_t_2 = (__Pyx_PyString_Equals(__pyx_t_4, __pyx_n_s_MESH, Py_EQ)); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 126, __pyx_L6_error)
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       if (__pyx_t_2) {
       } else {
@@ -9052,18 +8963,18 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
         goto __pyx_L10_bool_binop_done;
       }
       { /* enter inner scope */
-        __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 120, __pyx_L14_error)
+        __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 126, __pyx_L14_error)
         __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr2__pyx_v_obj, __pyx_n_s_modifiers); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 120, __pyx_L14_error)
+        __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr2__pyx_v_obj, __pyx_n_s_modifiers); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 126, __pyx_L14_error)
         __Pyx_GOTREF(__pyx_t_8);
         if (likely(PyList_CheckExact(__pyx_t_8)) || PyTuple_CheckExact(__pyx_t_8)) {
           __pyx_t_9 = __pyx_t_8; __Pyx_INCREF(__pyx_t_9);
           __pyx_t_10 = 0;
           __pyx_t_11 = NULL;
         } else {
-          __pyx_t_10 = -1; __pyx_t_9 = PyObject_GetIter(__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 120, __pyx_L14_error)
+          __pyx_t_10 = -1; __pyx_t_9 = PyObject_GetIter(__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 126, __pyx_L14_error)
           __Pyx_GOTREF(__pyx_t_9);
-          __pyx_t_11 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_9); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 120, __pyx_L14_error)
+          __pyx_t_11 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_9); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 126, __pyx_L14_error)
         }
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         for (;;) {
@@ -9072,28 +8983,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
               {
                 Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_9);
                 #if !CYTHON_ASSUME_SAFE_MACROS
-                if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 120, __pyx_L14_error)
+                if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 126, __pyx_L14_error)
                 #endif
                 if (__pyx_t_10 >= __pyx_temp) break;
               }
               #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-              __pyx_t_8 = PyList_GET_ITEM(__pyx_t_9, __pyx_t_10); __Pyx_INCREF(__pyx_t_8); __pyx_t_10++; if (unlikely((0 < 0))) __PYX_ERR(0, 120, __pyx_L14_error)
+              __pyx_t_8 = PyList_GET_ITEM(__pyx_t_9, __pyx_t_10); __Pyx_INCREF(__pyx_t_8); __pyx_t_10++; if (unlikely((0 < 0))) __PYX_ERR(0, 126, __pyx_L14_error)
               #else
-              __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_9, __pyx_t_10); __pyx_t_10++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 120, __pyx_L14_error)
+              __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_9, __pyx_t_10); __pyx_t_10++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 126, __pyx_L14_error)
               __Pyx_GOTREF(__pyx_t_8);
               #endif
             } else {
               {
                 Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_9);
                 #if !CYTHON_ASSUME_SAFE_MACROS
-                if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 120, __pyx_L14_error)
+                if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 126, __pyx_L14_error)
                 #endif
                 if (__pyx_t_10 >= __pyx_temp) break;
               }
               #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-              __pyx_t_8 = PyTuple_GET_ITEM(__pyx_t_9, __pyx_t_10); __Pyx_INCREF(__pyx_t_8); __pyx_t_10++; if (unlikely((0 < 0))) __PYX_ERR(0, 120, __pyx_L14_error)
+              __pyx_t_8 = PyTuple_GET_ITEM(__pyx_t_9, __pyx_t_10); __Pyx_INCREF(__pyx_t_8); __pyx_t_10++; if (unlikely((0 < 0))) __PYX_ERR(0, 126, __pyx_L14_error)
               #else
-              __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_9, __pyx_t_10); __pyx_t_10++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 120, __pyx_L14_error)
+              __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_9, __pyx_t_10); __pyx_t_10++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 126, __pyx_L14_error)
               __Pyx_GOTREF(__pyx_t_8);
               #endif
             }
@@ -9103,7 +9014,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
               PyObject* exc_type = PyErr_Occurred();
               if (exc_type) {
                 if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-                else __PYX_ERR(0, 120, __pyx_L14_error)
+                else __PYX_ERR(0, 126, __pyx_L14_error)
               }
               break;
             }
@@ -9111,14 +9022,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
           }
           __Pyx_XDECREF_SET(__pyx_8genexpr3__pyx_v_m, __pyx_t_8);
           __pyx_t_8 = 0;
-          __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr3__pyx_v_m, __pyx_n_s_type); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 120, __pyx_L14_error)
+          __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr3__pyx_v_m, __pyx_n_s_type); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 126, __pyx_L14_error)
           __Pyx_GOTREF(__pyx_t_8);
-          __pyx_t_2 = (__Pyx_PyString_Equals(__pyx_t_8, __pyx_n_s_ARMATURE, Py_EQ)); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 120, __pyx_L14_error)
+          __pyx_t_2 = (__Pyx_PyString_Equals(__pyx_t_8, __pyx_n_s_ARMATURE, Py_EQ)); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 126, __pyx_L14_error)
           __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
           if (__pyx_t_2) {
-            __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr3__pyx_v_m, __pyx_n_s_object); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 120, __pyx_L14_error)
+            __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr3__pyx_v_m, __pyx_n_s_object); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 126, __pyx_L14_error)
             __Pyx_GOTREF(__pyx_t_8);
-            if (unlikely(__Pyx_ListComp_Append(__pyx_t_4, (PyObject*)__pyx_t_8))) __PYX_ERR(0, 120, __pyx_L14_error)
+            if (unlikely(__Pyx_ListComp_Append(__pyx_t_4, (PyObject*)__pyx_t_8))) __PYX_ERR(0, 126, __pyx_L14_error)
             __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
           }
         }
@@ -9130,12 +9041,12 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
         goto __pyx_L6_error;
         __pyx_L19_exit_scope:;
       } /* exit inner scope */
-      __pyx_t_2 = (__Pyx_PySequence_ContainsTF(__pyx_v_inARMATURE, __pyx_t_4, Py_EQ)); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 120, __pyx_L6_error)
+      __pyx_t_2 = (__Pyx_PySequence_ContainsTF(__pyx_v_inARMATURE, __pyx_t_4, Py_EQ)); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 126, __pyx_L6_error)
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __pyx_t_3 = __pyx_t_2;
       __pyx_L10_bool_binop_done:;
       if (__pyx_t_3) {
-        if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_8genexpr2__pyx_v_obj))) __PYX_ERR(0, 120, __pyx_L6_error)
+        if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_8genexpr2__pyx_v_obj))) __PYX_ERR(0, 126, __pyx_L6_error)
       }
     }
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -9149,18 +9060,18 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
   __Pyx_DECREF_SET(__pyx_v_Geos, ((PyObject*)__pyx_t_1));
   __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":122
+  /* "LeetdMassExport.py":128
  *         Geos = [obj for obj in bpy.data.objects if obj.type == 'MESH' and inARMATURE in [m.object for m in obj.modifiers if m.type == 'ARMATURE']]
  * 
  *         print(Geos)             # <<<<<<<<<<<<<<
  * 
  *         return Geos
  */
-  __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_Geos); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 122, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_Geos); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 128, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":124
+  /* "LeetdMassExport.py":130
  *         print(Geos)
  * 
  *         return Geos             # <<<<<<<<<<<<<<
@@ -9172,7 +9083,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
   __pyx_r = __pyx_v_Geos;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":116
+  /* "LeetdMassExport.py":122
  *         return self.GetObjectTypes(col,'ARMATURE')
  * 
  *     def GetAllGeometryAttachedArmature(self,inARMATURE):             # <<<<<<<<<<<<<<
@@ -9198,7 +9109,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_34GetAllGeometryAtta
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":126
+/* "LeetdMassExport.py":132
  *         return Geos
  * 
  *     def isArmatureAction(self,inAct,inArmature):             # <<<<<<<<<<<<<<
@@ -9265,7 +9176,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 126, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 132, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -9273,9 +9184,9 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 126, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 132, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("isArmatureAction", 1, 3, 3, 1); __PYX_ERR(0, 126, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("isArmatureAction", 1, 3, 3, 1); __PYX_ERR(0, 132, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
@@ -9283,14 +9194,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[2]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 126, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 132, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("isArmatureAction", 1, 3, 3, 2); __PYX_ERR(0, 126, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("isArmatureAction", 1, 3, 3, 2); __PYX_ERR(0, 132, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "isArmatureAction") < 0)) __PYX_ERR(0, 126, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "isArmatureAction") < 0)) __PYX_ERR(0, 132, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 3)) {
       goto __pyx_L5_argtuple_error;
@@ -9305,7 +9216,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("isArmatureAction", 1, 3, 3, __pyx_nargs); __PYX_ERR(0, 126, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("isArmatureAction", 1, 3, 3, __pyx_nargs); __PYX_ERR(0, 132, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -9353,7 +9264,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("isArmatureAction", 1);
 
-  /* "LeetdMassExport.py":127
+  /* "LeetdMassExport.py":133
  * 
  *     def isArmatureAction(self,inAct,inArmature):
  *         if inAct is None or inArmature is None: return False             # <<<<<<<<<<<<<<
@@ -9376,7 +9287,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":129
+  /* "LeetdMassExport.py":135
  *         if inAct is None or inArmature is None: return False
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -9392,23 +9303,23 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
     __Pyx_XGOTREF(__pyx_t_5);
     /*try:*/ {
 
-      /* "LeetdMassExport.py":130
+      /* "LeetdMassExport.py":136
  * 
  *         try:
  *             for layer in inArmature.Anim_Layers:             # <<<<<<<<<<<<<<
  *                 if layer.name == inAct.name:
  *                     info = str("ALayer : {A} BLayer : {B}").format(A=layer.name,B=inAct.name)
  */
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_inArmature, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 130, __pyx_L6_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_inArmature, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 136, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_6);
       if (likely(PyList_CheckExact(__pyx_t_6)) || PyTuple_CheckExact(__pyx_t_6)) {
         __pyx_t_7 = __pyx_t_6; __Pyx_INCREF(__pyx_t_7);
         __pyx_t_8 = 0;
         __pyx_t_9 = NULL;
       } else {
-        __pyx_t_8 = -1; __pyx_t_7 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 130, __pyx_L6_error)
+        __pyx_t_8 = -1; __pyx_t_7 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 136, __pyx_L6_error)
         __Pyx_GOTREF(__pyx_t_7);
-        __pyx_t_9 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_7); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 130, __pyx_L6_error)
+        __pyx_t_9 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_7); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 136, __pyx_L6_error)
       }
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       for (;;) {
@@ -9417,28 +9328,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
             {
               Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_7);
               #if !CYTHON_ASSUME_SAFE_MACROS
-              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 130, __pyx_L6_error)
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 136, __pyx_L6_error)
               #endif
               if (__pyx_t_8 >= __pyx_temp) break;
             }
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_6 = PyList_GET_ITEM(__pyx_t_7, __pyx_t_8); __Pyx_INCREF(__pyx_t_6); __pyx_t_8++; if (unlikely((0 < 0))) __PYX_ERR(0, 130, __pyx_L6_error)
+            __pyx_t_6 = PyList_GET_ITEM(__pyx_t_7, __pyx_t_8); __Pyx_INCREF(__pyx_t_6); __pyx_t_8++; if (unlikely((0 < 0))) __PYX_ERR(0, 136, __pyx_L6_error)
             #else
-            __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_7, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 130, __pyx_L6_error)
+            __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_7, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 136, __pyx_L6_error)
             __Pyx_GOTREF(__pyx_t_6);
             #endif
           } else {
             {
               Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_7);
               #if !CYTHON_ASSUME_SAFE_MACROS
-              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 130, __pyx_L6_error)
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 136, __pyx_L6_error)
               #endif
               if (__pyx_t_8 >= __pyx_temp) break;
             }
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_6 = PyTuple_GET_ITEM(__pyx_t_7, __pyx_t_8); __Pyx_INCREF(__pyx_t_6); __pyx_t_8++; if (unlikely((0 < 0))) __PYX_ERR(0, 130, __pyx_L6_error)
+            __pyx_t_6 = PyTuple_GET_ITEM(__pyx_t_7, __pyx_t_8); __Pyx_INCREF(__pyx_t_6); __pyx_t_8++; if (unlikely((0 < 0))) __PYX_ERR(0, 136, __pyx_L6_error)
             #else
-            __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_7, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 130, __pyx_L6_error)
+            __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_7, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 136, __pyx_L6_error)
             __Pyx_GOTREF(__pyx_t_6);
             #endif
           }
@@ -9448,7 +9359,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
               if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-              else __PYX_ERR(0, 130, __pyx_L6_error)
+              else __PYX_ERR(0, 136, __pyx_L6_error)
             }
             break;
           }
@@ -9457,62 +9368,62 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
         __Pyx_XDECREF_SET(__pyx_v_layer, __pyx_t_6);
         __pyx_t_6 = 0;
 
-        /* "LeetdMassExport.py":131
+        /* "LeetdMassExport.py":137
  *         try:
  *             for layer in inArmature.Anim_Layers:
  *                 if layer.name == inAct.name:             # <<<<<<<<<<<<<<
  *                     info = str("ALayer : {A} BLayer : {B}").format(A=layer.name,B=inAct.name)
  *                     print(info)
  */
-        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_layer, __pyx_n_s_name); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 131, __pyx_L6_error)
+        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_layer, __pyx_n_s_name); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 137, __pyx_L6_error)
         __Pyx_GOTREF(__pyx_t_6);
-        __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_v_inAct, __pyx_n_s_name); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 131, __pyx_L6_error)
+        __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_v_inAct, __pyx_n_s_name); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 137, __pyx_L6_error)
         __Pyx_GOTREF(__pyx_t_10);
-        __pyx_t_11 = PyObject_RichCompare(__pyx_t_6, __pyx_t_10, Py_EQ); __Pyx_XGOTREF(__pyx_t_11); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 131, __pyx_L6_error)
+        __pyx_t_11 = PyObject_RichCompare(__pyx_t_6, __pyx_t_10, Py_EQ); __Pyx_XGOTREF(__pyx_t_11); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 137, __pyx_L6_error)
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-        __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_11); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 131, __pyx_L6_error)
+        __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_11); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 137, __pyx_L6_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
         if (__pyx_t_1) {
 
-          /* "LeetdMassExport.py":132
+          /* "LeetdMassExport.py":138
  *             for layer in inArmature.Anim_Layers:
  *                 if layer.name == inAct.name:
  *                     info = str("ALayer : {A} BLayer : {B}").format(A=layer.name,B=inAct.name)             # <<<<<<<<<<<<<<
  *                     print(info)
  *                     return True
  */
-          __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_ALayer_A_BLayer_B, __pyx_n_s_format); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 132, __pyx_L6_error)
+          __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_ALayer_A_BLayer_B, __pyx_n_s_format); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 138, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_11);
-          __pyx_t_10 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 132, __pyx_L6_error)
+          __pyx_t_10 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 138, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_10);
-          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_layer, __pyx_n_s_name); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 132, __pyx_L6_error)
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_layer, __pyx_n_s_name); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 138, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_6);
-          if (PyDict_SetItem(__pyx_t_10, __pyx_n_s_A, __pyx_t_6) < 0) __PYX_ERR(0, 132, __pyx_L6_error)
+          if (PyDict_SetItem(__pyx_t_10, __pyx_n_s_A, __pyx_t_6) < 0) __PYX_ERR(0, 138, __pyx_L6_error)
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_inAct, __pyx_n_s_name); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 132, __pyx_L6_error)
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_inAct, __pyx_n_s_name); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 138, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_6);
-          if (PyDict_SetItem(__pyx_t_10, __pyx_n_s_B, __pyx_t_6) < 0) __PYX_ERR(0, 132, __pyx_L6_error)
+          if (PyDict_SetItem(__pyx_t_10, __pyx_n_s_B, __pyx_t_6) < 0) __PYX_ERR(0, 138, __pyx_L6_error)
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-          __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_empty_tuple, __pyx_t_10); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 132, __pyx_L6_error)
+          __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_empty_tuple, __pyx_t_10); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 138, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_6);
           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
           __pyx_v_info = __pyx_t_6;
           __pyx_t_6 = 0;
 
-          /* "LeetdMassExport.py":133
+          /* "LeetdMassExport.py":139
  *                 if layer.name == inAct.name:
  *                     info = str("ALayer : {A} BLayer : {B}").format(A=layer.name,B=inAct.name)
  *                     print(info)             # <<<<<<<<<<<<<<
  *                     return True
  *         except:
  */
-          __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_info); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 133, __pyx_L6_error)
+          __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_info); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 139, __pyx_L6_error)
           __Pyx_GOTREF(__pyx_t_6);
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-          /* "LeetdMassExport.py":134
+          /* "LeetdMassExport.py":140
  *                     info = str("ALayer : {A} BLayer : {B}").format(A=layer.name,B=inAct.name)
  *                     print(info)
  *                     return True             # <<<<<<<<<<<<<<
@@ -9525,7 +9436,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
           __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
           goto __pyx_L10_try_return;
 
-          /* "LeetdMassExport.py":131
+          /* "LeetdMassExport.py":137
  *         try:
  *             for layer in inArmature.Anim_Layers:
  *                 if layer.name == inAct.name:             # <<<<<<<<<<<<<<
@@ -9534,7 +9445,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
  */
         }
 
-        /* "LeetdMassExport.py":130
+        /* "LeetdMassExport.py":136
  * 
  *         try:
  *             for layer in inArmature.Anim_Layers:             # <<<<<<<<<<<<<<
@@ -9544,7 +9455,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
       }
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-      /* "LeetdMassExport.py":129
+      /* "LeetdMassExport.py":135
  *         if inAct is None or inArmature is None: return False
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -9562,7 +9473,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "LeetdMassExport.py":135
+    /* "LeetdMassExport.py":141
  *                     print(info)
  *                     return True
  *         except:             # <<<<<<<<<<<<<<
@@ -9571,12 +9482,12 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
  */
     /*except:*/ {
       __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.isArmatureAction", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_7, &__pyx_t_6, &__pyx_t_10) < 0) __PYX_ERR(0, 135, __pyx_L8_except_error)
+      if (__Pyx_GetException(&__pyx_t_7, &__pyx_t_6, &__pyx_t_10) < 0) __PYX_ERR(0, 141, __pyx_L8_except_error)
       __Pyx_XGOTREF(__pyx_t_7);
       __Pyx_XGOTREF(__pyx_t_6);
       __Pyx_XGOTREF(__pyx_t_10);
 
-      /* "LeetdMassExport.py":136
+      /* "LeetdMassExport.py":142
  *                     return True
  *         except:
  *             return False             # <<<<<<<<<<<<<<
@@ -9592,7 +9503,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
       goto __pyx_L9_except_return;
     }
 
-    /* "LeetdMassExport.py":129
+    /* "LeetdMassExport.py":135
  *         if inAct is None or inArmature is None: return False
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -9620,7 +9531,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
     __pyx_L11_try_end:;
   }
 
-  /* "LeetdMassExport.py":137
+  /* "LeetdMassExport.py":143
  *         except:
  *             return False
  *         return False             # <<<<<<<<<<<<<<
@@ -9632,7 +9543,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
   __pyx_r = Py_False;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":126
+  /* "LeetdMassExport.py":132
  *         return Geos
  * 
  *     def isArmatureAction(self,inAct,inArmature):             # <<<<<<<<<<<<<<
@@ -9656,10 +9567,10 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_36isArmatureAction(C
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":140
+/* "LeetdMassExport.py":146
  * 
  *     ##################################################################
- *     def LeeBakeFunc(self,Collection=None):             # <<<<<<<<<<<<<<
+ *     def LeeBakeFunc(self,Collection=None,isTest=False):             # <<<<<<<<<<<<<<
  *         if Collection is None: return
  *         col = bpy.data.collections[Collection]
  */
@@ -9682,11 +9593,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
 ) {
   PyObject *__pyx_v_self = 0;
   PyObject *__pyx_v_Collection = 0;
+  CYTHON_UNUSED PyObject *__pyx_v_isTest = 0;
   #if !CYTHON_METH_FASTCALL
   CYTHON_UNUSED Py_ssize_t __pyx_nargs;
   #endif
   CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
-  PyObject* values[2] = {0,0};
+  PyObject* values[3] = {0,0,0};
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -9702,11 +9614,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   #endif
   __pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
   {
-    PyObject **__pyx_pyargnames[] = {&__pyx_n_s_self,&__pyx_n_s_Collection,0};
+    PyObject **__pyx_pyargnames[] = {&__pyx_n_s_self,&__pyx_n_s_Collection,&__pyx_n_s_isTest,0};
     values[1] = __Pyx_Arg_NewRef_FASTCALL(((PyObject *)Py_None));
+    values[2] = __Pyx_Arg_NewRef_FASTCALL(((PyObject *)((PyObject *)Py_False)));
     if (__pyx_kwds) {
       Py_ssize_t kw_args;
       switch (__pyx_nargs) {
+        case  3: values[2] = __Pyx_Arg_FASTCALL(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
         case  2: values[1] = __Pyx_Arg_FASTCALL(__pyx_args, 1);
         CYTHON_FALLTHROUGH;
         case  1: values[0] = __Pyx_Arg_FASTCALL(__pyx_args, 0);
@@ -9721,22 +9636,31 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 140, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 146, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_Collection);
           if (value) { values[1] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 140, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 146, __pyx_L3_error)
+        }
+        CYTHON_FALLTHROUGH;
+        case  2:
+        if (kw_args > 0) {
+          PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_isTest);
+          if (value) { values[2] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 146, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "LeeBakeFunc") < 0)) __PYX_ERR(0, 140, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "LeeBakeFunc") < 0)) __PYX_ERR(0, 146, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
+        case  3: values[2] = __Pyx_Arg_FASTCALL(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
         case  2: values[1] = __Pyx_Arg_FASTCALL(__pyx_args, 1);
         CYTHON_FALLTHROUGH;
         case  1: values[0] = __Pyx_Arg_FASTCALL(__pyx_args, 0);
@@ -9746,10 +9670,11 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
     }
     __pyx_v_self = values[0];
     __pyx_v_Collection = values[1];
+    __pyx_v_isTest = values[2];
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("LeeBakeFunc", 0, 1, 2, __pyx_nargs); __PYX_ERR(0, 140, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("LeeBakeFunc", 0, 1, 3, __pyx_nargs); __PYX_ERR(0, 146, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -9763,7 +9688,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_15LeetdMassExport_13MassExportFbx_38LeeBakeFunc(__pyx_self, __pyx_v_self, __pyx_v_Collection);
+  __pyx_r = __pyx_pf_15LeetdMassExport_13MassExportFbx_38LeeBakeFunc(__pyx_self, __pyx_v_self, __pyx_v_Collection, __pyx_v_isTest);
 
   /* function exit code */
   {
@@ -9776,10 +9701,13 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_38LeeBakeFunc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_Collection) {
+static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_38LeeBakeFunc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_Collection, CYTHON_UNUSED PyObject *__pyx_v_isTest) {
   PyObject *__pyx_v_col = NULL;
   PyObject *__pyx_v_armature = NULL;
-  PyObject *__pyx_v_bone = NULL;
+  PyObject *__pyx_v_Processes = NULL;
+  PyObject *__pyx_v_p = NULL;
+  CYTHON_UNUSED PyObject *__pyx_8genexpr4__pyx_v_i = NULL;
+  PyObject *__pyx_8genexpr4__pyx_v_bone = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -9790,14 +9718,18 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_38LeeBakeFunc(CYTHON
   Py_ssize_t __pyx_t_6;
   PyObject *(*__pyx_t_7)(PyObject *);
   PyObject *__pyx_t_8 = NULL;
+  PyObject *__pyx_t_9 = NULL;
+  PyObject *__pyx_t_10 = NULL;
+  PyObject *__pyx_t_11 = NULL;
+  PyObject *__pyx_t_12 = NULL;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("LeeBakeFunc", 1);
 
-  /* "LeetdMassExport.py":141
+  /* "LeetdMassExport.py":147
  *     ##################################################################
- *     def LeeBakeFunc(self,Collection=None):
+ *     def LeeBakeFunc(self,Collection=None,isTest=False):
  *         if Collection is None: return             # <<<<<<<<<<<<<<
  *         col = bpy.data.collections[Collection]
  *         armature = self.GetObjectTypes(col,'ARMATURE')
@@ -9809,35 +9741,35 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_38LeeBakeFunc(CYTHON
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":142
- *     def LeeBakeFunc(self,Collection=None):
+  /* "LeetdMassExport.py":148
+ *     def LeeBakeFunc(self,Collection=None,isTest=False):
  *         if Collection is None: return
  *         col = bpy.data.collections[Collection]             # <<<<<<<<<<<<<<
  *         armature = self.GetObjectTypes(col,'ARMATURE')
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 142, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 148, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_data); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 142, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_data); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 148, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_collections); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 142, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_collections); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 148, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_2, __pyx_v_Collection); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 142, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_2, __pyx_v_Collection); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 148, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_col = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":143
+  /* "LeetdMassExport.py":149
  *         if Collection is None: return
  *         col = bpy.data.collections[Collection]
  *         armature = self.GetObjectTypes(col,'ARMATURE')             # <<<<<<<<<<<<<<
  * 
- *         for bone in armature:
+ * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectTypes); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 143, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectTypes); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 149, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_4 = NULL;
   __pyx_t_5 = 0;
@@ -9857,180 +9789,256 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_38LeeBakeFunc(CYTHON
     PyObject *__pyx_callargs[3] = {__pyx_t_4, __pyx_v_col, __pyx_n_s_ARMATURE};
     __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_5, 2+__pyx_t_5);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 143, __pyx_L1_error)
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 149, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __pyx_v_armature = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":145
- *         armature = self.GetObjectTypes(col,'ARMATURE')
+  /* "LeetdMassExport.py":152
  * 
- *         for bone in armature:             # <<<<<<<<<<<<<<
- *             if bone.als.turn_on:
- *                 self.ClearSelection()
+ * 
+ *         Processes = [Process(target=self.BakeAnimLayer(bone)) for i,bone in enumerate(armature) if bone.als.turn_on]             # <<<<<<<<<<<<<<
+ * 
+ *         for p in Processes: p.start()
  */
-  if (likely(PyList_CheckExact(__pyx_v_armature)) || PyTuple_CheckExact(__pyx_v_armature)) {
-    __pyx_t_3 = __pyx_v_armature; __Pyx_INCREF(__pyx_t_3);
-    __pyx_t_6 = 0;
-    __pyx_t_7 = NULL;
-  } else {
-    __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_v_armature); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 145, __pyx_L1_error)
+  { /* enter inner scope */
+    __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 152, __pyx_L6_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 145, __pyx_L1_error)
-  }
-  for (;;) {
-    if (likely(!__pyx_t_7)) {
-      if (likely(PyList_CheckExact(__pyx_t_3))) {
-        {
-          Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_3);
-          #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 145, __pyx_L1_error)
-          #endif
-          if (__pyx_t_6 >= __pyx_temp) break;
-        }
-        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 145, __pyx_L1_error)
-        #else
-        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 145, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_2);
-        #endif
-      } else {
-        {
-          Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_3);
-          #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 145, __pyx_L1_error)
-          #endif
-          if (__pyx_t_6 >= __pyx_temp) break;
-        }
-        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 145, __pyx_L1_error)
-        #else
-        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 145, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_2);
-        #endif
-      }
+    __Pyx_INCREF(__pyx_int_0);
+    __pyx_t_2 = __pyx_int_0;
+    if (likely(PyList_CheckExact(__pyx_v_armature)) || PyTuple_CheckExact(__pyx_v_armature)) {
+      __pyx_t_4 = __pyx_v_armature; __Pyx_INCREF(__pyx_t_4);
+      __pyx_t_6 = 0;
+      __pyx_t_7 = NULL;
     } else {
-      __pyx_t_2 = __pyx_t_7(__pyx_t_3);
-      if (unlikely(!__pyx_t_2)) {
-        PyObject* exc_type = PyErr_Occurred();
-        if (exc_type) {
-          if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 145, __pyx_L1_error)
-        }
-        break;
-      }
-      __Pyx_GOTREF(__pyx_t_2);
+      __pyx_t_6 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_v_armature); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 152, __pyx_L6_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 152, __pyx_L6_error)
     }
-    __Pyx_XDECREF_SET(__pyx_v_bone, __pyx_t_2);
-    __pyx_t_2 = 0;
-
-    /* "LeetdMassExport.py":146
- * 
- *         for bone in armature:
- *             if bone.als.turn_on:             # <<<<<<<<<<<<<<
- *                 self.ClearSelection()
- *                 self.BakeAnimLayer(bone) #bake animation Layer
- */
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_bone, __pyx_n_s_als); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 146, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_turn_on); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 146, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 146, __pyx_L1_error)
+    for (;;) {
+      if (likely(!__pyx_t_7)) {
+        if (likely(PyList_CheckExact(__pyx_t_4))) {
+          {
+            Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_4);
+            #if !CYTHON_ASSUME_SAFE_MACROS
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 152, __pyx_L6_error)
+            #endif
+            if (__pyx_t_6 >= __pyx_temp) break;
+          }
+          #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+          __pyx_t_8 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_6); __Pyx_INCREF(__pyx_t_8); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 152, __pyx_L6_error)
+          #else
+          __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_4, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 152, __pyx_L6_error)
+          __Pyx_GOTREF(__pyx_t_8);
+          #endif
+        } else {
+          {
+            Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_4);
+            #if !CYTHON_ASSUME_SAFE_MACROS
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 152, __pyx_L6_error)
+            #endif
+            if (__pyx_t_6 >= __pyx_temp) break;
+          }
+          #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+          __pyx_t_8 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_6); __Pyx_INCREF(__pyx_t_8); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 152, __pyx_L6_error)
+          #else
+          __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_4, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 152, __pyx_L6_error)
+          __Pyx_GOTREF(__pyx_t_8);
+          #endif
+        }
+      } else {
+        __pyx_t_8 = __pyx_t_7(__pyx_t_4);
+        if (unlikely(!__pyx_t_8)) {
+          PyObject* exc_type = PyErr_Occurred();
+          if (exc_type) {
+            if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
+            else __PYX_ERR(0, 152, __pyx_L6_error)
+          }
+          break;
+        }
+        __Pyx_GOTREF(__pyx_t_8);
+      }
+      __Pyx_XDECREF_SET(__pyx_8genexpr4__pyx_v_bone, __pyx_t_8);
+      __pyx_t_8 = 0;
+      __Pyx_INCREF(__pyx_t_2);
+      __Pyx_XDECREF_SET(__pyx_8genexpr4__pyx_v_i, __pyx_t_2);
+      __pyx_t_8 = __Pyx_PyInt_AddObjC(__pyx_t_2, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 152, __pyx_L6_error)
+      __Pyx_GOTREF(__pyx_t_8);
+      __Pyx_DECREF(__pyx_t_2);
+      __pyx_t_2 = __pyx_t_8;
+      __pyx_t_8 = 0;
+      __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr4__pyx_v_bone, __pyx_n_s_als); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 152, __pyx_L6_error)
+      __Pyx_GOTREF(__pyx_t_8);
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_turn_on); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 152, __pyx_L6_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 152, __pyx_L6_error)
+      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+      if (__pyx_t_1) {
+        __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_Process); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 152, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_9);
+        __pyx_t_8 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 152, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_8);
+        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_BakeAnimLayer); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 152, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_11);
+        __pyx_t_12 = NULL;
+        __pyx_t_5 = 0;
+        #if CYTHON_UNPACK_METHODS
+        if (likely(PyMethod_Check(__pyx_t_11))) {
+          __pyx_t_12 = PyMethod_GET_SELF(__pyx_t_11);
+          if (likely(__pyx_t_12)) {
+            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_11);
+            __Pyx_INCREF(__pyx_t_12);
+            __Pyx_INCREF(function);
+            __Pyx_DECREF_SET(__pyx_t_11, function);
+            __pyx_t_5 = 1;
+          }
+        }
+        #endif
+        {
+          PyObject *__pyx_callargs[2] = {__pyx_t_12, __pyx_8genexpr4__pyx_v_bone};
+          __pyx_t_10 = __Pyx_PyObject_FastCall(__pyx_t_11, __pyx_callargs+1-__pyx_t_5, 1+__pyx_t_5);
+          __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
+          if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 152, __pyx_L6_error)
+          __Pyx_GOTREF(__pyx_t_10);
+          __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+        }
+        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_target, __pyx_t_10) < 0) __PYX_ERR(0, 152, __pyx_L6_error)
+        __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+        __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_empty_tuple, __pyx_t_8); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 152, __pyx_L6_error)
+        __Pyx_GOTREF(__pyx_t_10);
+        __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+        __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+        if (unlikely(__Pyx_ListComp_Append(__pyx_t_3, (PyObject*)__pyx_t_10))) __PYX_ERR(0, 152, __pyx_L6_error)
+        __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+      }
+    }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (__pyx_t_1) {
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_XDECREF(__pyx_8genexpr4__pyx_v_bone); __pyx_8genexpr4__pyx_v_bone = 0;
+    __Pyx_XDECREF(__pyx_8genexpr4__pyx_v_i); __pyx_8genexpr4__pyx_v_i = 0;
+    goto __pyx_L11_exit_scope;
+    __pyx_L6_error:;
+    __Pyx_XDECREF(__pyx_8genexpr4__pyx_v_bone); __pyx_8genexpr4__pyx_v_bone = 0;
+    __Pyx_XDECREF(__pyx_8genexpr4__pyx_v_i); __pyx_8genexpr4__pyx_v_i = 0;
+    goto __pyx_L1_error;
+    __pyx_L11_exit_scope:;
+  } /* exit inner scope */
+  __pyx_v_Processes = ((PyObject*)__pyx_t_3);
+  __pyx_t_3 = 0;
 
-      /* "LeetdMassExport.py":147
- *         for bone in armature:
- *             if bone.als.turn_on:
- *                 self.ClearSelection()             # <<<<<<<<<<<<<<
- *                 self.BakeAnimLayer(bone) #bake animation Layer
- *             # else
- */
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ClearSelection); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 147, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_8 = NULL;
-      __pyx_t_5 = 0;
-      #if CYTHON_UNPACK_METHODS
-      if (likely(PyMethod_Check(__pyx_t_2))) {
-        __pyx_t_8 = PyMethod_GET_SELF(__pyx_t_2);
-        if (likely(__pyx_t_8)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-          __Pyx_INCREF(__pyx_t_8);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_2, function);
-          __pyx_t_5 = 1;
-        }
-      }
-      #endif
-      {
-        PyObject *__pyx_callargs[2] = {__pyx_t_8, NULL};
-        __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_5, 0+__pyx_t_5);
-        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 147, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      }
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-
-      /* "LeetdMassExport.py":148
- *             if bone.als.turn_on:
- *                 self.ClearSelection()
- *                 self.BakeAnimLayer(bone) #bake animation Layer             # <<<<<<<<<<<<<<
- *             # else
- *             # self.LeeArmatureBake(bone)
- */
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_BakeAnimLayer); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 148, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_8 = NULL;
-      __pyx_t_5 = 0;
-      #if CYTHON_UNPACK_METHODS
-      if (likely(PyMethod_Check(__pyx_t_2))) {
-        __pyx_t_8 = PyMethod_GET_SELF(__pyx_t_2);
-        if (likely(__pyx_t_8)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-          __Pyx_INCREF(__pyx_t_8);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_2, function);
-          __pyx_t_5 = 1;
-        }
-      }
-      #endif
-      {
-        PyObject *__pyx_callargs[2] = {__pyx_t_8, __pyx_v_bone};
-        __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_5, 1+__pyx_t_5);
-        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 148, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      }
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-
-      /* "LeetdMassExport.py":146
+  /* "LeetdMassExport.py":154
+ *         Processes = [Process(target=self.BakeAnimLayer(bone)) for i,bone in enumerate(armature) if bone.als.turn_on]
  * 
- *         for bone in armature:
- *             if bone.als.turn_on:             # <<<<<<<<<<<<<<
- *                 self.ClearSelection()
- *                 self.BakeAnimLayer(bone) #bake animation Layer
+ *         for p in Processes: p.start()             # <<<<<<<<<<<<<<
+ * 
+ *         for p in Processes: p.join()
  */
+  __pyx_t_3 = __pyx_v_Processes; __Pyx_INCREF(__pyx_t_3);
+  __pyx_t_6 = 0;
+  for (;;) {
+    {
+      Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_3);
+      #if !CYTHON_ASSUME_SAFE_MACROS
+      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 154, __pyx_L1_error)
+      #endif
+      if (__pyx_t_6 >= __pyx_temp) break;
     }
-
-    /* "LeetdMassExport.py":145
- *         armature = self.GetObjectTypes(col,'ARMATURE')
- * 
- *         for bone in armature:             # <<<<<<<<<<<<<<
- *             if bone.als.turn_on:
- *                 self.ClearSelection()
- */
+    #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+    __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 154, __pyx_L1_error)
+    #else
+    __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 154, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    #endif
+    __Pyx_XDECREF_SET(__pyx_v_p, __pyx_t_2);
+    __pyx_t_2 = 0;
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_p, __pyx_n_s_start); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 154, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_10 = NULL;
+    __pyx_t_5 = 0;
+    #if CYTHON_UNPACK_METHODS
+    if (likely(PyMethod_Check(__pyx_t_4))) {
+      __pyx_t_10 = PyMethod_GET_SELF(__pyx_t_4);
+      if (likely(__pyx_t_10)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+        __Pyx_INCREF(__pyx_t_10);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_4, function);
+        __pyx_t_5 = 1;
+      }
+    }
+    #endif
+    {
+      PyObject *__pyx_callargs[2] = {__pyx_t_10, NULL};
+      __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_5, 0+__pyx_t_5);
+      __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 154, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    }
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":140
+  /* "LeetdMassExport.py":156
+ *         for p in Processes: p.start()
+ * 
+ *         for p in Processes: p.join()             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __pyx_t_3 = __pyx_v_Processes; __Pyx_INCREF(__pyx_t_3);
+  __pyx_t_6 = 0;
+  for (;;) {
+    {
+      Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_3);
+      #if !CYTHON_ASSUME_SAFE_MACROS
+      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 156, __pyx_L1_error)
+      #endif
+      if (__pyx_t_6 >= __pyx_temp) break;
+    }
+    #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+    __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 156, __pyx_L1_error)
+    #else
+    __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 156, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    #endif
+    __Pyx_XDECREF_SET(__pyx_v_p, __pyx_t_2);
+    __pyx_t_2 = 0;
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_p, __pyx_n_s_join); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 156, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_10 = NULL;
+    __pyx_t_5 = 0;
+    #if CYTHON_UNPACK_METHODS
+    if (likely(PyMethod_Check(__pyx_t_4))) {
+      __pyx_t_10 = PyMethod_GET_SELF(__pyx_t_4);
+      if (likely(__pyx_t_10)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+        __Pyx_INCREF(__pyx_t_10);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_4, function);
+        __pyx_t_5 = 1;
+      }
+    }
+    #endif
+    {
+      PyObject *__pyx_callargs[2] = {__pyx_t_10, NULL};
+      __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_5, 0+__pyx_t_5);
+      __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 156, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    }
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  }
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+  /* "LeetdMassExport.py":146
  * 
  *     ##################################################################
- *     def LeeBakeFunc(self,Collection=None):             # <<<<<<<<<<<<<<
+ *     def LeeBakeFunc(self,Collection=None,isTest=False):             # <<<<<<<<<<<<<<
  *         if Collection is None: return
  *         col = bpy.data.collections[Collection]
  */
@@ -10043,19 +10051,26 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_38LeeBakeFunc(CYTHON
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_8);
+  __Pyx_XDECREF(__pyx_t_9);
+  __Pyx_XDECREF(__pyx_t_10);
+  __Pyx_XDECREF(__pyx_t_11);
+  __Pyx_XDECREF(__pyx_t_12);
   __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.LeeBakeFunc", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_col);
   __Pyx_XDECREF(__pyx_v_armature);
-  __Pyx_XDECREF(__pyx_v_bone);
+  __Pyx_XDECREF(__pyx_v_Processes);
+  __Pyx_XDECREF(__pyx_v_p);
+  __Pyx_XDECREF(__pyx_8genexpr4__pyx_v_i);
+  __Pyx_XDECREF(__pyx_8genexpr4__pyx_v_bone);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":152
- *             # self.LeeArmatureBake(bone)
+/* "LeetdMassExport.py":159
+ * 
  * 
  *     def LeeArmatureBake(self,arm):             # <<<<<<<<<<<<<<
  *         if arm is None: return
@@ -10118,7 +10133,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 152, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 159, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -10126,14 +10141,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 152, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 159, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("LeeArmatureBake", 1, 2, 2, 1); __PYX_ERR(0, 152, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("LeeArmatureBake", 1, 2, 2, 1); __PYX_ERR(0, 159, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "LeeArmatureBake") < 0)) __PYX_ERR(0, 152, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "LeeArmatureBake") < 0)) __PYX_ERR(0, 159, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -10146,7 +10161,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("LeeArmatureBake", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 152, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("LeeArmatureBake", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 159, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -10198,7 +10213,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("LeeArmatureBake", 1);
 
-  /* "LeetdMassExport.py":153
+  /* "LeetdMassExport.py":160
  * 
  *     def LeeArmatureBake(self,arm):
  *         if arm is None: return             # <<<<<<<<<<<<<<
@@ -10212,16 +10227,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":155
+  /* "LeetdMassExport.py":162
  *         if arm is None: return
  * 
  *         self.set_active_object(arm.name)             # <<<<<<<<<<<<<<
  *         ###Bake###########
  *         startf,endf = self.GetStartEndFrame(arm)
  */
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 155, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 162, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 155, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 162, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_5 = NULL;
   __pyx_t_6 = 0;
@@ -10242,20 +10257,20 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 155, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 162, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":157
+  /* "LeetdMassExport.py":164
  *         self.set_active_object(arm.name)
  *         ###Bake###########
  *         startf,endf = self.GetStartEndFrame(arm)             # <<<<<<<<<<<<<<
  *         startf = math.ceil(startf)
  *         endf = math.ceil(endf)
  */
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetStartEndFrame); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 157, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetStartEndFrame); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 164, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_4 = NULL;
   __pyx_t_6 = 0;
@@ -10275,7 +10290,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_v_arm};
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 157, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 164, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
@@ -10285,7 +10300,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     if (unlikely(size != 2)) {
       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-      __PYX_ERR(0, 157, __pyx_L1_error)
+      __PYX_ERR(0, 164, __pyx_L1_error)
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
@@ -10298,15 +10313,15 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     __Pyx_INCREF(__pyx_t_3);
     __Pyx_INCREF(__pyx_t_4);
     #else
-    __pyx_t_3 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 157, __pyx_L1_error)
+    __pyx_t_3 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 164, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 157, __pyx_L1_error)
+    __pyx_t_4 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 164, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     #endif
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   } else {
     Py_ssize_t index = -1;
-    __pyx_t_5 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 157, __pyx_L1_error)
+    __pyx_t_5 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 164, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5);
@@ -10314,7 +10329,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     __Pyx_GOTREF(__pyx_t_3);
     index = 1; __pyx_t_4 = __pyx_t_7(__pyx_t_5); if (unlikely(!__pyx_t_4)) goto __pyx_L4_unpacking_failed;
     __Pyx_GOTREF(__pyx_t_4);
-    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_5), 2) < 0) __PYX_ERR(0, 157, __pyx_L1_error)
+    if (__Pyx_IternextUnpackEndCheck(__pyx_t_7(__pyx_t_5), 2) < 0) __PYX_ERR(0, 164, __pyx_L1_error)
     __pyx_t_7 = NULL;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     goto __pyx_L5_unpacking_done;
@@ -10322,7 +10337,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_t_7 = NULL;
     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-    __PYX_ERR(0, 157, __pyx_L1_error)
+    __PYX_ERR(0, 164, __pyx_L1_error)
     __pyx_L5_unpacking_done:;
   }
   __pyx_v_startf = __pyx_t_3;
@@ -10330,16 +10345,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
   __pyx_v_endf = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":158
+  /* "LeetdMassExport.py":165
  *         ###Bake###########
  *         startf,endf = self.GetStartEndFrame(arm)
  *         startf = math.ceil(startf)             # <<<<<<<<<<<<<<
  *         endf = math.ceil(endf)
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_math); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_math); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 165, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ceil); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ceil); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 165, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_4 = NULL;
@@ -10360,23 +10375,23 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_v_startf};
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 158, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 165, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
   __Pyx_DECREF_SET(__pyx_v_startf, __pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":159
+  /* "LeetdMassExport.py":166
  *         startf,endf = self.GetStartEndFrame(arm)
  *         startf = math.ceil(startf)
  *         endf = math.ceil(endf)             # <<<<<<<<<<<<<<
  * 
  *         act = arm.animation_data.action
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_math); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_math); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 166, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ceil); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ceil); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 166, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_3 = NULL;
@@ -10397,36 +10412,36 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_endf};
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 159, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 166, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   }
   __Pyx_DECREF_SET(__pyx_v_endf, __pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":161
+  /* "LeetdMassExport.py":168
  *         endf = math.ceil(endf)
  * 
  *         act = arm.animation_data.action             # <<<<<<<<<<<<<<
  *         if not act: return
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_animation_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 161, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_animation_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 168, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_action); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 161, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_action); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 168, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_act = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":162
+  /* "LeetdMassExport.py":169
  * 
  *         act = arm.animation_data.action
  *         if not act: return             # <<<<<<<<<<<<<<
  * 
  *         # for iAct in bpy.data.actions:
  */
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_act); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 162, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_act); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 169, __pyx_L1_error)
   __pyx_t_8 = (!__pyx_t_1);
   if (__pyx_t_8) {
     __Pyx_XDECREF(__pyx_r);
@@ -10434,34 +10449,34 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":167
+  /* "LeetdMassExport.py":174
  *         #     if not self.isArmatureAction(iAct,arm): continue
  *             #active Armature and Change to POSE MODE
  *         bpy.ops.object.mode_set(mode = 'POSE')             # <<<<<<<<<<<<<<
  *         try:
  *             bpy.ops.anim.bones_in_layers()
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 167, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 174, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 167, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 174, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_object); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 167, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_object); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 174, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 167, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 174, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 167, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 174, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_mode, __pyx_n_s_POSE) < 0) __PYX_ERR(0, 167, __pyx_L1_error)
-  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 167, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_mode, __pyx_n_s_POSE) < 0) __PYX_ERR(0, 174, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 174, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":168
+  /* "LeetdMassExport.py":175
  *             #active Armature and Change to POSE MODE
  *         bpy.ops.object.mode_set(mode = 'POSE')
  *         try:             # <<<<<<<<<<<<<<
@@ -10477,22 +10492,22 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     __Pyx_XGOTREF(__pyx_t_11);
     /*try:*/ {
 
-      /* "LeetdMassExport.py":169
+      /* "LeetdMassExport.py":176
  *         bpy.ops.object.mode_set(mode = 'POSE')
  *         try:
  *             bpy.ops.anim.bones_in_layers()             # <<<<<<<<<<<<<<
  *         except:
  *             print("Exceptions : Bone In Layer")
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 169, __pyx_L7_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 176, __pyx_L7_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 169, __pyx_L7_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 176, __pyx_L7_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_anim); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 169, __pyx_L7_error)
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_anim); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 176, __pyx_L7_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_bones_in_layers); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 169, __pyx_L7_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_bones_in_layers); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 176, __pyx_L7_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __pyx_t_4 = NULL;
@@ -10513,13 +10528,13 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
         PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
         __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
         __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 169, __pyx_L7_error)
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 176, __pyx_L7_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "LeetdMassExport.py":168
+      /* "LeetdMassExport.py":175
  *             #active Armature and Change to POSE MODE
  *         bpy.ops.object.mode_set(mode = 'POSE')
  *         try:             # <<<<<<<<<<<<<<
@@ -10537,7 +10552,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "LeetdMassExport.py":170
+    /* "LeetdMassExport.py":177
  *         try:
  *             bpy.ops.anim.bones_in_layers()
  *         except:             # <<<<<<<<<<<<<<
@@ -10546,23 +10561,23 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
  */
     /*except:*/ {
       __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.LeeArmatureBake", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_2, &__pyx_t_4) < 0) __PYX_ERR(0, 170, __pyx_L9_except_error)
+      if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_2, &__pyx_t_4) < 0) __PYX_ERR(0, 177, __pyx_L9_except_error)
       __Pyx_XGOTREF(__pyx_t_3);
       __Pyx_XGOTREF(__pyx_t_2);
       __Pyx_XGOTREF(__pyx_t_4);
 
-      /* "LeetdMassExport.py":171
+      /* "LeetdMassExport.py":178
  *             bpy.ops.anim.bones_in_layers()
  *         except:
  *             print("Exceptions : Bone In Layer")             # <<<<<<<<<<<<<<
  *             return
  * 
  */
-      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 171, __pyx_L9_except_error)
+      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 178, __pyx_L9_except_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-      /* "LeetdMassExport.py":172
+      /* "LeetdMassExport.py":179
  *         except:
  *             print("Exceptions : Bone In Layer")
  *             return             # <<<<<<<<<<<<<<
@@ -10577,7 +10592,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
       goto __pyx_L10_except_return;
     }
 
-    /* "LeetdMassExport.py":168
+    /* "LeetdMassExport.py":175
  *             #active Armature and Change to POSE MODE
  *         bpy.ops.object.mode_set(mode = 'POSE')
  *         try:             # <<<<<<<<<<<<<<
@@ -10599,52 +10614,52 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     __pyx_L12_try_end:;
   }
 
-  /* "LeetdMassExport.py":179
+  /* "LeetdMassExport.py":186
  *             #bpy.data.objects[bone.name].select_set(True)
  * 
  *         bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True,use_current_action=True, bake_types={'POSE'})             # <<<<<<<<<<<<<<
  * 
  *         info = str("Baking Action : {}").format(act.name)
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 186, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 186, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_nla); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_nla); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 186, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_bake); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_bake); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 186, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyDict_NewPresized(6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyDict_NewPresized(6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 186, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_frame_start, __pyx_v_startf) < 0) __PYX_ERR(0, 179, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_frame_end, __pyx_v_endf) < 0) __PYX_ERR(0, 179, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_only_selected, Py_True) < 0) __PYX_ERR(0, 179, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_visual_keying, Py_True) < 0) __PYX_ERR(0, 179, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_use_current_action, Py_True) < 0) __PYX_ERR(0, 179, __pyx_L1_error)
-  __pyx_t_3 = PySet_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 179, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_frame_start, __pyx_v_startf) < 0) __PYX_ERR(0, 186, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_frame_end, __pyx_v_endf) < 0) __PYX_ERR(0, 186, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_only_selected, Py_True) < 0) __PYX_ERR(0, 186, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_visual_keying, Py_True) < 0) __PYX_ERR(0, 186, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_use_current_action, Py_True) < 0) __PYX_ERR(0, 186, __pyx_L1_error)
+  __pyx_t_3 = PySet_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 186, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  if (PySet_Add(__pyx_t_3, __pyx_n_s_POSE) < 0) __PYX_ERR(0, 179, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_bake_types, __pyx_t_3) < 0) __PYX_ERR(0, 179, __pyx_L1_error)
+  if (PySet_Add(__pyx_t_3, __pyx_n_s_POSE) < 0) __PYX_ERR(0, 186, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_bake_types, __pyx_t_3) < 0) __PYX_ERR(0, 186, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 186, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":181
+  /* "LeetdMassExport.py":188
  *         bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True,use_current_action=True, bake_types={'POSE'})
  * 
  *         info = str("Baking Action : {}").format(act.name)             # <<<<<<<<<<<<<<
  *         print (info)
  *         #Back to Object Mode
  */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Baking_Action, __pyx_n_s_format); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Baking_Action, __pyx_n_s_format); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 188, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_name); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_name); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 188, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_5 = NULL;
   __pyx_t_6 = 0;
@@ -10665,69 +10680,69 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 181, __pyx_L1_error)
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 188, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   }
   __pyx_v_info = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":182
+  /* "LeetdMassExport.py":189
  * 
  *         info = str("Baking Action : {}").format(act.name)
  *         print (info)             # <<<<<<<<<<<<<<
  *         #Back to Object Mode
  *         bpy.ops.object.mode_set(mode = 'OBJECT')
  */
-  __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_info); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 182, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_info); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 189, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":184
+  /* "LeetdMassExport.py":191
  *         print (info)
  *         #Back to Object Mode
  *         bpy.ops.object.mode_set(mode = 'OBJECT')             # <<<<<<<<<<<<<<
  *         #bpy.ops.anim.remove_anim_layer()
  *         arm.Anim_Layers[len(arm.Anim_Layers)-1].delete()
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 184, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 191, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 184, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 191, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_object); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 184, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_object); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 191, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 184, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 191, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 184, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 191, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_mode, __pyx_n_s_OBJECT) < 0) __PYX_ERR(0, 184, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 184, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_mode, __pyx_n_s_OBJECT) < 0) __PYX_ERR(0, 191, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 191, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":186
+  /* "LeetdMassExport.py":193
  *         bpy.ops.object.mode_set(mode = 'OBJECT')
  *         #bpy.ops.anim.remove_anim_layer()
  *         arm.Anim_Layers[len(arm.Anim_Layers)-1].delete()             # <<<<<<<<<<<<<<
  * 
  *     ##===================AutoRigProInterGrade======================
  */
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 186, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 186, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_12 = PyObject_Length(__pyx_t_4); if (unlikely(__pyx_t_12 == ((Py_ssize_t)-1))) __PYX_ERR(0, 186, __pyx_L1_error)
+  __pyx_t_12 = PyObject_Length(__pyx_t_4); if (unlikely(__pyx_t_12 == ((Py_ssize_t)-1))) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_13 = (__pyx_t_12 - 1);
-  __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_3, __pyx_t_13, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 186, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_3, __pyx_t_13, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_delete); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 186, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_delete); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_4 = NULL;
@@ -10748,14 +10763,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
     PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 186, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 193, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":152
- *             # self.LeeArmatureBake(bone)
+  /* "LeetdMassExport.py":159
+ * 
  * 
  *     def LeeArmatureBake(self,arm):             # <<<<<<<<<<<<<<
  *         if arm is None: return
@@ -10782,7 +10797,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_40LeeArmatureBake(CY
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":189
+/* "LeetdMassExport.py":196
  * 
  *     ##===================AutoRigProInterGrade======================
  *     def LeeArpExport(self,fileoutput):             # <<<<<<<<<<<<<<
@@ -10847,7 +10862,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 189, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 196, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -10855,14 +10870,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 189, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 196, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("LeeArpExport", 1, 2, 2, 1); __PYX_ERR(0, 189, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("LeeArpExport", 1, 2, 2, 1); __PYX_ERR(0, 196, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "LeeArpExport") < 0)) __PYX_ERR(0, 189, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "LeeArpExport") < 0)) __PYX_ERR(0, 196, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -10875,7 +10890,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("LeeArpExport", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 189, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("LeeArpExport", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 196, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -10927,14 +10942,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("LeeArpExport", 1);
 
-  /* "LeetdMassExport.py":194
+  /* "LeetdMassExport.py":201
  *         '''
  * 
  *         if not fileoutput: return             # <<<<<<<<<<<<<<
  * 
  *         # set some settings...
  */
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_fileoutput); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 194, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_fileoutput); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 201, __pyx_L1_error)
   __pyx_t_2 = (!__pyx_t_1);
   if (__pyx_t_2) {
     __Pyx_XDECREF(__pyx_r);
@@ -10942,7 +10957,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":201
+  /* "LeetdMassExport.py":208
  *         # types: 'humanoid' for humanoid characters, 'mped' for universal skeletons
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -10958,25 +10973,25 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
     __Pyx_XGOTREF(__pyx_t_5);
     /*try:*/ {
 
-      /* "LeetdMassExport.py":202
+      /* "LeetdMassExport.py":209
  * 
  *         try:
  *             bpy.context.scene.arp_engine_type = 'unreal'             # <<<<<<<<<<<<<<
  *         except:
  *             bpy.context.scene.arp_engine_type = 'UNREAL'
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_bpy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 202, __pyx_L4_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_bpy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 209, __pyx_L4_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 202, __pyx_L4_error)
+      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 209, __pyx_L4_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 202, __pyx_L4_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 209, __pyx_L4_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      if (__Pyx_PyObject_SetAttrStr(__pyx_t_6, __pyx_n_s_arp_engine_type, __pyx_n_s_unreal) < 0) __PYX_ERR(0, 202, __pyx_L4_error)
+      if (__Pyx_PyObject_SetAttrStr(__pyx_t_6, __pyx_n_s_arp_engine_type, __pyx_n_s_unreal) < 0) __PYX_ERR(0, 209, __pyx_L4_error)
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "LeetdMassExport.py":201
+      /* "LeetdMassExport.py":208
  *         # types: 'humanoid' for humanoid characters, 'mped' for universal skeletons
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -10992,7 +11007,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "LeetdMassExport.py":203
+    /* "LeetdMassExport.py":210
  *         try:
  *             bpy.context.scene.arp_engine_type = 'unreal'
  *         except:             # <<<<<<<<<<<<<<
@@ -11001,27 +11016,27 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
  */
     /*except:*/ {
       __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.LeeArpExport", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_6, &__pyx_t_7, &__pyx_t_8) < 0) __PYX_ERR(0, 203, __pyx_L6_except_error)
+      if (__Pyx_GetException(&__pyx_t_6, &__pyx_t_7, &__pyx_t_8) < 0) __PYX_ERR(0, 210, __pyx_L6_except_error)
       __Pyx_XGOTREF(__pyx_t_6);
       __Pyx_XGOTREF(__pyx_t_7);
       __Pyx_XGOTREF(__pyx_t_8);
 
-      /* "LeetdMassExport.py":204
+      /* "LeetdMassExport.py":211
  *             bpy.context.scene.arp_engine_type = 'unreal'
  *         except:
  *             bpy.context.scene.arp_engine_type = 'UNREAL'             # <<<<<<<<<<<<<<
  *         # other useful settings
  *         # scn.arp_keep_bend_bones = True
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_bpy); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 204, __pyx_L6_except_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_bpy); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 211, __pyx_L6_except_error)
       __Pyx_GOTREF(__pyx_t_9);
-      __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_context); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 204, __pyx_L6_except_error)
+      __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_context); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 211, __pyx_L6_except_error)
       __Pyx_GOTREF(__pyx_t_10);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_10, __pyx_n_s_scene); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 204, __pyx_L6_except_error)
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_10, __pyx_n_s_scene); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 211, __pyx_L6_except_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      if (__Pyx_PyObject_SetAttrStr(__pyx_t_9, __pyx_n_s_arp_engine_type, __pyx_n_s_UNREAL) < 0) __PYX_ERR(0, 204, __pyx_L6_except_error)
+      if (__Pyx_PyObject_SetAttrStr(__pyx_t_9, __pyx_n_s_arp_engine_type, __pyx_n_s_UNREAL) < 0) __PYX_ERR(0, 211, __pyx_L6_except_error)
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
@@ -11029,7 +11044,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
       goto __pyx_L5_exception_handled;
     }
 
-    /* "LeetdMassExport.py":201
+    /* "LeetdMassExport.py":208
  *         # types: 'humanoid' for humanoid characters, 'mped' for universal skeletons
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -11050,102 +11065,12 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
     __pyx_L9_try_end:;
   }
 
-  /* "LeetdMassExport.py":218
+  /* "LeetdMassExport.py":225
  *         #scn.arp_ge_sel_only =True
  *         #=======================================
  *         bpy.context.scene.arp_ge_sel_only = True             # <<<<<<<<<<<<<<
  *         #bpy.context.scene.arp_bake_actions = True
  *         bpy.context.scene.arp_frame_range_type='SCENE'
- */
-  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 218, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 218, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 218, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_ge_sel_only, Py_True) < 0) __PYX_ERR(0, 218, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-
-  /* "LeetdMassExport.py":220
- *         bpy.context.scene.arp_ge_sel_only = True
- *         #bpy.context.scene.arp_bake_actions = True
- *         bpy.context.scene.arp_frame_range_type='SCENE'             # <<<<<<<<<<<<<<
- *         bpy.context.scene.arp_bake_only_active=True
- *         bpy.context.scene.arp_fix_fbx_rot=True
- */
-  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 220, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 220, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 220, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_frame_range_type, __pyx_n_s_SCENE) < 0) __PYX_ERR(0, 220, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-
-  /* "LeetdMassExport.py":221
- *         #bpy.context.scene.arp_bake_actions = True
- *         bpy.context.scene.arp_frame_range_type='SCENE'
- *         bpy.context.scene.arp_bake_only_active=True             # <<<<<<<<<<<<<<
- *         bpy.context.scene.arp_fix_fbx_rot=True
- *         #bpy.context.scene.arp_rename_for_ue=True
- */
-  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 221, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 221, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 221, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_bake_only_active, Py_True) < 0) __PYX_ERR(0, 221, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-
-  /* "LeetdMassExport.py":222
- *         bpy.context.scene.arp_frame_range_type='SCENE'
- *         bpy.context.scene.arp_bake_only_active=True
- *         bpy.context.scene.arp_fix_fbx_rot=True             # <<<<<<<<<<<<<<
- *         #bpy.context.scene.arp_rename_for_ue=True
- *         bpy.context.scene.arp_apply_mods = True
- */
-  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 222, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 222, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 222, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_fix_fbx_rot, Py_True) < 0) __PYX_ERR(0, 222, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-
-  /* "LeetdMassExport.py":224
- *         bpy.context.scene.arp_fix_fbx_rot=True
- *         #bpy.context.scene.arp_rename_for_ue=True
- *         bpy.context.scene.arp_apply_mods = True             # <<<<<<<<<<<<<<
- *         bpy.context.scene.arp_fix_fbx_rot=True
- *         bpy.context.scene.arp_export_tex=False
- */
-  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 224, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 224, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 224, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_apply_mods, Py_True) < 0) __PYX_ERR(0, 224, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-
-  /* "LeetdMassExport.py":225
- *         #bpy.context.scene.arp_rename_for_ue=True
- *         bpy.context.scene.arp_apply_mods = True
- *         bpy.context.scene.arp_fix_fbx_rot=True             # <<<<<<<<<<<<<<
- *         bpy.context.scene.arp_export_tex=False
- * 
  */
   __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 225, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
@@ -11155,28 +11080,136 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
   __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 225, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_fix_fbx_rot, Py_True) < 0) __PYX_ERR(0, 225, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_ge_sel_only, Py_True) < 0) __PYX_ERR(0, 225, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-  /* "LeetdMassExport.py":226
+  /* "LeetdMassExport.py":227
+ *         bpy.context.scene.arp_ge_sel_only = True
+ *         #bpy.context.scene.arp_bake_actions = True
+ *         bpy.context.scene.arp_frame_range_type='SCENE'             # <<<<<<<<<<<<<<
+ *         bpy.context.scene.arp_bake_only_active=True
+ *         bpy.context.scene.arp_only_containing=True
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 227, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 227, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 227, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_frame_range_type, __pyx_n_s_SCENE) < 0) __PYX_ERR(0, 227, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+
+  /* "LeetdMassExport.py":228
+ *         #bpy.context.scene.arp_bake_actions = True
+ *         bpy.context.scene.arp_frame_range_type='SCENE'
+ *         bpy.context.scene.arp_bake_only_active=True             # <<<<<<<<<<<<<<
+ *         bpy.context.scene.arp_only_containing=True
+ *         bpy.context.scene.arp_fix_fbx_rot=True
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 228, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 228, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 228, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_bake_only_active, Py_True) < 0) __PYX_ERR(0, 228, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+
+  /* "LeetdMassExport.py":229
+ *         bpy.context.scene.arp_frame_range_type='SCENE'
+ *         bpy.context.scene.arp_bake_only_active=True
+ *         bpy.context.scene.arp_only_containing=True             # <<<<<<<<<<<<<<
+ *         bpy.context.scene.arp_fix_fbx_rot=True
+ *         #bpy.context.scene.arp_rename_for_ue=True
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 229, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 229, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 229, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_only_containing, Py_True) < 0) __PYX_ERR(0, 229, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+
+  /* "LeetdMassExport.py":230
+ *         bpy.context.scene.arp_bake_only_active=True
+ *         bpy.context.scene.arp_only_containing=True
+ *         bpy.context.scene.arp_fix_fbx_rot=True             # <<<<<<<<<<<<<<
+ *         #bpy.context.scene.arp_rename_for_ue=True
+ *         bpy.context.scene.arp_apply_mods = True
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 230, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 230, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 230, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_fix_fbx_rot, Py_True) < 0) __PYX_ERR(0, 230, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+
+  /* "LeetdMassExport.py":232
+ *         bpy.context.scene.arp_fix_fbx_rot=True
+ *         #bpy.context.scene.arp_rename_for_ue=True
+ *         bpy.context.scene.arp_apply_mods = True             # <<<<<<<<<<<<<<
+ *         bpy.context.scene.arp_fix_fbx_rot=True
+ *         bpy.context.scene.arp_export_tex=False
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 232, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 232, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 232, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_apply_mods, Py_True) < 0) __PYX_ERR(0, 232, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+
+  /* "LeetdMassExport.py":233
+ *         #bpy.context.scene.arp_rename_for_ue=True
+ *         bpy.context.scene.arp_apply_mods = True
+ *         bpy.context.scene.arp_fix_fbx_rot=True             # <<<<<<<<<<<<<<
+ *         bpy.context.scene.arp_export_tex=False
+ * 
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 233, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 233, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 233, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_8);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_fix_fbx_rot, Py_True) < 0) __PYX_ERR(0, 233, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+
+  /* "LeetdMassExport.py":234
  *         bpy.context.scene.arp_apply_mods = True
  *         bpy.context.scene.arp_fix_fbx_rot=True
  *         bpy.context.scene.arp_export_tex=False             # <<<<<<<<<<<<<<
  * 
  *         #===================================
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 226, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 234, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 226, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_context); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 234, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 226, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_scene); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 234, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_export_tex, Py_False) < 0) __PYX_ERR(0, 226, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_8, __pyx_n_s_arp_export_tex, Py_False) < 0) __PYX_ERR(0, 234, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-  /* "LeetdMassExport.py":234
+  /* "LeetdMassExport.py":242
  *         # run export
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -11193,34 +11226,34 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
       __Pyx_XGOTREF(__pyx_t_3);
       /*try:*/ {
 
-        /* "LeetdMassExport.py":235
+        /* "LeetdMassExport.py":243
  * 
  *         try:
  *             bpy.ops.arp.arp_export_fbx_panel(filepath=fileoutput)             # <<<<<<<<<<<<<<
  *         except:
  *             bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)
  */
-        __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 235, __pyx_L15_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 243, __pyx_L15_error)
         __Pyx_GOTREF(__pyx_t_8);
-        __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_ops); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 235, __pyx_L15_error)
+        __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_ops); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 243, __pyx_L15_error)
         __Pyx_GOTREF(__pyx_t_7);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-        __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_arp); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 235, __pyx_L15_error)
+        __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_arp); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 243, __pyx_L15_error)
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-        __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_arp_export_fbx_panel); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 235, __pyx_L15_error)
+        __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_arp_export_fbx_panel); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 243, __pyx_L15_error)
         __Pyx_GOTREF(__pyx_t_7);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-        __pyx_t_8 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 235, __pyx_L15_error)
+        __pyx_t_8 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 243, __pyx_L15_error)
         __Pyx_GOTREF(__pyx_t_8);
-        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_filepath, __pyx_v_fileoutput) < 0) __PYX_ERR(0, 235, __pyx_L15_error)
-        __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_empty_tuple, __pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 235, __pyx_L15_error)
+        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_filepath, __pyx_v_fileoutput) < 0) __PYX_ERR(0, 243, __pyx_L15_error)
+        __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_empty_tuple, __pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 243, __pyx_L15_error)
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-        /* "LeetdMassExport.py":234
+        /* "LeetdMassExport.py":242
  *         # run export
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -11239,7 +11272,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "LeetdMassExport.py":236
+      /* "LeetdMassExport.py":244
  *         try:
  *             bpy.ops.arp.arp_export_fbx_panel(filepath=fileoutput)
  *         except:             # <<<<<<<<<<<<<<
@@ -11248,33 +11281,33 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
  */
       /*except:*/ {
         __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.LeeArpExport", __pyx_clineno, __pyx_lineno, __pyx_filename);
-        if (__Pyx_GetException(&__pyx_t_6, &__pyx_t_8, &__pyx_t_7) < 0) __PYX_ERR(0, 236, __pyx_L17_except_error)
+        if (__Pyx_GetException(&__pyx_t_6, &__pyx_t_8, &__pyx_t_7) < 0) __PYX_ERR(0, 244, __pyx_L17_except_error)
         __Pyx_XGOTREF(__pyx_t_6);
         __Pyx_XGOTREF(__pyx_t_8);
         __Pyx_XGOTREF(__pyx_t_7);
 
-        /* "LeetdMassExport.py":237
+        /* "LeetdMassExport.py":245
  *             bpy.ops.arp.arp_export_fbx_panel(filepath=fileoutput)
  *         except:
  *             bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)             # <<<<<<<<<<<<<<
  *         finally:
  *             pass
  */
-        __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_bpy); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 237, __pyx_L17_except_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_bpy); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 245, __pyx_L17_except_error)
         __Pyx_GOTREF(__pyx_t_9);
-        __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_ops); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 237, __pyx_L17_except_error)
+        __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_ops); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 245, __pyx_L17_except_error)
         __Pyx_GOTREF(__pyx_t_10);
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-        __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_10, __pyx_n_s_id); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 237, __pyx_L17_except_error)
+        __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_10, __pyx_n_s_id); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 245, __pyx_L17_except_error)
         __Pyx_GOTREF(__pyx_t_9);
         __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-        __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_arp_export_fbx_panel); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 237, __pyx_L17_except_error)
+        __pyx_t_10 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_arp_export_fbx_panel); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 245, __pyx_L17_except_error)
         __Pyx_GOTREF(__pyx_t_10);
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-        __pyx_t_9 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 237, __pyx_L17_except_error)
+        __pyx_t_9 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 245, __pyx_L17_except_error)
         __Pyx_GOTREF(__pyx_t_9);
-        if (PyDict_SetItem(__pyx_t_9, __pyx_n_s_filepath, __pyx_v_fileoutput) < 0) __PYX_ERR(0, 237, __pyx_L17_except_error)
-        __pyx_t_11 = __Pyx_PyObject_Call(__pyx_t_10, __pyx_empty_tuple, __pyx_t_9); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 237, __pyx_L17_except_error)
+        if (PyDict_SetItem(__pyx_t_9, __pyx_n_s_filepath, __pyx_v_fileoutput) < 0) __PYX_ERR(0, 245, __pyx_L17_except_error)
+        __pyx_t_11 = __Pyx_PyObject_Call(__pyx_t_10, __pyx_empty_tuple, __pyx_t_9); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 245, __pyx_L17_except_error)
         __Pyx_GOTREF(__pyx_t_11);
         __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
@@ -11285,7 +11318,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
         goto __pyx_L16_exception_handled;
       }
 
-      /* "LeetdMassExport.py":234
+      /* "LeetdMassExport.py":242
  *         # run export
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -11307,7 +11340,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
     }
   }
 
-  /* "LeetdMassExport.py":239
+  /* "LeetdMassExport.py":247
  *             bpy.ops.id.arp_export_fbx_panel(filepath=fileoutput)
  *         finally:
  *             pass             # <<<<<<<<<<<<<<
@@ -11357,7 +11390,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
     __pyx_L14:;
   }
 
-  /* "LeetdMassExport.py":189
+  /* "LeetdMassExport.py":196
  * 
  *     ##===================AutoRigProInterGrade======================
  *     def LeeArpExport(self,fileoutput):             # <<<<<<<<<<<<<<
@@ -11383,7 +11416,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_42LeeArpExport(CYTHO
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":242
+/* "LeetdMassExport.py":250
  * 
  * 
  *     def ArpIsLoaded(self):             # <<<<<<<<<<<<<<
@@ -11445,12 +11478,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 242, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 250, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "ArpIsLoaded") < 0)) __PYX_ERR(0, 242, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "ArpIsLoaded") < 0)) __PYX_ERR(0, 250, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
@@ -11461,7 +11494,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("ArpIsLoaded", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 242, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("ArpIsLoaded", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 250, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -11493,7 +11526,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
   PyObject *__pyx_v_BAddons = NULL;
   PyObject *__pyx_v_checkloaded = NULL;
   PyObject *__pyx_v_addon = NULL;
-  PyObject *__pyx_8genexpr4__pyx_v_mod = NULL;
+  PyObject *__pyx_8genexpr5__pyx_v_mod = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -11513,37 +11546,37 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("ArpIsLoaded", 1);
 
-  /* "LeetdMassExport.py":246
+  /* "LeetdMassExport.py":254
  *         check Addon
  *         '''
  *         Addons = ['auto_rig_pro-master','Animation_Layers','Multikey']             # <<<<<<<<<<<<<<
  *         addon_utils.modules_refresh()
  *         BAddons = [mod.__name__ for mod in addon_utils.modules()]
  */
-  __pyx_t_1 = PyList_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 246, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 254, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_kp_s_auto_rig_pro_master);
   __Pyx_GIVEREF(__pyx_kp_s_auto_rig_pro_master);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_1, 0, __pyx_kp_s_auto_rig_pro_master)) __PYX_ERR(0, 246, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_1, 0, __pyx_kp_s_auto_rig_pro_master)) __PYX_ERR(0, 254, __pyx_L1_error);
   __Pyx_INCREF(__pyx_n_s_Animation_Layers);
   __Pyx_GIVEREF(__pyx_n_s_Animation_Layers);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_1, 1, __pyx_n_s_Animation_Layers)) __PYX_ERR(0, 246, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_1, 1, __pyx_n_s_Animation_Layers)) __PYX_ERR(0, 254, __pyx_L1_error);
   __Pyx_INCREF(__pyx_n_s_Multikey);
   __Pyx_GIVEREF(__pyx_n_s_Multikey);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_1, 2, __pyx_n_s_Multikey)) __PYX_ERR(0, 246, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_1, 2, __pyx_n_s_Multikey)) __PYX_ERR(0, 254, __pyx_L1_error);
   __pyx_v_Addons = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":247
+  /* "LeetdMassExport.py":255
  *         '''
  *         Addons = ['auto_rig_pro-master','Animation_Layers','Multikey']
  *         addon_utils.modules_refresh()             # <<<<<<<<<<<<<<
  *         BAddons = [mod.__name__ for mod in addon_utils.modules()]
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_addon_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 247, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_addon_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 255, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_modules_refresh); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 247, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_modules_refresh); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 255, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = NULL;
@@ -11564,13 +11597,13 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
     PyObject *__pyx_callargs[2] = {__pyx_t_2, NULL};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 247, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 255, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":248
+  /* "LeetdMassExport.py":256
  *         Addons = ['auto_rig_pro-master','Animation_Layers','Multikey']
  *         addon_utils.modules_refresh()
  *         BAddons = [mod.__name__ for mod in addon_utils.modules()]             # <<<<<<<<<<<<<<
@@ -11578,11 +11611,11 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
  *         checkloaded =False
  */
   { /* enter inner scope */
-    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 248, __pyx_L5_error)
+    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 256, __pyx_L5_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_addon_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 248, __pyx_L5_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_addon_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 256, __pyx_L5_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_modules); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 248, __pyx_L5_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_modules); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 256, __pyx_L5_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_2 = NULL;
@@ -11603,7 +11636,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
       PyObject *__pyx_callargs[2] = {__pyx_t_2, NULL};
       __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_5, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 248, __pyx_L5_error)
+      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 256, __pyx_L5_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     }
@@ -11612,9 +11645,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
       __pyx_t_6 = 0;
       __pyx_t_7 = NULL;
     } else {
-      __pyx_t_6 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 248, __pyx_L5_error)
+      __pyx_t_6 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 256, __pyx_L5_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 248, __pyx_L5_error)
+      __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 256, __pyx_L5_error)
     }
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     for (;;) {
@@ -11623,28 +11656,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
           {
             Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_5);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 248, __pyx_L5_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 256, __pyx_L5_error)
             #endif
             if (__pyx_t_6 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_3 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_3); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 248, __pyx_L5_error)
+          __pyx_t_3 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_3); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 256, __pyx_L5_error)
           #else
-          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 248, __pyx_L5_error)
+          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 256, __pyx_L5_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
         } else {
           {
             Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_5);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 248, __pyx_L5_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 256, __pyx_L5_error)
             #endif
             if (__pyx_t_6 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_3); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 248, __pyx_L5_error)
+          __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_3); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 256, __pyx_L5_error)
           #else
-          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 248, __pyx_L5_error)
+          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 256, __pyx_L5_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
         }
@@ -11654,31 +11687,31 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 248, __pyx_L5_error)
+            else __PYX_ERR(0, 256, __pyx_L5_error)
           }
           break;
         }
         __Pyx_GOTREF(__pyx_t_3);
       }
-      __Pyx_XDECREF_SET(__pyx_8genexpr4__pyx_v_mod, __pyx_t_3);
+      __Pyx_XDECREF_SET(__pyx_8genexpr5__pyx_v_mod, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr4__pyx_v_mod, __pyx_n_s_name_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 248, __pyx_L5_error)
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_8genexpr5__pyx_v_mod, __pyx_n_s_name_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 256, __pyx_L5_error)
       __Pyx_GOTREF(__pyx_t_3);
-      if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_3))) __PYX_ERR(0, 248, __pyx_L5_error)
+      if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_3))) __PYX_ERR(0, 256, __pyx_L5_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     }
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __Pyx_XDECREF(__pyx_8genexpr4__pyx_v_mod); __pyx_8genexpr4__pyx_v_mod = 0;
+    __Pyx_XDECREF(__pyx_8genexpr5__pyx_v_mod); __pyx_8genexpr5__pyx_v_mod = 0;
     goto __pyx_L9_exit_scope;
     __pyx_L5_error:;
-    __Pyx_XDECREF(__pyx_8genexpr4__pyx_v_mod); __pyx_8genexpr4__pyx_v_mod = 0;
+    __Pyx_XDECREF(__pyx_8genexpr5__pyx_v_mod); __pyx_8genexpr5__pyx_v_mod = 0;
     goto __pyx_L1_error;
     __pyx_L9_exit_scope:;
   } /* exit inner scope */
   __pyx_v_BAddons = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":250
+  /* "LeetdMassExport.py":258
  *         BAddons = [mod.__name__ for mod in addon_utils.modules()]
  * 
  *         checkloaded =False             # <<<<<<<<<<<<<<
@@ -11688,7 +11721,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
   __Pyx_INCREF(Py_False);
   __pyx_v_checkloaded = Py_False;
 
-  /* "LeetdMassExport.py":251
+  /* "LeetdMassExport.py":259
  * 
  *         checkloaded =False
  *         for addon in Addons:             # <<<<<<<<<<<<<<
@@ -11701,41 +11734,41 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
     {
       Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_1);
       #if !CYTHON_ASSUME_SAFE_MACROS
-      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 251, __pyx_L1_error)
+      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 259, __pyx_L1_error)
       #endif
       if (__pyx_t_6 >= __pyx_temp) break;
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-    __pyx_t_5 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_5); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 251, __pyx_L1_error)
+    __pyx_t_5 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_5); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 259, __pyx_L1_error)
     #else
-    __pyx_t_5 = __Pyx_PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 251, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 259, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     #endif
     __Pyx_XDECREF_SET(__pyx_v_addon, __pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "LeetdMassExport.py":252
+    /* "LeetdMassExport.py":260
  *         checkloaded =False
  *         for addon in Addons:
  *             if addon not in BAddons: continue             # <<<<<<<<<<<<<<
  * 
  *             checkloaded = addon_utils.check(addon)[1]
  */
-    __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_v_addon, __pyx_v_BAddons, Py_NE)); if (unlikely((__pyx_t_8 < 0))) __PYX_ERR(0, 252, __pyx_L1_error)
+    __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_v_addon, __pyx_v_BAddons, Py_NE)); if (unlikely((__pyx_t_8 < 0))) __PYX_ERR(0, 260, __pyx_L1_error)
     if (__pyx_t_8) {
       goto __pyx_L10_continue;
     }
 
-    /* "LeetdMassExport.py":254
+    /* "LeetdMassExport.py":262
  *             if addon not in BAddons: continue
  * 
  *             checkloaded = addon_utils.check(addon)[1]             # <<<<<<<<<<<<<<
- *             if checkloaded and addon.endswith("Layers"):
- *                 #addon_utils.disable(addon)
+ *             if not checkloaded:
+ *                 try:
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_addon_utils); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 254, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_addon_utils); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 262, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_check); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 254, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_check); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 262, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_3 = NULL;
@@ -11756,75 +11789,30 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
       PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_addon};
       __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 254, __pyx_L1_error)
+      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 262, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     }
-    __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_5, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 254, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_5, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 262, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF_SET(__pyx_v_checkloaded, __pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":255
+    /* "LeetdMassExport.py":263
  * 
  *             checkloaded = addon_utils.check(addon)[1]
- *             if checkloaded and addon.endswith("Layers"):             # <<<<<<<<<<<<<<
- *                 #addon_utils.disable(addon)
- *                 pass
- */
-    __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_v_checkloaded); if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 255, __pyx_L1_error)
-    if (__pyx_t_9) {
-    } else {
-      __pyx_t_8 = __pyx_t_9;
-      goto __pyx_L14_bool_binop_done;
-    }
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_addon, __pyx_n_s_endswith); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 255, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_3 = NULL;
-    __pyx_t_4 = 0;
-    #if CYTHON_UNPACK_METHODS
-    if (likely(PyMethod_Check(__pyx_t_5))) {
-      __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_5);
-      if (likely(__pyx_t_3)) {
-        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
-        __Pyx_INCREF(__pyx_t_3);
-        __Pyx_INCREF(function);
-        __Pyx_DECREF_SET(__pyx_t_5, function);
-        __pyx_t_4 = 1;
-      }
-    }
-    #endif
-    {
-      PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_n_s_Layers};
-      __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_5, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
-      __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 255, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    }
-    __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 255, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_8 = __pyx_t_9;
-    __pyx_L14_bool_binop_done:;
-    if (__pyx_t_8) {
-      goto __pyx_L13;
-    }
-
-    /* "LeetdMassExport.py":266
- *                 # except:
- *                 #     pass
- *             elif not checkloaded:             # <<<<<<<<<<<<<<
+ *             if not checkloaded:             # <<<<<<<<<<<<<<
  *                 try:
  *                     checkloaded = addon_utils.enable(addon)
  */
-    __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_v_checkloaded); if (unlikely((__pyx_t_8 < 0))) __PYX_ERR(0, 266, __pyx_L1_error)
+    __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_v_checkloaded); if (unlikely((__pyx_t_8 < 0))) __PYX_ERR(0, 263, __pyx_L1_error)
     __pyx_t_9 = (!__pyx_t_8);
     if (__pyx_t_9) {
 
-      /* "LeetdMassExport.py":267
- *                 #     pass
- *             elif not checkloaded:
+      /* "LeetdMassExport.py":264
+ *             checkloaded = addon_utils.check(addon)[1]
+ *             if not checkloaded:
  *                 try:             # <<<<<<<<<<<<<<
  *                     checkloaded = addon_utils.enable(addon)
  *                     return checkloaded
@@ -11839,16 +11827,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
           __Pyx_XGOTREF(__pyx_t_12);
           /*try:*/ {
 
-            /* "LeetdMassExport.py":268
- *             elif not checkloaded:
+            /* "LeetdMassExport.py":265
+ *             if not checkloaded:
  *                 try:
  *                     checkloaded = addon_utils.enable(addon)             # <<<<<<<<<<<<<<
  *                     return checkloaded
  *                 except:
  */
-            __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_addon_utils); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 268, __pyx_L21_error)
+            __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_addon_utils); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 265, __pyx_L19_error)
             __Pyx_GOTREF(__pyx_t_5);
-            __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_enable); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 268, __pyx_L21_error)
+            __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_enable); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 265, __pyx_L19_error)
             __Pyx_GOTREF(__pyx_t_3);
             __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
             __pyx_t_5 = NULL;
@@ -11869,14 +11857,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
               PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_v_addon};
               __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
               __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 268, __pyx_L21_error)
+              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 265, __pyx_L19_error)
               __Pyx_GOTREF(__pyx_t_2);
               __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
             }
             __Pyx_DECREF_SET(__pyx_v_checkloaded, __pyx_t_2);
             __pyx_t_2 = 0;
 
-            /* "LeetdMassExport.py":269
+            /* "LeetdMassExport.py":266
  *                 try:
  *                     checkloaded = addon_utils.enable(addon)
  *                     return checkloaded             # <<<<<<<<<<<<<<
@@ -11887,22 +11875,22 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
             __Pyx_INCREF(__pyx_v_checkloaded);
             __pyx_r = __pyx_v_checkloaded;
             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-            goto __pyx_L25_try_return;
+            goto __pyx_L23_try_return;
 
-            /* "LeetdMassExport.py":267
- *                 #     pass
- *             elif not checkloaded:
+            /* "LeetdMassExport.py":264
+ *             checkloaded = addon_utils.check(addon)[1]
+ *             if not checkloaded:
  *                 try:             # <<<<<<<<<<<<<<
  *                     checkloaded = addon_utils.enable(addon)
  *                     return checkloaded
  */
           }
-          __pyx_L21_error:;
+          __pyx_L19_error:;
           __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
           __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
           __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-          /* "LeetdMassExport.py":270
+          /* "LeetdMassExport.py":267
  *                     checkloaded = addon_utils.enable(addon)
  *                     return checkloaded
  *                 except:             # <<<<<<<<<<<<<<
@@ -11911,23 +11899,23 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
  */
           /*except:*/ {
             __Pyx_ErrRestore(0,0,0);
-            goto __pyx_L22_exception_handled;
+            goto __pyx_L20_exception_handled;
           }
 
-          /* "LeetdMassExport.py":267
- *                 #     pass
- *             elif not checkloaded:
+          /* "LeetdMassExport.py":264
+ *             checkloaded = addon_utils.check(addon)[1]
+ *             if not checkloaded:
  *                 try:             # <<<<<<<<<<<<<<
  *                     checkloaded = addon_utils.enable(addon)
  *                     return checkloaded
  */
-          __pyx_L25_try_return:;
+          __pyx_L23_try_return:;
           __Pyx_XGIVEREF(__pyx_t_10);
           __Pyx_XGIVEREF(__pyx_t_11);
           __Pyx_XGIVEREF(__pyx_t_12);
           __Pyx_ExceptionReset(__pyx_t_10, __pyx_t_11, __pyx_t_12);
-          goto __pyx_L18_return;
-          __pyx_L22_exception_handled:;
+          goto __pyx_L16_return;
+          __pyx_L20_exception_handled:;
           __Pyx_XGIVEREF(__pyx_t_10);
           __Pyx_XGIVEREF(__pyx_t_11);
           __Pyx_XGIVEREF(__pyx_t_12);
@@ -11935,7 +11923,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
         }
       }
 
-      /* "LeetdMassExport.py":273
+      /* "LeetdMassExport.py":270
  *                     pass
  *                 finally:
  *                     pass             # <<<<<<<<<<<<<<
@@ -11944,29 +11932,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
  */
       /*finally:*/ {
         /*normal exit:*/{
-          goto __pyx_L20;
+          goto __pyx_L18;
         }
-        __pyx_L18_return: {
+        __pyx_L16_return: {
           __pyx_t_12 = __pyx_r;
           __pyx_r = 0;
           __pyx_r = __pyx_t_12;
           __pyx_t_12 = 0;
           goto __pyx_L0;
         }
-        __pyx_L20:;
+        __pyx_L18:;
       }
 
-      /* "LeetdMassExport.py":266
- *                 # except:
- *                 #     pass
- *             elif not checkloaded:             # <<<<<<<<<<<<<<
+      /* "LeetdMassExport.py":263
+ * 
+ *             checkloaded = addon_utils.check(addon)[1]
+ *             if not checkloaded:             # <<<<<<<<<<<<<<
  *                 try:
  *                     checkloaded = addon_utils.enable(addon)
  */
     }
-    __pyx_L13:;
 
-    /* "LeetdMassExport.py":251
+    /* "LeetdMassExport.py":259
  * 
  *         checkloaded =False
  *         for addon in Addons:             # <<<<<<<<<<<<<<
@@ -11977,7 +11964,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":274
+  /* "LeetdMassExport.py":271
  *                 finally:
  *                     pass
  *         return checkloaded             # <<<<<<<<<<<<<<
@@ -11989,7 +11976,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
   __pyx_r = __pyx_v_checkloaded;
   goto __pyx_L0;
 
-  /* "LeetdMassExport.py":242
+  /* "LeetdMassExport.py":250
  * 
  * 
  *     def ArpIsLoaded(self):             # <<<<<<<<<<<<<<
@@ -12010,13 +11997,13 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_44ArpIsLoaded(CYTHON
   __Pyx_XDECREF(__pyx_v_BAddons);
   __Pyx_XDECREF(__pyx_v_checkloaded);
   __Pyx_XDECREF(__pyx_v_addon);
-  __Pyx_XDECREF(__pyx_8genexpr4__pyx_v_mod);
+  __Pyx_XDECREF(__pyx_8genexpr5__pyx_v_mod);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":276
+/* "LeetdMassExport.py":273
  *         return checkloaded
  * 
  *     def select_layer_bones(self,arm):             # <<<<<<<<<<<<<<
@@ -12081,7 +12068,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 276, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 273, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -12089,14 +12076,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 276, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 273, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("select_layer_bones", 1, 2, 2, 1); __PYX_ERR(0, 276, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("select_layer_bones", 1, 2, 2, 1); __PYX_ERR(0, 273, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "select_layer_bones") < 0)) __PYX_ERR(0, 276, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "select_layer_bones") < 0)) __PYX_ERR(0, 273, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -12109,7 +12096,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("select_layer_bones", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 276, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("select_layer_bones", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 273, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -12156,19 +12143,19 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("select_layer_bones", 1);
 
-  /* "LeetdMassExport.py":280
+  /* "LeetdMassExport.py":277
  *         Select Bone In Animation Layers ( nla tracks)
  *         '''
  *         if not arm.als.turn_on: return             # <<<<<<<<<<<<<<
  * 
  *         strips = arm.animation_data.nla_tracks[arm.als.layer_index].strips
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 280, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 277, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_turn_on); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 280, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_turn_on); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 277, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_3 < 0))) __PYX_ERR(0, 280, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_3 < 0))) __PYX_ERR(0, 277, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = (!__pyx_t_3);
   if (__pyx_t_4) {
@@ -12177,50 +12164,50 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":282
+  /* "LeetdMassExport.py":279
  *         if not arm.als.turn_on: return
  * 
  *         strips = arm.animation_data.nla_tracks[arm.als.layer_index].strips             # <<<<<<<<<<<<<<
  *         if len(strips) != 1 or strips[0].action is None:
  *             return
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_animation_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 282, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_animation_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 279, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_nla_tracks); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 282, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_nla_tracks); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 279, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 282, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 279, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_layer_index); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 282, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_layer_index); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 279, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 282, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 279, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_strips); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 282, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_strips); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 279, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_strips = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":283
+  /* "LeetdMassExport.py":280
  * 
  *         strips = arm.animation_data.nla_tracks[arm.als.layer_index].strips
  *         if len(strips) != 1 or strips[0].action is None:             # <<<<<<<<<<<<<<
  *             return
  *         for fcu in strips[0].action.fcurves:
  */
-  __pyx_t_6 = PyObject_Length(__pyx_v_strips); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_6 = PyObject_Length(__pyx_v_strips); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 280, __pyx_L1_error)
   __pyx_t_3 = (__pyx_t_6 != 1);
   if (!__pyx_t_3) {
   } else {
     __pyx_t_4 = __pyx_t_3;
     goto __pyx_L5_bool_binop_done;
   }
-  __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_strips, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_strips, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 280, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_action); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_action); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 280, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_t_3 = (__pyx_t_2 == Py_None);
@@ -12229,7 +12216,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
   __pyx_L5_bool_binop_done:;
   if (__pyx_t_4) {
 
-    /* "LeetdMassExport.py":284
+    /* "LeetdMassExport.py":281
  *         strips = arm.animation_data.nla_tracks[arm.als.layer_index].strips
  *         if len(strips) != 1 or strips[0].action is None:
  *             return             # <<<<<<<<<<<<<<
@@ -12240,7 +12227,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "LeetdMassExport.py":283
+    /* "LeetdMassExport.py":280
  * 
  *         strips = arm.animation_data.nla_tracks[arm.als.layer_index].strips
  *         if len(strips) != 1 or strips[0].action is None:             # <<<<<<<<<<<<<<
@@ -12249,19 +12236,19 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
  */
   }
 
-  /* "LeetdMassExport.py":285
+  /* "LeetdMassExport.py":282
  *         if len(strips) != 1 or strips[0].action is None:
  *             return
  *         for fcu in strips[0].action.fcurves:             # <<<<<<<<<<<<<<
  *             if 'pose.bones' in fcu.data_path:
  *                 bone = fcu.data_path.split('"')[1]
  */
-  __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_strips, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 285, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_strips, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 282, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_action); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 285, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_action); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 282, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_fcurves); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 285, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_fcurves); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 282, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   if (likely(PyList_CheckExact(__pyx_t_2)) || PyTuple_CheckExact(__pyx_t_2)) {
@@ -12269,9 +12256,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
     __pyx_t_6 = 0;
     __pyx_t_7 = NULL;
   } else {
-    __pyx_t_6 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 285, __pyx_L1_error)
+    __pyx_t_6 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 282, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 285, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 282, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   for (;;) {
@@ -12280,28 +12267,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_5);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 285, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 282, __pyx_L1_error)
           #endif
           if (__pyx_t_6 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 285, __pyx_L1_error)
+        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 282, __pyx_L1_error)
         #else
-        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 285, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 282, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       } else {
         {
           Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_5);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 285, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 282, __pyx_L1_error)
           #endif
           if (__pyx_t_6 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 285, __pyx_L1_error)
+        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely((0 < 0))) __PYX_ERR(0, 282, __pyx_L1_error)
         #else
-        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 285, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 282, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       }
@@ -12311,7 +12298,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 285, __pyx_L1_error)
+          else __PYX_ERR(0, 282, __pyx_L1_error)
         }
         break;
       }
@@ -12320,29 +12307,29 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
     __Pyx_XDECREF_SET(__pyx_v_fcu, __pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":286
+    /* "LeetdMassExport.py":283
  *             return
  *         for fcu in strips[0].action.fcurves:
  *             if 'pose.bones' in fcu.data_path:             # <<<<<<<<<<<<<<
  *                 bone = fcu.data_path.split('"')[1]
  *                 if bone in arm.data.bones:
  */
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_fcu, __pyx_n_s_data_path); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 286, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_fcu, __pyx_n_s_data_path); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 283, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_pose_bones, __pyx_t_2, Py_EQ)); if (unlikely((__pyx_t_4 < 0))) __PYX_ERR(0, 286, __pyx_L1_error)
+    __pyx_t_4 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_pose_bones, __pyx_t_2, Py_EQ)); if (unlikely((__pyx_t_4 < 0))) __PYX_ERR(0, 283, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     if (__pyx_t_4) {
 
-      /* "LeetdMassExport.py":287
+      /* "LeetdMassExport.py":284
  *         for fcu in strips[0].action.fcurves:
  *             if 'pose.bones' in fcu.data_path:
  *                 bone = fcu.data_path.split('"')[1]             # <<<<<<<<<<<<<<
  *                 if bone in arm.data.bones:
  *                     arm.data.bones[bone].select = True
  */
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_fcu, __pyx_n_s_data_path); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 287, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_fcu, __pyx_n_s_data_path); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 284, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_split); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 287, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_split); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 284, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __pyx_t_1 = NULL;
@@ -12363,51 +12350,51 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
         PyObject *__pyx_callargs[2] = {__pyx_t_1, __pyx_kp_s__4};
         __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_8, __pyx_callargs+1-__pyx_t_9, 1+__pyx_t_9);
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-        if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 287, __pyx_L1_error)
+        if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 284, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       }
-      __pyx_t_8 = __Pyx_GetItemInt(__pyx_t_2, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 287, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_GetItemInt(__pyx_t_2, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 284, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_XDECREF_SET(__pyx_v_bone, __pyx_t_8);
       __pyx_t_8 = 0;
 
-      /* "LeetdMassExport.py":288
+      /* "LeetdMassExport.py":285
  *             if 'pose.bones' in fcu.data_path:
  *                 bone = fcu.data_path.split('"')[1]
  *                 if bone in arm.data.bones:             # <<<<<<<<<<<<<<
  *                     arm.data.bones[bone].select = True
  * 
  */
-      __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 288, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 285, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_bones); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 288, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_bones); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 285, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __pyx_t_4 = (__Pyx_PySequence_ContainsTF(__pyx_v_bone, __pyx_t_2, Py_EQ)); if (unlikely((__pyx_t_4 < 0))) __PYX_ERR(0, 288, __pyx_L1_error)
+      __pyx_t_4 = (__Pyx_PySequence_ContainsTF(__pyx_v_bone, __pyx_t_2, Py_EQ)); if (unlikely((__pyx_t_4 < 0))) __PYX_ERR(0, 285, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       if (__pyx_t_4) {
 
-        /* "LeetdMassExport.py":289
+        /* "LeetdMassExport.py":286
  *                 bone = fcu.data_path.split('"')[1]
  *                 if bone in arm.data.bones:
  *                     arm.data.bones[bone].select = True             # <<<<<<<<<<<<<<
  * 
  *     def InitScriptExpSkeletal(self,scriptLoc=''):
  */
-        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 289, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 286, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_bones); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 289, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_bones); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 286, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-        __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_8, __pyx_v_bone); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 289, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_8, __pyx_v_bone); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 286, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-        if (__Pyx_PyObject_SetAttrStr(__pyx_t_2, __pyx_n_s_select, Py_True) < 0) __PYX_ERR(0, 289, __pyx_L1_error)
+        if (__Pyx_PyObject_SetAttrStr(__pyx_t_2, __pyx_n_s_select, Py_True) < 0) __PYX_ERR(0, 286, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "LeetdMassExport.py":288
+        /* "LeetdMassExport.py":285
  *             if 'pose.bones' in fcu.data_path:
  *                 bone = fcu.data_path.split('"')[1]
  *                 if bone in arm.data.bones:             # <<<<<<<<<<<<<<
@@ -12416,7 +12403,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
  */
       }
 
-      /* "LeetdMassExport.py":286
+      /* "LeetdMassExport.py":283
  *             return
  *         for fcu in strips[0].action.fcurves:
  *             if 'pose.bones' in fcu.data_path:             # <<<<<<<<<<<<<<
@@ -12425,7 +12412,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
  */
     }
 
-    /* "LeetdMassExport.py":285
+    /* "LeetdMassExport.py":282
  *         if len(strips) != 1 or strips[0].action is None:
  *             return
  *         for fcu in strips[0].action.fcurves:             # <<<<<<<<<<<<<<
@@ -12435,7 +12422,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
   }
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":276
+  /* "LeetdMassExport.py":273
  *         return checkloaded
  * 
  *     def select_layer_bones(self,arm):             # <<<<<<<<<<<<<<
@@ -12462,7 +12449,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_46select_layer_bones
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":291
+/* "LeetdMassExport.py":288
  *                     arm.data.bones[bone].select = True
  * 
  *     def InitScriptExpSkeletal(self,scriptLoc=''):             # <<<<<<<<<<<<<<
@@ -12527,19 +12514,19 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 291, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 288, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_scriptLoc);
           if (value) { values[1] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 291, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 288, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "InitScriptExpSkeletal") < 0)) __PYX_ERR(0, 291, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "InitScriptExpSkeletal") < 0)) __PYX_ERR(0, 288, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
@@ -12555,7 +12542,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("InitScriptExpSkeletal", 0, 1, 2, __pyx_nargs); __PYX_ERR(0, 291, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("InitScriptExpSkeletal", 0, 1, 2, __pyx_nargs); __PYX_ERR(0, 288, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -12583,6 +12570,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
 }
 
 static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkeletal(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v_scriptLoc) {
+  PyObject *__pyx_v_baseScript = NULL;
   PyObject *__pyx_v_SkeBaseScr = NULL;
   PyObject *__pyx_v_f = NULL;
   PyObject *__pyx_v_text = NULL;
@@ -12596,7 +12584,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
   PyObject *__pyx_v_fbxPath = NULL;
   PyObject *__pyx_v_fpath = NULL;
   PyObject *__pyx_v_iCmd = NULL;
-  CYTHON_UNUSED PyObject *__pyx_v_infoCmd = NULL;
+  PyObject *__pyx_v_infoCmd = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -12616,87 +12604,102 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("InitScriptExpSkeletal", 1);
 
-  /* "LeetdMassExport.py":294
+  /* "LeetdMassExport.py":291
  *         #dir = self.ScriptDir #os.path.dirname(os.path.abspath(__file__))
  * 
- *         SkeBaseScr  = str("{sdir}BaseExport.py").format(sdir=self.ScriptDir.format(py=""))             # <<<<<<<<<<<<<<
+ *         baseScript = str(self.ScriptDir + '{py}')             # <<<<<<<<<<<<<<
+ *         SkeBaseScr  = str("{sdir}BaseExport.py").format(sdir=baseScript.format(py=""))
+ * 
+ */
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ScriptDir); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 291, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = PyNumber_Add(__pyx_t_1, __pyx_kp_s_py); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 291, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_PyObject_Str(__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 291, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_v_baseScript = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "LeetdMassExport.py":292
+ * 
+ *         baseScript = str(self.ScriptDir + '{py}')
+ *         SkeBaseScr  = str("{sdir}BaseExport.py").format(sdir=baseScript.format(py=""))             # <<<<<<<<<<<<<<
  * 
  *         #Script Exists check
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_sdir_BaseExport_py, __pyx_n_s_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 294, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_sdir_BaseExport_py, __pyx_n_s_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 292, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 294, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 292, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ScriptDir); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 294, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_baseScript, __pyx_n_s_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 292, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_format); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 294, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 292, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 294, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_py_2, __pyx_kp_s__2) < 0) __PYX_ERR(0, 294, __pyx_L1_error)
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 294, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_py_2, __pyx_kp_s__2) < 0) __PYX_ERR(0, 292, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 292, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_sdir, __pyx_t_5) < 0) __PYX_ERR(0, 294, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_sdir, __pyx_t_5) < 0) __PYX_ERR(0, 292, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 294, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 292, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_SkeBaseScr = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":298
+  /* "LeetdMassExport.py":296
  *         #Script Exists check
  *         #if not os.path.exists(SkeBaseScr): return
  *         print("Scripts",SkeBaseScr)             # <<<<<<<<<<<<<<
  *         f = open(SkeBaseScr,'r')
  *         text= f.read()
  */
-  __pyx_t_5 = PyTuple_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 298, __pyx_L1_error)
+  __pyx_t_5 = PyTuple_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 296, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_INCREF(__pyx_n_s_Scripts);
   __Pyx_GIVEREF(__pyx_n_s_Scripts);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_n_s_Scripts)) __PYX_ERR(0, 298, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_n_s_Scripts)) __PYX_ERR(0, 296, __pyx_L1_error);
   __Pyx_INCREF(__pyx_v_SkeBaseScr);
   __Pyx_GIVEREF(__pyx_v_SkeBaseScr);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_v_SkeBaseScr)) __PYX_ERR(0, 298, __pyx_L1_error);
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 298, __pyx_L1_error)
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_v_SkeBaseScr)) __PYX_ERR(0, 296, __pyx_L1_error);
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 296, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":299
+  /* "LeetdMassExport.py":297
  *         #if not os.path.exists(SkeBaseScr): return
  *         print("Scripts",SkeBaseScr)
  *         f = open(SkeBaseScr,'r')             # <<<<<<<<<<<<<<
  *         text= f.read()
  *         f.close()
  */
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 299, __pyx_L1_error)
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 297, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(__pyx_v_SkeBaseScr);
   __Pyx_GIVEREF(__pyx_v_SkeBaseScr);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_v_SkeBaseScr)) __PYX_ERR(0, 299, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_v_SkeBaseScr)) __PYX_ERR(0, 297, __pyx_L1_error);
   __Pyx_INCREF(__pyx_n_s_r);
   __Pyx_GIVEREF(__pyx_n_s_r);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_n_s_r)) __PYX_ERR(0, 299, __pyx_L1_error);
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_2, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 299, __pyx_L1_error)
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_n_s_r)) __PYX_ERR(0, 297, __pyx_L1_error);
+  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_2, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 297, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_f = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":300
+  /* "LeetdMassExport.py":298
  *         print("Scripts",SkeBaseScr)
  *         f = open(SkeBaseScr,'r')
  *         text= f.read()             # <<<<<<<<<<<<<<
  *         f.close()
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_read); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 300, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_read); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 298, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_1 = NULL;
   __pyx_t_6 = 0;
@@ -12716,21 +12719,21 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
     PyObject *__pyx_callargs[2] = {__pyx_t_1, NULL};
     __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 300, __pyx_L1_error)
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 298, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __pyx_v_text = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":301
+  /* "LeetdMassExport.py":299
  *         f = open(SkeBaseScr,'r')
  *         text= f.read()
  *         f.close()             # <<<<<<<<<<<<<<
  * 
  *         Libs= self.MassFbx.GetAllLibraries()
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_close); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 301, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_close); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 299, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_1 = NULL;
   __pyx_t_6 = 0;
@@ -12750,22 +12753,22 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
     PyObject *__pyx_callargs[2] = {__pyx_t_1, NULL};
     __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 301, __pyx_L1_error)
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 299, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":303
+  /* "LeetdMassExport.py":301
  *         f.close()
  * 
  *         Libs= self.MassFbx.GetAllLibraries()             # <<<<<<<<<<<<<<
  *         transientPath= []
  *         for i,lib in enumerate(Libs):
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_MassFbx); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 303, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_MassFbx); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 301, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_GetAllLibraries); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 303, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_GetAllLibraries); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 301, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = NULL;
@@ -12786,26 +12789,26 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
     PyObject *__pyx_callargs[2] = {__pyx_t_2, NULL};
     __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_1, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 303, __pyx_L1_error)
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 301, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
   __pyx_v_Libs = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":304
+  /* "LeetdMassExport.py":302
  * 
  *         Libs= self.MassFbx.GetAllLibraries()
  *         transientPath= []             # <<<<<<<<<<<<<<
  *         for i,lib in enumerate(Libs):
  *             scr = bpy.path.display_name(lib.filepath)
  */
-  __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 304, __pyx_L1_error)
+  __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 302, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_v_transientPath = ((PyObject*)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":305
+  /* "LeetdMassExport.py":303
  *         Libs= self.MassFbx.GetAllLibraries()
  *         transientPath= []
  *         for i,lib in enumerate(Libs):             # <<<<<<<<<<<<<<
@@ -12819,9 +12822,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
     __pyx_t_7 = 0;
     __pyx_t_8 = NULL;
   } else {
-    __pyx_t_7 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_Libs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 305, __pyx_L1_error)
+    __pyx_t_7 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_Libs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 303, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_8 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 305, __pyx_L1_error)
+    __pyx_t_8 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 303, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_8)) {
@@ -12829,28 +12832,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_1);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 305, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 303, __pyx_L1_error)
           #endif
           if (__pyx_t_7 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_7); __Pyx_INCREF(__pyx_t_2); __pyx_t_7++; if (unlikely((0 < 0))) __PYX_ERR(0, 305, __pyx_L1_error)
+        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_7); __Pyx_INCREF(__pyx_t_2); __pyx_t_7++; if (unlikely((0 < 0))) __PYX_ERR(0, 303, __pyx_L1_error)
         #else
-        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_1, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 305, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_1, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 303, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       } else {
         {
           Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_1);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 305, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 303, __pyx_L1_error)
           #endif
           if (__pyx_t_7 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_7); __Pyx_INCREF(__pyx_t_2); __pyx_t_7++; if (unlikely((0 < 0))) __PYX_ERR(0, 305, __pyx_L1_error)
+        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_7); __Pyx_INCREF(__pyx_t_2); __pyx_t_7++; if (unlikely((0 < 0))) __PYX_ERR(0, 303, __pyx_L1_error)
         #else
-        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_1, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 305, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_1, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 303, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       }
@@ -12860,7 +12863,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 305, __pyx_L1_error)
+          else __PYX_ERR(0, 303, __pyx_L1_error)
         }
         break;
       }
@@ -12870,75 +12873,37 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
     __pyx_t_2 = 0;
     __Pyx_INCREF(__pyx_t_5);
     __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_5);
-    __pyx_t_2 = __Pyx_PyInt_AddObjC(__pyx_t_5, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 305, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyInt_AddObjC(__pyx_t_5, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 303, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5);
     __pyx_t_5 = __pyx_t_2;
     __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":306
+    /* "LeetdMassExport.py":304
  *         transientPath= []
  *         for i,lib in enumerate(Libs):
  *             scr = bpy.path.display_name(lib.filepath)             # <<<<<<<<<<<<<<
  *             if str(scr).endswith("Rig"):
  *                 srcPy = scr + ".py"
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 306, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_path); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 306, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 304, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_display_name); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 306, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_path); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 304, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_lib, __pyx_n_s_filepath); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 306, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_display_name); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 304, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_lib, __pyx_n_s_filepath); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 304, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_9 = NULL;
     __pyx_t_6 = 0;
     #if CYTHON_UNPACK_METHODS
-    if (likely(PyMethod_Check(__pyx_t_3))) {
-      __pyx_t_9 = PyMethod_GET_SELF(__pyx_t_3);
-      if (likely(__pyx_t_9)) {
-        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
-        __Pyx_INCREF(__pyx_t_9);
-        __Pyx_INCREF(function);
-        __Pyx_DECREF_SET(__pyx_t_3, function);
-        __pyx_t_6 = 1;
-      }
-    }
-    #endif
-    {
-      PyObject *__pyx_callargs[2] = {__pyx_t_9, __pyx_t_4};
-      __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
-      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 306, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    }
-    __Pyx_XDECREF_SET(__pyx_v_scr, __pyx_t_2);
-    __pyx_t_2 = 0;
-
-    /* "LeetdMassExport.py":307
- *         for i,lib in enumerate(Libs):
- *             scr = bpy.path.display_name(lib.filepath)
- *             if str(scr).endswith("Rig"):             # <<<<<<<<<<<<<<
- *                 srcPy = scr + ".py"
- *                 srcPy = str(srcPy).replace(" ","")
- */
-    __pyx_t_3 = __Pyx_PyObject_Str(__pyx_v_scr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 307, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_endswith); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 307, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = NULL;
-    __pyx_t_6 = 0;
-    #if CYTHON_UNPACK_METHODS
     if (likely(PyMethod_Check(__pyx_t_4))) {
-      __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_4);
-      if (likely(__pyx_t_3)) {
+      __pyx_t_9 = PyMethod_GET_SELF(__pyx_t_4);
+      if (likely(__pyx_t_9)) {
         PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
-        __Pyx_INCREF(__pyx_t_3);
+        __Pyx_INCREF(__pyx_t_9);
         __Pyx_INCREF(function);
         __Pyx_DECREF_SET(__pyx_t_4, function);
         __pyx_t_6 = 1;
@@ -12946,147 +12911,188 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
     }
     #endif
     {
-      PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_n_s_Rig};
+      PyObject *__pyx_callargs[2] = {__pyx_t_9, __pyx_t_3};
       __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
-      __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 307, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 304, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     }
-    __pyx_t_10 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_10 < 0))) __PYX_ERR(0, 307, __pyx_L1_error)
+    __Pyx_XDECREF_SET(__pyx_v_scr, __pyx_t_2);
+    __pyx_t_2 = 0;
+
+    /* "LeetdMassExport.py":305
+ *         for i,lib in enumerate(Libs):
+ *             scr = bpy.path.display_name(lib.filepath)
+ *             if str(scr).endswith("Rig"):             # <<<<<<<<<<<<<<
+ *                 srcPy = scr + ".py"
+ *                 srcPy = str(srcPy).replace(" ","")
+ */
+    __pyx_t_4 = __Pyx_PyObject_Str(__pyx_v_scr); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 305, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_endswith); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 305, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_t_4 = NULL;
+    __pyx_t_6 = 0;
+    #if CYTHON_UNPACK_METHODS
+    if (likely(PyMethod_Check(__pyx_t_3))) {
+      __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
+      if (likely(__pyx_t_4)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+        __Pyx_INCREF(__pyx_t_4);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_3, function);
+        __pyx_t_6 = 1;
+      }
+    }
+    #endif
+    {
+      PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_n_s_Rig};
+      __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 305, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    }
+    __pyx_t_10 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_10 < 0))) __PYX_ERR(0, 305, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     if (__pyx_t_10) {
 
-      /* "LeetdMassExport.py":308
+      /* "LeetdMassExport.py":306
  *             scr = bpy.path.display_name(lib.filepath)
  *             if str(scr).endswith("Rig"):
  *                 srcPy = scr + ".py"             # <<<<<<<<<<<<<<
  *                 srcPy = str(srcPy).replace(" ","")
- *                 scrPath = str(self.ScriptDir).format(py=srcPy)
+ *                 scrPath = str(self.ScriptDir + '{py}').format(py=srcPy)
  */
-      __pyx_t_2 = PyNumber_Add(__pyx_v_scr, __pyx_kp_s_py_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 308, __pyx_L1_error)
+      __pyx_t_2 = PyNumber_Add(__pyx_v_scr, __pyx_kp_s_py_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 306, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_XDECREF_SET(__pyx_v_srcPy, __pyx_t_2);
       __pyx_t_2 = 0;
 
-      /* "LeetdMassExport.py":309
+      /* "LeetdMassExport.py":307
  *             if str(scr).endswith("Rig"):
  *                 srcPy = scr + ".py"
  *                 srcPy = str(srcPy).replace(" ","")             # <<<<<<<<<<<<<<
- *                 scrPath = str(self.ScriptDir).format(py=srcPy)
+ *                 scrPath = str(self.ScriptDir + '{py}').format(py=srcPy)
  *                 fbxPath = self.ExportDir.format(fName=str("BaseSkeletal/" +scr))
  */
-      __pyx_t_2 = __Pyx_PyObject_Str(__pyx_v_srcPy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 309, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Str(__pyx_v_srcPy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 307, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_replace); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 309, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_replace); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 307, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_tuple__6, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 309, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_tuple__6, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 307, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF_SET(__pyx_v_srcPy, __pyx_t_2);
       __pyx_t_2 = 0;
 
-      /* "LeetdMassExport.py":310
+      /* "LeetdMassExport.py":308
  *                 srcPy = scr + ".py"
  *                 srcPy = str(srcPy).replace(" ","")
- *                 scrPath = str(self.ScriptDir).format(py=srcPy)             # <<<<<<<<<<<<<<
+ *                 scrPath = str(self.ScriptDir + '{py}').format(py=srcPy)             # <<<<<<<<<<<<<<
  *                 fbxPath = self.ExportDir.format(fName=str("BaseSkeletal/" +scr))
  *                 f = open(scrPath,'w')
  */
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ScriptDir); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 310, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ScriptDir); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 308, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_4 = __Pyx_PyObject_Str(__pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 310, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 310, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 310, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_py_2, __pyx_v_srcPy) < 0) __PYX_ERR(0, 310, __pyx_L1_error)
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 310, __pyx_L1_error)
+      __pyx_t_3 = PyNumber_Add(__pyx_t_2, __pyx_kp_s_py); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 308, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __Pyx_XDECREF_SET(__pyx_v_scrPath, __pyx_t_3);
-      __pyx_t_3 = 0;
+      __pyx_t_2 = __Pyx_PyObject_Str(__pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 308, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 308, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 308, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_py_2, __pyx_v_srcPy) < 0) __PYX_ERR(0, 308, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 308, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_XDECREF_SET(__pyx_v_scrPath, __pyx_t_4);
+      __pyx_t_4 = 0;
 
-      /* "LeetdMassExport.py":311
+      /* "LeetdMassExport.py":309
  *                 srcPy = str(srcPy).replace(" ","")
- *                 scrPath = str(self.ScriptDir).format(py=srcPy)
+ *                 scrPath = str(self.ScriptDir + '{py}').format(py=srcPy)
  *                 fbxPath = self.ExportDir.format(fName=str("BaseSkeletal/" +scr))             # <<<<<<<<<<<<<<
  *                 f = open(scrPath,'w')
  *                 f.write(text.format(fbxpath=fbxPath))
  */
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ExportDir); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 311, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_format); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 311, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ExportDir); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 311, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_2 = PyNumber_Add(__pyx_kp_s_BaseSkeletal, __pyx_v_scr); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 311, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_9 = __Pyx_PyObject_Str(__pyx_t_2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 311, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 309, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_3 = PyNumber_Add(__pyx_kp_s_BaseSkeletal, __pyx_v_scr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 309, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_9 = __Pyx_PyObject_Str(__pyx_t_3); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 309, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_fName, __pyx_t_9) < 0) __PYX_ERR(0, 309, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __pyx_t_9 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 309, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_fName, __pyx_t_9) < 0) __PYX_ERR(0, 311, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-      __pyx_t_9 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 311, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_XDECREF_SET(__pyx_v_fbxPath, __pyx_t_9);
       __pyx_t_9 = 0;
 
-      /* "LeetdMassExport.py":312
- *                 scrPath = str(self.ScriptDir).format(py=srcPy)
+      /* "LeetdMassExport.py":310
+ *                 scrPath = str(self.ScriptDir + '{py}').format(py=srcPy)
  *                 fbxPath = self.ExportDir.format(fName=str("BaseSkeletal/" +scr))
  *                 f = open(scrPath,'w')             # <<<<<<<<<<<<<<
  *                 f.write(text.format(fbxpath=fbxPath))
  *                 f.close()
  */
-      __pyx_t_9 = PyTuple_New(2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 312, __pyx_L1_error)
+      __pyx_t_9 = PyTuple_New(2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 310, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_INCREF(__pyx_v_scrPath);
       __Pyx_GIVEREF(__pyx_v_scrPath);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_v_scrPath)) __PYX_ERR(0, 312, __pyx_L1_error);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_v_scrPath)) __PYX_ERR(0, 310, __pyx_L1_error);
       __Pyx_INCREF(__pyx_n_s_w);
       __Pyx_GIVEREF(__pyx_n_s_w);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_9, 1, __pyx_n_s_w)) __PYX_ERR(0, 312, __pyx_L1_error);
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_9, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 312, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_9, 1, __pyx_n_s_w)) __PYX_ERR(0, 310, __pyx_L1_error);
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_9, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 310, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-      __Pyx_DECREF_SET(__pyx_v_f, __pyx_t_3);
-      __pyx_t_3 = 0;
+      __Pyx_DECREF_SET(__pyx_v_f, __pyx_t_4);
+      __pyx_t_4 = 0;
 
-      /* "LeetdMassExport.py":313
+      /* "LeetdMassExport.py":311
  *                 fbxPath = self.ExportDir.format(fName=str("BaseSkeletal/" +scr))
  *                 f = open(scrPath,'w')
  *                 f.write(text.format(fbxpath=fbxPath))             # <<<<<<<<<<<<<<
  *                 f.close()
  *                 fpath = bpy.path.abspath(lib.filepath)
  */
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_write); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 313, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_write); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 311, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_text, __pyx_n_s_format); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 313, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 313, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_text, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 311, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_fbxpath, __pyx_v_fbxPath) < 0) __PYX_ERR(0, 313, __pyx_L1_error)
-      __pyx_t_11 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 313, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 311, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_fbxpath, __pyx_v_fbxPath) < 0) __PYX_ERR(0, 311, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 311, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_11);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_2 = NULL;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = NULL;
       __pyx_t_6 = 0;
       #if CYTHON_UNPACK_METHODS
       if (likely(PyMethod_Check(__pyx_t_9))) {
-        __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_9);
-        if (likely(__pyx_t_2)) {
+        __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_9);
+        if (likely(__pyx_t_3)) {
           PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_9);
-          __Pyx_INCREF(__pyx_t_2);
+          __Pyx_INCREF(__pyx_t_3);
           __Pyx_INCREF(function);
           __Pyx_DECREF_SET(__pyx_t_9, function);
           __pyx_t_6 = 1;
@@ -13094,24 +13100,24 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
       }
       #endif
       {
-        PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_t_11};
-        __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_9, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
-        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+        PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_t_11};
+        __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_9, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
+        __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 313, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 311, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       }
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "LeetdMassExport.py":314
+      /* "LeetdMassExport.py":312
  *                 f = open(scrPath,'w')
  *                 f.write(text.format(fbxpath=fbxPath))
  *                 f.close()             # <<<<<<<<<<<<<<
  *                 fpath = bpy.path.abspath(lib.filepath)
  *                 iCmd = str('\"{blender}\" -b ').format(blender=str(self.blProgram))
  */
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_close); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 314, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_close); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 312, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __pyx_t_11 = NULL;
       __pyx_t_6 = 0;
@@ -13129,157 +13135,35 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
       #endif
       {
         PyObject *__pyx_callargs[2] = {__pyx_t_11, NULL};
-        __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_9, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
+        __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_9, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
         __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 314, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 312, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       }
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "LeetdMassExport.py":315
+      /* "LeetdMassExport.py":313
  *                 f.write(text.format(fbxpath=fbxPath))
  *                 f.close()
  *                 fpath = bpy.path.abspath(lib.filepath)             # <<<<<<<<<<<<<<
  *                 iCmd = str('\"{blender}\" -b ').format(blender=str(self.blProgram))
  *                 iCmd += str('{file}  -P ').format(file=fpath)
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_bpy); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 315, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_bpy); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 313, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_path); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 315, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_path); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 313, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_11);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_n_s_abspath); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 315, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_n_s_abspath); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 313, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-      __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_lib, __pyx_n_s_filepath); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 315, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_lib, __pyx_n_s_filepath); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 313, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_11);
-      __pyx_t_2 = NULL;
-      __pyx_t_6 = 0;
-      #if CYTHON_UNPACK_METHODS
-      if (likely(PyMethod_Check(__pyx_t_9))) {
-        __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_9);
-        if (likely(__pyx_t_2)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_9);
-          __Pyx_INCREF(__pyx_t_2);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_9, function);
-          __pyx_t_6 = 1;
-        }
-      }
-      #endif
-      {
-        PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_t_11};
-        __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_9, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
-        __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 315, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-      }
-      __Pyx_XDECREF_SET(__pyx_v_fpath, __pyx_t_3);
-      __pyx_t_3 = 0;
-
-      /* "LeetdMassExport.py":316
- *                 f.close()
- *                 fpath = bpy.path.abspath(lib.filepath)
- *                 iCmd = str('\"{blender}\" -b ').format(blender=str(self.blProgram))             # <<<<<<<<<<<<<<
- *                 iCmd += str('{file}  -P ').format(file=fpath)
- *                 iCmd += str("{Str} -Y").format(Str=scrPath)
- */
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_blender_b, __pyx_n_s_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 316, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_9 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 316, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_9);
-      __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_blProgram); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 316, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_11);
-      __pyx_t_2 = __Pyx_PyObject_Str(__pyx_t_11); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 316, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-      if (PyDict_SetItem(__pyx_t_9, __pyx_n_s_blender, __pyx_t_2) < 0) __PYX_ERR(0, 316, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_empty_tuple, __pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 316, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-      __Pyx_XDECREF_SET(__pyx_v_iCmd, __pyx_t_2);
-      __pyx_t_2 = 0;
-
-      /* "LeetdMassExport.py":317
- *                 fpath = bpy.path.abspath(lib.filepath)
- *                 iCmd = str('\"{blender}\" -b ').format(blender=str(self.blProgram))
- *                 iCmd += str('{file}  -P ').format(file=fpath)             # <<<<<<<<<<<<<<
- *                 iCmd += str("{Str} -Y").format(Str=scrPath)
- *                 iCmd = iCmd.replace("\\","/")
- */
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_file_P, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 317, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_9 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 317, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_9);
-      if (PyDict_SetItem(__pyx_t_9, __pyx_n_s_file, __pyx_v_fpath) < 0) __PYX_ERR(0, 317, __pyx_L1_error)
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_9); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 317, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-      __pyx_t_9 = PyNumber_InPlaceAdd(__pyx_v_iCmd, __pyx_t_3); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 317, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_9);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __Pyx_DECREF_SET(__pyx_v_iCmd, __pyx_t_9);
-      __pyx_t_9 = 0;
-
-      /* "LeetdMassExport.py":318
- *                 iCmd = str('\"{blender}\" -b ').format(blender=str(self.blProgram))
- *                 iCmd += str('{file}  -P ').format(file=fpath)
- *                 iCmd += str("{Str} -Y").format(Str=scrPath)             # <<<<<<<<<<<<<<
- *                 iCmd = iCmd.replace("\\","/")
- *                 infoCmd = os.system(iCmd)
- */
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Str_Y, __pyx_n_s_format); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 318, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_9);
-      __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 318, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_Str, __pyx_v_scrPath) < 0) __PYX_ERR(0, 318, __pyx_L1_error)
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 318, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_3 = PyNumber_InPlaceAdd(__pyx_v_iCmd, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 318, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __Pyx_DECREF_SET(__pyx_v_iCmd, __pyx_t_3);
-      __pyx_t_3 = 0;
-
-      /* "LeetdMassExport.py":319
- *                 iCmd += str('{file}  -P ').format(file=fpath)
- *                 iCmd += str("{Str} -Y").format(Str=scrPath)
- *                 iCmd = iCmd.replace("\\","/")             # <<<<<<<<<<<<<<
- *                 infoCmd = os.system(iCmd)
- *                 print("Exported : " + fpath)
- */
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_iCmd, __pyx_n_s_replace); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 319, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_tuple__9, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 319, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __Pyx_DECREF_SET(__pyx_v_iCmd, __pyx_t_2);
-      __pyx_t_2 = 0;
-
-      /* "LeetdMassExport.py":320
- *                 iCmd += str("{Str} -Y").format(Str=scrPath)
- *                 iCmd = iCmd.replace("\\","/")
- *                 infoCmd = os.system(iCmd)             # <<<<<<<<<<<<<<
- *                 print("Exported : " + fpath)
- *                 transientPath.append(scrPath)
- */
-      __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_os); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 320, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_system); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 320, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_9);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __pyx_t_3 = NULL;
       __pyx_t_6 = 0;
       #if CYTHON_UNPACK_METHODS
-      if (unlikely(PyMethod_Check(__pyx_t_9))) {
+      if (likely(PyMethod_Check(__pyx_t_9))) {
         __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_9);
         if (likely(__pyx_t_3)) {
           PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_9);
@@ -13291,40 +13175,185 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
       }
       #endif
       {
-        PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_iCmd};
-        __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_9, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
+        PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_t_11};
+        __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_9, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-        if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 320, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_2);
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 313, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       }
-      __Pyx_XDECREF_SET(__pyx_v_infoCmd, __pyx_t_2);
-      __pyx_t_2 = 0;
+      __Pyx_XDECREF_SET(__pyx_v_fpath, __pyx_t_4);
+      __pyx_t_4 = 0;
 
-      /* "LeetdMassExport.py":321
+      /* "LeetdMassExport.py":314
+ *                 f.close()
+ *                 fpath = bpy.path.abspath(lib.filepath)
+ *                 iCmd = str('\"{blender}\" -b ').format(blender=str(self.blProgram))             # <<<<<<<<<<<<<<
+ *                 iCmd += str('{file}  -P ').format(file=fpath)
+ *                 iCmd += str("{Str} -Y").format(Str=scrPath)
+ */
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_blender_b, __pyx_n_s_format); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 314, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_9 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 314, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_blProgram); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 314, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_11);
+      __pyx_t_3 = __Pyx_PyObject_Str(__pyx_t_11); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 314, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+      if (PyDict_SetItem(__pyx_t_9, __pyx_n_s_blender, __pyx_t_3) < 0) __PYX_ERR(0, 314, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_9); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 314, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __Pyx_XDECREF_SET(__pyx_v_iCmd, __pyx_t_3);
+      __pyx_t_3 = 0;
+
+      /* "LeetdMassExport.py":315
+ *                 fpath = bpy.path.abspath(lib.filepath)
+ *                 iCmd = str('\"{blender}\" -b ').format(blender=str(self.blProgram))
+ *                 iCmd += str('{file}  -P ').format(file=fpath)             # <<<<<<<<<<<<<<
+ *                 iCmd += str("{Str} -Y").format(Str=scrPath)
+ *                 iCmd = iCmd.replace("\\","/")
+ */
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_file_P, __pyx_n_s_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 315, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_9 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 315, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      if (PyDict_SetItem(__pyx_t_9, __pyx_n_s_file, __pyx_v_fpath) < 0) __PYX_ERR(0, 315, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_empty_tuple, __pyx_t_9); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 315, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __pyx_t_9 = PyNumber_InPlaceAdd(__pyx_v_iCmd, __pyx_t_4); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 315, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_DECREF_SET(__pyx_v_iCmd, __pyx_t_9);
+      __pyx_t_9 = 0;
+
+      /* "LeetdMassExport.py":316
+ *                 iCmd = str('\"{blender}\" -b ').format(blender=str(self.blProgram))
+ *                 iCmd += str('{file}  -P ').format(file=fpath)
+ *                 iCmd += str("{Str} -Y").format(Str=scrPath)             # <<<<<<<<<<<<<<
+ *                 iCmd = iCmd.replace("\\","/")
+ *                 infoCmd = os.system(iCmd)
+ */
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Str_Y, __pyx_n_s_format); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 316, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 316, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_Str, __pyx_v_scrPath) < 0) __PYX_ERR(0, 316, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 316, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_4 = PyNumber_InPlaceAdd(__pyx_v_iCmd, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 316, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF_SET(__pyx_v_iCmd, __pyx_t_4);
+      __pyx_t_4 = 0;
+
+      /* "LeetdMassExport.py":317
+ *                 iCmd += str('{file}  -P ').format(file=fpath)
+ *                 iCmd += str("{Str} -Y").format(Str=scrPath)
+ *                 iCmd = iCmd.replace("\\","/")             # <<<<<<<<<<<<<<
+ *                 infoCmd = os.system(iCmd)
+ *                 print("Exported : " + fpath)
+ */
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_iCmd, __pyx_n_s_replace); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 317, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_tuple__9, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 317, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_DECREF_SET(__pyx_v_iCmd, __pyx_t_3);
+      __pyx_t_3 = 0;
+
+      /* "LeetdMassExport.py":318
+ *                 iCmd += str("{Str} -Y").format(Str=scrPath)
+ *                 iCmd = iCmd.replace("\\","/")
+ *                 infoCmd = os.system(iCmd)             # <<<<<<<<<<<<<<
+ *                 print("Exported : " + fpath)
+ *                 transientPath.append(scrPath)
+ */
+      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_os); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 318, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_system); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 318, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_4 = NULL;
+      __pyx_t_6 = 0;
+      #if CYTHON_UNPACK_METHODS
+      if (unlikely(PyMethod_Check(__pyx_t_9))) {
+        __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_9);
+        if (likely(__pyx_t_4)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_9);
+          __Pyx_INCREF(__pyx_t_4);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_9, function);
+          __pyx_t_6 = 1;
+        }
+      }
+      #endif
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_v_iCmd};
+        __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_9, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 318, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+      }
+      __Pyx_XDECREF_SET(__pyx_v_infoCmd, __pyx_t_3);
+      __pyx_t_3 = 0;
+
+      /* "LeetdMassExport.py":319
  *                 iCmd = iCmd.replace("\\","/")
  *                 infoCmd = os.system(iCmd)
  *                 print("Exported : " + fpath)             # <<<<<<<<<<<<<<
  *                 transientPath.append(scrPath)
- *                 #print("Command  : " ,iCmd ,infoCmd)
+ *                 print("Command  : " ,iCmd ,infoCmd)
  */
-      __pyx_t_2 = PyNumber_Add(__pyx_kp_s_Exported, __pyx_v_fpath); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 321, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_9 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 321, __pyx_L1_error)
+      __pyx_t_3 = PyNumber_Add(__pyx_kp_s_Exported, __pyx_v_fpath); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 319, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_9 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_3); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 319, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "LeetdMassExport.py":322
+      /* "LeetdMassExport.py":320
  *                 infoCmd = os.system(iCmd)
  *                 print("Exported : " + fpath)
  *                 transientPath.append(scrPath)             # <<<<<<<<<<<<<<
- *                 #print("Command  : " ,iCmd ,infoCmd)
+ *                 print("Command  : " ,iCmd ,infoCmd)
  * 
  */
-      __pyx_t_12 = __Pyx_PyList_Append(__pyx_v_transientPath, __pyx_v_scrPath); if (unlikely(__pyx_t_12 == ((int)-1))) __PYX_ERR(0, 322, __pyx_L1_error)
+      __pyx_t_12 = __Pyx_PyList_Append(__pyx_v_transientPath, __pyx_v_scrPath); if (unlikely(__pyx_t_12 == ((int)-1))) __PYX_ERR(0, 320, __pyx_L1_error)
 
-      /* "LeetdMassExport.py":307
+      /* "LeetdMassExport.py":321
+ *                 print("Exported : " + fpath)
+ *                 transientPath.append(scrPath)
+ *                 print("Command  : " ,iCmd ,infoCmd)             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+      __pyx_t_9 = PyTuple_New(3); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 321, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      __Pyx_INCREF(__pyx_kp_s_Command);
+      __Pyx_GIVEREF(__pyx_kp_s_Command);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_kp_s_Command)) __PYX_ERR(0, 321, __pyx_L1_error);
+      __Pyx_INCREF(__pyx_v_iCmd);
+      __Pyx_GIVEREF(__pyx_v_iCmd);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_9, 1, __pyx_v_iCmd)) __PYX_ERR(0, 321, __pyx_L1_error);
+      __Pyx_INCREF(__pyx_v_infoCmd);
+      __Pyx_GIVEREF(__pyx_v_infoCmd);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_9, 2, __pyx_v_infoCmd)) __PYX_ERR(0, 321, __pyx_L1_error);
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_t_9, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 321, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+      /* "LeetdMassExport.py":305
  *         for i,lib in enumerate(Libs):
  *             scr = bpy.path.display_name(lib.filepath)
  *             if str(scr).endswith("Rig"):             # <<<<<<<<<<<<<<
@@ -13333,7 +13362,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
  */
     }
 
-    /* "LeetdMassExport.py":305
+    /* "LeetdMassExport.py":303
  *         Libs= self.MassFbx.GetAllLibraries()
  *         transientPath= []
  *         for i,lib in enumerate(Libs):             # <<<<<<<<<<<<<<
@@ -13344,7 +13373,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":291
+  /* "LeetdMassExport.py":288
  *                     arm.data.bones[bone].select = True
  * 
  *     def InitScriptExpSkeletal(self,scriptLoc=''):             # <<<<<<<<<<<<<<
@@ -13366,6 +13395,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
   __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.InitScriptExpSkeletal", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_baseScript);
   __Pyx_XDECREF(__pyx_v_SkeBaseScr);
   __Pyx_XDECREF(__pyx_v_f);
   __Pyx_XDECREF(__pyx_v_text);
@@ -13385,7 +13415,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_48InitScriptExpSkele
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":326
+/* "LeetdMassExport.py":324
  * 
  * 
  *     def GetMassFbxCollection(self,inCollection=str):             # <<<<<<<<<<<<<<
@@ -13403,18 +13433,18 @@ static PyObject *__pyx_pf_15LeetdMassExport_6__defaults__(CYTHON_UNUSED PyObject
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__defaults__", 1);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 326, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 324, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(__pyx_defaults3, __pyx_self)->__pyx_arg_inCollection);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(__pyx_defaults3, __pyx_self)->__pyx_arg_inCollection);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(__pyx_defaults3, __pyx_self)->__pyx_arg_inCollection)) __PYX_ERR(0, 326, __pyx_L1_error);
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 326, __pyx_L1_error)
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(__pyx_defaults3, __pyx_self)->__pyx_arg_inCollection)) __PYX_ERR(0, 324, __pyx_L1_error);
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 324, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_1);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1)) __PYX_ERR(0, 326, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1)) __PYX_ERR(0, 324, __pyx_L1_error);
   __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(Py_None);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None)) __PYX_ERR(0, 326, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None)) __PYX_ERR(0, 324, __pyx_L1_error);
   __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
@@ -13491,19 +13521,19 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 326, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 324, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_inCollection);
           if (value) { values[1] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 326, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 324, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetMassFbxCollection") < 0)) __PYX_ERR(0, 326, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetMassFbxCollection") < 0)) __PYX_ERR(0, 324, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
@@ -13519,7 +13549,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("GetMassFbxCollection", 0, 1, 2, __pyx_nargs); __PYX_ERR(0, 326, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("GetMassFbxCollection", 0, 1, 2, __pyx_nargs); __PYX_ERR(0, 324, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -13566,25 +13596,25 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_50GetMassFbxCollecti
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("GetMassFbxCollection", 1);
 
-  /* "LeetdMassExport.py":330
+  /* "LeetdMassExport.py":328
  *         Get MassExport Collection in View_layers
  *         '''
  *         collections = bpy.data.collections             # <<<<<<<<<<<<<<
  *         for i,obj in enumerate(collections):
  *             if str(obj.name).lower() == inCollection: return obj.name,obj
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 330, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 328, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 330, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 328, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_collections); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 330, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_collections); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 328, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_collections = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":331
+  /* "LeetdMassExport.py":329
  *         '''
  *         collections = bpy.data.collections
  *         for i,obj in enumerate(collections):             # <<<<<<<<<<<<<<
@@ -13598,9 +13628,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_50GetMassFbxCollecti
     __pyx_t_3 = 0;
     __pyx_t_4 = NULL;
   } else {
-    __pyx_t_3 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_collections); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 331, __pyx_L1_error)
+    __pyx_t_3 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_collections); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 329, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 331, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 329, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_4)) {
@@ -13608,28 +13638,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_50GetMassFbxCollecti
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_2);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 331, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 329, __pyx_L1_error)
           #endif
           if (__pyx_t_3 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_5 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_5); __pyx_t_3++; if (unlikely((0 < 0))) __PYX_ERR(0, 331, __pyx_L1_error)
+        __pyx_t_5 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_5); __pyx_t_3++; if (unlikely((0 < 0))) __PYX_ERR(0, 329, __pyx_L1_error)
         #else
-        __pyx_t_5 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 331, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 329, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         #endif
       } else {
         {
           Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_2);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 331, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 329, __pyx_L1_error)
           #endif
           if (__pyx_t_3 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_5); __pyx_t_3++; if (unlikely((0 < 0))) __PYX_ERR(0, 331, __pyx_L1_error)
+        __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_5); __pyx_t_3++; if (unlikely((0 < 0))) __PYX_ERR(0, 329, __pyx_L1_error)
         #else
-        __pyx_t_5 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 331, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 329, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         #endif
       }
@@ -13639,7 +13669,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_50GetMassFbxCollecti
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 331, __pyx_L1_error)
+          else __PYX_ERR(0, 329, __pyx_L1_error)
         }
         break;
       }
@@ -13649,25 +13679,25 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_50GetMassFbxCollecti
     __pyx_t_5 = 0;
     __Pyx_INCREF(__pyx_t_1);
     __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_1);
-    __pyx_t_5 = __Pyx_PyInt_AddObjC(__pyx_t_1, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 331, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyInt_AddObjC(__pyx_t_1, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 329, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1);
     __pyx_t_1 = __pyx_t_5;
     __pyx_t_5 = 0;
 
-    /* "LeetdMassExport.py":332
+    /* "LeetdMassExport.py":330
  *         collections = bpy.data.collections
  *         for i,obj in enumerate(collections):
  *             if str(obj.name).lower() == inCollection: return obj.name,obj             # <<<<<<<<<<<<<<
  * 
  *         raise Exception("Sorry, No Collection MassExport Check your Animator Memer")
  */
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_name); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 332, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_name); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 330, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = __Pyx_PyObject_Str(__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 332, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_Str(__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 330, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_lower); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 332, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_lower); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 330, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __pyx_t_7 = NULL;
@@ -13688,25 +13718,25 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_50GetMassFbxCollecti
       PyObject *__pyx_callargs[2] = {__pyx_t_7, NULL};
       __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_6, __pyx_callargs+1-__pyx_t_8, 0+__pyx_t_8);
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
-      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 332, __pyx_L1_error)
+      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 330, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     }
-    __pyx_t_6 = PyObject_RichCompare(__pyx_t_5, __pyx_v_inCollection, Py_EQ); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 332, __pyx_L1_error)
+    __pyx_t_6 = PyObject_RichCompare(__pyx_t_5, __pyx_v_inCollection, Py_EQ); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 330, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 332, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 330, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     if (__pyx_t_9) {
       __Pyx_XDECREF(__pyx_r);
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_name); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 332, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_name); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 330, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_5 = PyTuple_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 332, __pyx_L1_error)
+      __pyx_t_5 = PyTuple_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 330, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GIVEREF(__pyx_t_6);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_6)) __PYX_ERR(0, 332, __pyx_L1_error);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_6)) __PYX_ERR(0, 330, __pyx_L1_error);
       __Pyx_INCREF(__pyx_v_obj);
       __Pyx_GIVEREF(__pyx_v_obj);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_v_obj)) __PYX_ERR(0, 332, __pyx_L1_error);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_v_obj)) __PYX_ERR(0, 330, __pyx_L1_error);
       __pyx_t_6 = 0;
       __pyx_r = __pyx_t_5;
       __pyx_t_5 = 0;
@@ -13715,7 +13745,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_50GetMassFbxCollecti
       goto __pyx_L0;
     }
 
-    /* "LeetdMassExport.py":331
+    /* "LeetdMassExport.py":329
  *         '''
  *         collections = bpy.data.collections
  *         for i,obj in enumerate(collections):             # <<<<<<<<<<<<<<
@@ -13726,20 +13756,20 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_50GetMassFbxCollecti
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":334
+  /* "LeetdMassExport.py":332
  *             if str(obj.name).lower() == inCollection: return obj.name,obj
  * 
  *         raise Exception("Sorry, No Collection MassExport Check your Animator Memer")             # <<<<<<<<<<<<<<
  * 
  *     def BlenderExport(self,expPath,isCamera=False):
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_tuple__10, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 334, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_tuple__10, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 332, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_Raise(__pyx_t_1, 0, 0, 0);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __PYX_ERR(0, 334, __pyx_L1_error)
+  __PYX_ERR(0, 332, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":326
+  /* "LeetdMassExport.py":324
  * 
  * 
  *     def GetMassFbxCollection(self,inCollection=str):             # <<<<<<<<<<<<<<
@@ -13765,7 +13795,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_50GetMassFbxCollecti
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":336
+/* "LeetdMassExport.py":334
  *         raise Exception("Sorry, No Collection MassExport Check your Animator Memer")
  * 
  *     def BlenderExport(self,expPath,isCamera=False):             # <<<<<<<<<<<<<<
@@ -13833,7 +13863,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 336, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 334, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -13841,21 +13871,21 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 336, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 334, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("BlenderExport", 0, 2, 3, 1); __PYX_ERR(0, 336, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("BlenderExport", 0, 2, 3, 1); __PYX_ERR(0, 334, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_isCamera);
           if (value) { values[2] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 336, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 334, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "BlenderExport") < 0)) __PYX_ERR(0, 336, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "BlenderExport") < 0)) __PYX_ERR(0, 334, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
@@ -13873,7 +13903,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("BlenderExport", 0, 2, 3, __pyx_nargs); __PYX_ERR(0, 336, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("BlenderExport", 0, 2, 3, __pyx_nargs); __PYX_ERR(0, 334, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -13914,14 +13944,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_52BlenderExport(CYTH
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("BlenderExport", 1);
 
-  /* "LeetdMassExport.py":337
+  /* "LeetdMassExport.py":335
  * 
  *     def BlenderExport(self,expPath,isCamera=False):
  *         if not expPath: return             # <<<<<<<<<<<<<<
  *         Exportypes={}
  *         if isCamera: Exportypes = {'CAMERA'}
  */
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_expPath); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 337, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_expPath); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 335, __pyx_L1_error)
   __pyx_t_2 = (!__pyx_t_1);
   if (__pyx_t_2) {
     __Pyx_XDECREF(__pyx_r);
@@ -13929,36 +13959,36 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_52BlenderExport(CYTH
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":338
+  /* "LeetdMassExport.py":336
  *     def BlenderExport(self,expPath,isCamera=False):
  *         if not expPath: return
  *         Exportypes={}             # <<<<<<<<<<<<<<
  *         if isCamera: Exportypes = {'CAMERA'}
  *         else: Exportypes={'ARMATURE','MESH','OTHER'}
  */
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 338, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 336, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_v_Exportypes = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":339
+  /* "LeetdMassExport.py":337
  *         if not expPath: return
  *         Exportypes={}
  *         if isCamera: Exportypes = {'CAMERA'}             # <<<<<<<<<<<<<<
  *         else: Exportypes={'ARMATURE','MESH','OTHER'}
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_isCamera); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 339, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_isCamera); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 337, __pyx_L1_error)
   if (__pyx_t_2) {
-    __pyx_t_3 = PySet_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 339, __pyx_L1_error)
+    __pyx_t_3 = PySet_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 337, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    if (PySet_Add(__pyx_t_3, __pyx_n_s_CAMERA) < 0) __PYX_ERR(0, 339, __pyx_L1_error)
+    if (PySet_Add(__pyx_t_3, __pyx_n_s_CAMERA) < 0) __PYX_ERR(0, 337, __pyx_L1_error)
     __Pyx_DECREF_SET(__pyx_v_Exportypes, __pyx_t_3);
     __pyx_t_3 = 0;
     goto __pyx_L4;
   }
 
-  /* "LeetdMassExport.py":340
+  /* "LeetdMassExport.py":338
  *         Exportypes={}
  *         if isCamera: Exportypes = {'CAMERA'}
  *         else: Exportypes={'ARMATURE','MESH','OTHER'}             # <<<<<<<<<<<<<<
@@ -13966,97 +13996,97 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_52BlenderExport(CYTH
  *         bpy.ops.export_scene.fbx(filepath=expPath,
  */
   /*else*/ {
-    __pyx_t_3 = PySet_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 340, __pyx_L1_error)
+    __pyx_t_3 = PySet_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 338, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    if (PySet_Add(__pyx_t_3, __pyx_n_s_ARMATURE) < 0) __PYX_ERR(0, 340, __pyx_L1_error)
-    if (PySet_Add(__pyx_t_3, __pyx_n_s_MESH) < 0) __PYX_ERR(0, 340, __pyx_L1_error)
-    if (PySet_Add(__pyx_t_3, __pyx_n_s_OTHER) < 0) __PYX_ERR(0, 340, __pyx_L1_error)
+    if (PySet_Add(__pyx_t_3, __pyx_n_s_ARMATURE) < 0) __PYX_ERR(0, 338, __pyx_L1_error)
+    if (PySet_Add(__pyx_t_3, __pyx_n_s_MESH) < 0) __PYX_ERR(0, 338, __pyx_L1_error)
+    if (PySet_Add(__pyx_t_3, __pyx_n_s_OTHER) < 0) __PYX_ERR(0, 338, __pyx_L1_error)
     __Pyx_DECREF_SET(__pyx_v_Exportypes, __pyx_t_3);
     __pyx_t_3 = 0;
   }
   __pyx_L4:;
 
-  /* "LeetdMassExport.py":342
+  /* "LeetdMassExport.py":340
  *         else: Exportypes={'ARMATURE','MESH','OTHER'}
  * 
  *         bpy.ops.export_scene.fbx(filepath=expPath,             # <<<<<<<<<<<<<<
  *                             use_selection=True,
  *                             object_types=Exportypes,
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 342, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 340, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 342, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 340, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_export_scene); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 342, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_export_scene); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 340, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_fbx); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 342, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_fbx); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 340, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 342, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 340, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_filepath, __pyx_v_expPath) < 0) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_filepath, __pyx_v_expPath) < 0) __PYX_ERR(0, 340, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":343
+  /* "LeetdMassExport.py":341
  * 
  *         bpy.ops.export_scene.fbx(filepath=expPath,
  *                             use_selection=True,             # <<<<<<<<<<<<<<
  *                             object_types=Exportypes,
  *                             use_custom_props=True,
  */
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_selection, Py_True) < 0) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_selection, Py_True) < 0) __PYX_ERR(0, 340, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":344
+  /* "LeetdMassExport.py":342
  *         bpy.ops.export_scene.fbx(filepath=expPath,
  *                             use_selection=True,
  *                             object_types=Exportypes,             # <<<<<<<<<<<<<<
  *                             use_custom_props=True,
  *                             bake_anim_force_startend_keying=False,
  */
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_object_types, __pyx_v_Exportypes) < 0) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_object_types, __pyx_v_Exportypes) < 0) __PYX_ERR(0, 340, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":345
+  /* "LeetdMassExport.py":343
  *                             use_selection=True,
  *                             object_types=Exportypes,
  *                             use_custom_props=True,             # <<<<<<<<<<<<<<
  *                             bake_anim_force_startend_keying=False,
  *                             use_mesh_modifiers=True
  */
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_custom_props, Py_True) < 0) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_custom_props, Py_True) < 0) __PYX_ERR(0, 340, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":346
+  /* "LeetdMassExport.py":344
  *                             object_types=Exportypes,
  *                             use_custom_props=True,
  *                             bake_anim_force_startend_keying=False,             # <<<<<<<<<<<<<<
  *                             use_mesh_modifiers=True
  *                             )
  */
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_bake_anim_force_startend_keying, Py_False) < 0) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_bake_anim_force_startend_keying, Py_False) < 0) __PYX_ERR(0, 340, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":347
+  /* "LeetdMassExport.py":345
  *                             use_custom_props=True,
  *                             bake_anim_force_startend_keying=False,
  *                             use_mesh_modifiers=True             # <<<<<<<<<<<<<<
  *                             )
  * 
  */
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_mesh_modifiers, Py_True) < 0) __PYX_ERR(0, 342, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_mesh_modifiers, Py_True) < 0) __PYX_ERR(0, 340, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":342
+  /* "LeetdMassExport.py":340
  *         else: Exportypes={'ARMATURE','MESH','OTHER'}
  * 
  *         bpy.ops.export_scene.fbx(filepath=expPath,             # <<<<<<<<<<<<<<
  *                             use_selection=True,
  *                             object_types=Exportypes,
  */
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 342, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 340, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":336
+  /* "LeetdMassExport.py":334
  *         raise Exception("Sorry, No Collection MassExport Check your Animator Memer")
  * 
  *     def BlenderExport(self,expPath,isCamera=False):             # <<<<<<<<<<<<<<
@@ -14080,7 +14110,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_52BlenderExport(CYTH
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":351
+/* "LeetdMassExport.py":349
  * 
  * 
  *     def BakeAnimLayer(self,arm):             # <<<<<<<<<<<<<<
@@ -14144,7 +14174,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 351, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 349, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -14152,14 +14182,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 351, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 349, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("BakeAnimLayer", 1, 2, 2, 1); __PYX_ERR(0, 351, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("BakeAnimLayer", 1, 2, 2, 1); __PYX_ERR(0, 349, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "BakeAnimLayer") < 0)) __PYX_ERR(0, 351, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "BakeAnimLayer") < 0)) __PYX_ERR(0, 349, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -14172,7 +14202,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("BakeAnimLayer", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 351, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("BakeAnimLayer", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 349, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -14200,9 +14230,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
 }
 
 static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_arm) {
-  PyObject *__pyx_v_LayerCount = NULL;
-  PyObject *__pyx_v_i = NULL;
-  PyObject *__pyx_v_bone = NULL;
+  Py_ssize_t __pyx_v_LayerCount;
   PyObject *__pyx_v_result = NULL;
   PyObject *__pyx_v_NewLayerName = NULL;
   PyObject *__pyx_r = NULL;
@@ -14214,19 +14242,19 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
   PyObject *__pyx_t_5 = NULL;
   unsigned int __pyx_t_6;
   Py_ssize_t __pyx_t_7;
-  PyObject *(*__pyx_t_8)(PyObject *);
+  PyObject *__pyx_t_8 = NULL;
   PyObject *__pyx_t_9 = NULL;
   PyObject *__pyx_t_10 = NULL;
   PyObject *__pyx_t_11 = NULL;
   PyObject *__pyx_t_12 = NULL;
   PyObject *__pyx_t_13 = NULL;
-  PyObject *__pyx_t_14 = NULL;
+  Py_ssize_t __pyx_t_14;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("BakeAnimLayer", 1);
 
-  /* "LeetdMassExport.py":352
+  /* "LeetdMassExport.py":350
  * 
  *     def BakeAnimLayer(self,arm):
  *         if arm is None: return             # <<<<<<<<<<<<<<
@@ -14240,28 +14268,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":354
+  /* "LeetdMassExport.py":352
  *         if arm is None: return
  *         #select Layer 0
  *         bpy.data.objects[arm.name].select_set(True)             # <<<<<<<<<<<<<<
  *         self.ClearSelection()
  *         #Set Select Armature
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 354, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 352, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_data); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 354, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_data); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 352, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_objects); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 354, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_objects); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 352, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 354, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 352, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 354, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 352, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_select_set); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 354, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_select_set); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 352, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_t_5 = NULL;
@@ -14282,20 +14310,20 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
     PyObject *__pyx_callargs[2] = {__pyx_t_5, Py_True};
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 354, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 352, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":355
+  /* "LeetdMassExport.py":353
  *         #select Layer 0
  *         bpy.data.objects[arm.name].select_set(True)
  *         self.ClearSelection()             # <<<<<<<<<<<<<<
  *         #Set Select Armature
  *         self.set_active_object(arm.name)
  */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ClearSelection); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 355, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ClearSelection); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 353, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_5 = NULL;
   __pyx_t_6 = 0;
@@ -14315,22 +14343,22 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
     PyObject *__pyx_callargs[2] = {__pyx_t_5, NULL};
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 355, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 353, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":357
+  /* "LeetdMassExport.py":355
  *         self.ClearSelection()
  *         #Set Select Armature
  *         self.set_active_object(arm.name)             # <<<<<<<<<<<<<<
  *         LayerCount=len(arm.Anim_Layers)
  * 
  */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 357, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 355, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 357, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 355, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_t_3 = NULL;
   __pyx_t_6 = 0;
@@ -14351,263 +14379,183 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 357, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 355, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":358
+  /* "LeetdMassExport.py":356
  *         #Set Select Armature
  *         self.set_active_object(arm.name)
  *         LayerCount=len(arm.Anim_Layers)             # <<<<<<<<<<<<<<
  * 
  *         ##Count Layer  > 0
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 358, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 356, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = PyObject_Length(__pyx_t_2); if (unlikely(__pyx_t_7 == ((Py_ssize_t)-1))) __PYX_ERR(0, 358, __pyx_L1_error)
+  __pyx_t_7 = PyObject_Length(__pyx_t_2); if (unlikely(__pyx_t_7 == ((Py_ssize_t)-1))) __PYX_ERR(0, 356, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyInt_FromSsize_t(__pyx_t_7); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 358, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_v_LayerCount = __pyx_t_2;
-  __pyx_t_2 = 0;
+  __pyx_v_LayerCount = __pyx_t_7;
 
-  /* "LeetdMassExport.py":361
+  /* "LeetdMassExport.py":359
  * 
  *         ##Count Layer  > 0
  *         if LayerCount > 1:             # <<<<<<<<<<<<<<
  *             bpy.ops.object.mode_set(mode = 'POSE')
  *             #arm.als.layer_index=LayerCount-1
  */
-  __pyx_t_2 = PyObject_RichCompare(__pyx_v_LayerCount, __pyx_int_1, Py_GT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 361, __pyx_L1_error)
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 361, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_1 = (__pyx_v_LayerCount > 1);
   if (__pyx_t_1) {
 
-    /* "LeetdMassExport.py":362
+    /* "LeetdMassExport.py":360
  *         ##Count Layer  > 0
  *         if LayerCount > 1:
  *             bpy.ops.object.mode_set(mode = 'POSE')             # <<<<<<<<<<<<<<
  *             #arm.als.layer_index=LayerCount-1
- *             for i,bone in enumerate(arm.data.bones): bone.select=True; print(i)
+ *             #for i,bone in enumerate(arm.data.bones): bone.select=True
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 362, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 360, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_ops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 362, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_ops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 360, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_object); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 362, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_object); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 360, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 362, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 360, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 362, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 360, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_mode, __pyx_n_s_POSE) < 0) __PYX_ERR(0, 362, __pyx_L1_error)
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 362, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_mode, __pyx_n_s_POSE) < 0) __PYX_ERR(0, 360, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 360, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
     /* "LeetdMassExport.py":364
- *             bpy.ops.object.mode_set(mode = 'POSE')
- *             #arm.als.layer_index=LayerCount-1
- *             for i,bone in enumerate(arm.data.bones): bone.select=True; print(i)             # <<<<<<<<<<<<<<
- *             bpy.context.object.als.layer_index=LayerCount-1
- *             bpy.context.object.als.mergefcurves = True
- */
-    __Pyx_INCREF(__pyx_int_0);
-    __pyx_t_5 = __pyx_int_0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 364, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_bones); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 364, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (likely(PyList_CheckExact(__pyx_t_4)) || PyTuple_CheckExact(__pyx_t_4)) {
-      __pyx_t_2 = __pyx_t_4; __Pyx_INCREF(__pyx_t_2);
-      __pyx_t_7 = 0;
-      __pyx_t_8 = NULL;
-    } else {
-      __pyx_t_7 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 364, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_8 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 364, __pyx_L1_error)
-    }
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    for (;;) {
-      if (likely(!__pyx_t_8)) {
-        if (likely(PyList_CheckExact(__pyx_t_2))) {
-          {
-            Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_2);
-            #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 364, __pyx_L1_error)
-            #endif
-            if (__pyx_t_7 >= __pyx_temp) break;
-          }
-          #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_4 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_7); __Pyx_INCREF(__pyx_t_4); __pyx_t_7++; if (unlikely((0 < 0))) __PYX_ERR(0, 364, __pyx_L1_error)
-          #else
-          __pyx_t_4 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 364, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_4);
-          #endif
-        } else {
-          {
-            Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_2);
-            #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 364, __pyx_L1_error)
-            #endif
-            if (__pyx_t_7 >= __pyx_temp) break;
-          }
-          #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_7); __Pyx_INCREF(__pyx_t_4); __pyx_t_7++; if (unlikely((0 < 0))) __PYX_ERR(0, 364, __pyx_L1_error)
-          #else
-          __pyx_t_4 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 364, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_4);
-          #endif
-        }
-      } else {
-        __pyx_t_4 = __pyx_t_8(__pyx_t_2);
-        if (unlikely(!__pyx_t_4)) {
-          PyObject* exc_type = PyErr_Occurred();
-          if (exc_type) {
-            if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 364, __pyx_L1_error)
-          }
-          break;
-        }
-        __Pyx_GOTREF(__pyx_t_4);
-      }
-      __Pyx_XDECREF_SET(__pyx_v_bone, __pyx_t_4);
-      __pyx_t_4 = 0;
-      __Pyx_INCREF(__pyx_t_5);
-      __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_5);
-      __pyx_t_4 = __Pyx_PyInt_AddObjC(__pyx_t_5, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 364, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF(__pyx_t_5);
-      __pyx_t_5 = __pyx_t_4;
-      __pyx_t_4 = 0;
-      if (__Pyx_PyObject_SetAttrStr(__pyx_v_bone, __pyx_n_s_select, Py_True) < 0) __PYX_ERR(0, 364, __pyx_L1_error)
-      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_i); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 364, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    }
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-
-    /* "LeetdMassExport.py":365
- *             #arm.als.layer_index=LayerCount-1
- *             for i,bone in enumerate(arm.data.bones): bone.select=True; print(i)
- *             bpy.context.object.als.layer_index=LayerCount-1             # <<<<<<<<<<<<<<
+ *             #for i,bone in enumerate(arm.data.bones): bone.select=True
+ *             #bpy.context.object.als.layer_index=LayerCount-1
+ *             self.select_layer_bones(arm)             # <<<<<<<<<<<<<<
  *             bpy.context.object.als.mergefcurves = True
  *             bpy.context.object.als.baketype = 'AL'
  */
-    __pyx_t_5 = __Pyx_PyInt_SubtractObjC(__pyx_v_LayerCount, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 365, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 365, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_select_layer_bones); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 364, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_context); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 365, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_object); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 365, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_2);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_als); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 365, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (__Pyx_PyObject_SetAttrStr(__pyx_t_4, __pyx_n_s_layer_index, __pyx_t_5) < 0) __PYX_ERR(0, 365, __pyx_L1_error)
+    __pyx_t_4 = NULL;
+    __pyx_t_6 = 0;
+    #if CYTHON_UNPACK_METHODS
+    if (likely(PyMethod_Check(__pyx_t_2))) {
+      __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_2);
+      if (likely(__pyx_t_4)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+        __Pyx_INCREF(__pyx_t_4);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_2, function);
+        __pyx_t_6 = 1;
+      }
+    }
+    #endif
+    {
+      PyObject *__pyx_callargs[2] = {__pyx_t_4, __pyx_v_arm};
+      __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 364, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    }
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "LeetdMassExport.py":366
- *             for i,bone in enumerate(arm.data.bones): bone.select=True; print(i)
- *             bpy.context.object.als.layer_index=LayerCount-1
+    /* "LeetdMassExport.py":365
+ *             #bpy.context.object.als.layer_index=LayerCount-1
+ *             self.select_layer_bones(arm)
  *             bpy.context.object.als.mergefcurves = True             # <<<<<<<<<<<<<<
  *             bpy.context.object.als.baketype = 'AL'
  *             bpy.context.scene.als.bake_range_type = 'SCENE'
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 366, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_context); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 366, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 365, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_object); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 366, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_context); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 365, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_als); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 366, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_object); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 365, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (__Pyx_PyObject_SetAttrStr(__pyx_t_5, __pyx_n_s_mergefcurves, Py_True) < 0) __PYX_ERR(0, 366, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_als); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 365, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_t_2, __pyx_n_s_mergefcurves, Py_True) < 0) __PYX_ERR(0, 365, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":367
- *             bpy.context.object.als.layer_index=LayerCount-1
+    /* "LeetdMassExport.py":366
+ *             self.select_layer_bones(arm)
  *             bpy.context.object.als.mergefcurves = True
  *             bpy.context.object.als.baketype = 'AL'             # <<<<<<<<<<<<<<
  *             bpy.context.scene.als.bake_range_type = 'SCENE'
  *             #arm.als.blend_type='MULTIPLY'
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 367, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_bpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 366, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_context); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 366, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_context); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 367, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_object); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 366, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_object); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 367, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_als); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 366, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_als); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 367, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_t_5, __pyx_n_s_baketype, __pyx_n_s_AL) < 0) __PYX_ERR(0, 366, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (__Pyx_PyObject_SetAttrStr(__pyx_t_4, __pyx_n_s_baketype, __pyx_n_s_AL) < 0) __PYX_ERR(0, 367, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "LeetdMassExport.py":368
+    /* "LeetdMassExport.py":367
  *             bpy.context.object.als.mergefcurves = True
  *             bpy.context.object.als.baketype = 'AL'
  *             bpy.context.scene.als.bake_range_type = 'SCENE'             # <<<<<<<<<<<<<<
  *             #arm.als.blend_type='MULTIPLY'
- *             arm.als.operator='MERGE'
+ *             arm.als.operator='NEW'
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 368, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_context); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 368, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 367, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_scene); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 368, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_context); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 367, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_als); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 368, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_scene); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 367, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (__Pyx_PyObject_SetAttrStr(__pyx_t_5, __pyx_n_s_bake_range_type, __pyx_n_s_SCENE) < 0) __PYX_ERR(0, 368, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_als); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 367, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_t_2, __pyx_n_s_bake_range_type, __pyx_n_s_SCENE) < 0) __PYX_ERR(0, 367, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":370
+    /* "LeetdMassExport.py":369
  *             bpy.context.scene.als.bake_range_type = 'SCENE'
  *             #arm.als.blend_type='MULTIPLY'
- *             arm.als.operator='MERGE'             # <<<<<<<<<<<<<<
+ *             arm.als.operator='NEW'             # <<<<<<<<<<<<<<
  *             arm.als.direction='ALL'
  *             #bpy.ops.anim.layers_merge_down()
  */
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 370, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    if (__Pyx_PyObject_SetAttrStr(__pyx_t_5, __pyx_n_s_operator, __pyx_n_s_MERGE) < 0) __PYX_ERR(0, 370, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 369, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    if (__Pyx_PyObject_SetAttrStr(__pyx_t_2, __pyx_n_s_operator, __pyx_n_s_NEW) < 0) __PYX_ERR(0, 369, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":371
+    /* "LeetdMassExport.py":370
  *             #arm.als.blend_type='MULTIPLY'
- *             arm.als.operator='MERGE'
+ *             arm.als.operator='NEW'
  *             arm.als.direction='ALL'             # <<<<<<<<<<<<<<
  *             #bpy.ops.anim.layers_merge_down()
  *             result = None
  */
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 371, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    if (__Pyx_PyObject_SetAttrStr(__pyx_t_5, __pyx_n_s_direction, __pyx_n_s_ALL) < 0) __PYX_ERR(0, 371, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 370, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    if (__Pyx_PyObject_SetAttrStr(__pyx_t_2, __pyx_n_s_direction, __pyx_n_s_ALL) < 0) __PYX_ERR(0, 370, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":373
+    /* "LeetdMassExport.py":372
  *             arm.als.direction='ALL'
  *             #bpy.ops.anim.layers_merge_down()
  *             result = None             # <<<<<<<<<<<<<<
@@ -14617,7 +14565,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
     __Pyx_INCREF(Py_None);
     __pyx_v_result = Py_None;
 
-    /* "LeetdMassExport.py":374
+    /* "LeetdMassExport.py":373
  *             #bpy.ops.anim.layers_merge_down()
  *             result = None
  *             try:             # <<<<<<<<<<<<<<
@@ -14627,105 +14575,105 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
     {
       __Pyx_PyThreadState_declare
       __Pyx_PyThreadState_assign
-      __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_10, &__pyx_t_11);
+      __Pyx_ExceptionSave(&__pyx_t_8, &__pyx_t_9, &__pyx_t_10);
+      __Pyx_XGOTREF(__pyx_t_8);
       __Pyx_XGOTREF(__pyx_t_9);
       __Pyx_XGOTREF(__pyx_t_10);
-      __Pyx_XGOTREF(__pyx_t_11);
       /*try:*/ {
 
-        /* "LeetdMassExport.py":375
+        /* "LeetdMassExport.py":374
  *             result = None
  *             try:
  *                 result = bpy.ops.anim.layers_merge_down()             # <<<<<<<<<<<<<<
  *                 if 'FINISHED' in result:
  *                     print(str('merge all Animation {}').format(arm.name))
  */
-        __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 375, __pyx_L8_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 374, __pyx_L5_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_ops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 374, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 375, __pyx_L8_error)
-        __Pyx_GOTREF(__pyx_t_2);
+        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_anim); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 374, __pyx_L5_error)
+        __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_anim); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 375, __pyx_L8_error)
+        __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_layers_merge_down); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 374, __pyx_L5_error)
         __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-        __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_layers_merge_down); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 375, __pyx_L8_error)
-        __Pyx_GOTREF(__pyx_t_2);
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_t_4 = NULL;
+        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __pyx_t_5 = NULL;
         __pyx_t_6 = 0;
         #if CYTHON_UNPACK_METHODS
-        if (likely(PyMethod_Check(__pyx_t_2))) {
-          __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_2);
-          if (likely(__pyx_t_4)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-            __Pyx_INCREF(__pyx_t_4);
+        if (likely(PyMethod_Check(__pyx_t_4))) {
+          __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+          if (likely(__pyx_t_5)) {
+            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+            __Pyx_INCREF(__pyx_t_5);
             __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_2, function);
+            __Pyx_DECREF_SET(__pyx_t_4, function);
             __pyx_t_6 = 1;
           }
         }
         #endif
         {
-          PyObject *__pyx_callargs[2] = {__pyx_t_4, NULL};
-          __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
-          __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-          if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 375, __pyx_L8_error)
-          __Pyx_GOTREF(__pyx_t_5);
-          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          PyObject *__pyx_callargs[2] = {__pyx_t_5, NULL};
+          __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
+          __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+          if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 374, __pyx_L5_error)
+          __Pyx_GOTREF(__pyx_t_2);
+          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         }
-        __Pyx_DECREF_SET(__pyx_v_result, __pyx_t_5);
-        __pyx_t_5 = 0;
+        __Pyx_DECREF_SET(__pyx_v_result, __pyx_t_2);
+        __pyx_t_2 = 0;
 
-        /* "LeetdMassExport.py":376
+        /* "LeetdMassExport.py":375
  *             try:
  *                 result = bpy.ops.anim.layers_merge_down()
  *                 if 'FINISHED' in result:             # <<<<<<<<<<<<<<
  *                     print(str('merge all Animation {}').format(arm.name))
  *             except:
  */
-        __pyx_t_1 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_FINISHED, __pyx_v_result, Py_EQ)); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 376, __pyx_L8_error)
+        __pyx_t_1 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_FINISHED, __pyx_v_result, Py_EQ)); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 375, __pyx_L5_error)
         if (__pyx_t_1) {
 
-          /* "LeetdMassExport.py":377
+          /* "LeetdMassExport.py":376
  *                 result = bpy.ops.anim.layers_merge_down()
  *                 if 'FINISHED' in result:
  *                     print(str('merge all Animation {}').format(arm.name))             # <<<<<<<<<<<<<<
  *             except:
  *                 print(str('merge all Animation failures {}').format(arm.name))
  */
-          __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_merge_all_Animation, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 377, __pyx_L8_error)
-          __Pyx_GOTREF(__pyx_t_2);
-          __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 377, __pyx_L8_error)
+          __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_merge_all_Animation, __pyx_n_s_format); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 376, __pyx_L5_error)
           __Pyx_GOTREF(__pyx_t_4);
+          __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 376, __pyx_L5_error)
+          __Pyx_GOTREF(__pyx_t_5);
           __pyx_t_3 = NULL;
           __pyx_t_6 = 0;
           #if CYTHON_UNPACK_METHODS
-          if (likely(PyMethod_Check(__pyx_t_2))) {
-            __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
+          if (likely(PyMethod_Check(__pyx_t_4))) {
+            __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_4);
             if (likely(__pyx_t_3)) {
-              PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+              PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
               __Pyx_INCREF(__pyx_t_3);
               __Pyx_INCREF(function);
-              __Pyx_DECREF_SET(__pyx_t_2, function);
+              __Pyx_DECREF_SET(__pyx_t_4, function);
               __pyx_t_6 = 1;
             }
           }
           #endif
           {
-            PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_t_4};
-            __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
+            PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_t_5};
+            __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
             __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+            __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 376, __pyx_L5_error)
+            __Pyx_GOTREF(__pyx_t_2);
             __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-            if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 377, __pyx_L8_error)
-            __Pyx_GOTREF(__pyx_t_5);
-            __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
           }
-          __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 377, __pyx_L8_error)
-          __Pyx_GOTREF(__pyx_t_2);
-          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+          __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 376, __pyx_L5_error)
+          __Pyx_GOTREF(__pyx_t_4);
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-          /* "LeetdMassExport.py":376
+          /* "LeetdMassExport.py":375
  *             try:
  *                 result = bpy.ops.anim.layers_merge_down()
  *                 if 'FINISHED' in result:             # <<<<<<<<<<<<<<
@@ -14734,7 +14682,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
  */
         }
 
-        /* "LeetdMassExport.py":374
+        /* "LeetdMassExport.py":373
  *             #bpy.ops.anim.layers_merge_down()
  *             result = None
  *             try:             # <<<<<<<<<<<<<<
@@ -14742,17 +14690,17 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
  *                 if 'FINISHED' in result:
  */
       }
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
-      __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
-      goto __pyx_L13_try_end;
-      __pyx_L8_error:;
+      goto __pyx_L10_try_end;
+      __pyx_L5_error:;
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-      /* "LeetdMassExport.py":378
+      /* "LeetdMassExport.py":377
  *                 if 'FINISHED' in result:
  *                     print(str('merge all Animation {}').format(arm.name))
  *             except:             # <<<<<<<<<<<<<<
@@ -14761,140 +14709,140 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
  */
       /*except:*/ {
         __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.BakeAnimLayer", __pyx_clineno, __pyx_lineno, __pyx_filename);
-        if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_5, &__pyx_t_4) < 0) __PYX_ERR(0, 378, __pyx_L10_except_error)
+        if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_2, &__pyx_t_5) < 0) __PYX_ERR(0, 377, __pyx_L7_except_error)
+        __Pyx_XGOTREF(__pyx_t_4);
         __Pyx_XGOTREF(__pyx_t_2);
         __Pyx_XGOTREF(__pyx_t_5);
-        __Pyx_XGOTREF(__pyx_t_4);
 
-        /* "LeetdMassExport.py":379
+        /* "LeetdMassExport.py":378
  *                     print(str('merge all Animation {}').format(arm.name))
  *             except:
  *                 print(str('merge all Animation failures {}').format(arm.name))             # <<<<<<<<<<<<<<
  *                 pass
  *             arm.Anim_Layers.update()
  */
-        __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_merge_all_Animation_failures, __pyx_n_s_format); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 379, __pyx_L10_except_error)
+        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_merge_all_Animation_failures, __pyx_n_s_format); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 378, __pyx_L7_except_error)
+        __Pyx_GOTREF(__pyx_t_11);
+        __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 378, __pyx_L7_except_error)
         __Pyx_GOTREF(__pyx_t_12);
-        __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 379, __pyx_L10_except_error)
-        __Pyx_GOTREF(__pyx_t_13);
-        __pyx_t_14 = NULL;
+        __pyx_t_13 = NULL;
         __pyx_t_6 = 0;
         #if CYTHON_UNPACK_METHODS
-        if (likely(PyMethod_Check(__pyx_t_12))) {
-          __pyx_t_14 = PyMethod_GET_SELF(__pyx_t_12);
-          if (likely(__pyx_t_14)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_12);
-            __Pyx_INCREF(__pyx_t_14);
+        if (likely(PyMethod_Check(__pyx_t_11))) {
+          __pyx_t_13 = PyMethod_GET_SELF(__pyx_t_11);
+          if (likely(__pyx_t_13)) {
+            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_11);
+            __Pyx_INCREF(__pyx_t_13);
             __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_12, function);
+            __Pyx_DECREF_SET(__pyx_t_11, function);
             __pyx_t_6 = 1;
           }
         }
         #endif
         {
-          PyObject *__pyx_callargs[2] = {__pyx_t_14, __pyx_t_13};
-          __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_12, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
-          __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
-          __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 379, __pyx_L10_except_error)
-          __Pyx_GOTREF(__pyx_t_3);
+          PyObject *__pyx_callargs[2] = {__pyx_t_13, __pyx_t_12};
+          __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_11, __pyx_callargs+1-__pyx_t_6, 1+__pyx_t_6);
+          __Pyx_XDECREF(__pyx_t_13); __pyx_t_13 = 0;
           __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 378, __pyx_L7_except_error)
+          __Pyx_GOTREF(__pyx_t_3);
+          __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
         }
-        __pyx_t_12 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_3); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 379, __pyx_L10_except_error)
-        __Pyx_GOTREF(__pyx_t_12);
+        __pyx_t_11 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_3); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 378, __pyx_L7_except_error)
+        __Pyx_GOTREF(__pyx_t_11);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+        __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
         __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
         __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-        goto __pyx_L9_exception_handled;
+        goto __pyx_L6_exception_handled;
       }
 
-      /* "LeetdMassExport.py":374
+      /* "LeetdMassExport.py":373
  *             #bpy.ops.anim.layers_merge_down()
  *             result = None
  *             try:             # <<<<<<<<<<<<<<
  *                 result = bpy.ops.anim.layers_merge_down()
  *                 if 'FINISHED' in result:
  */
-      __pyx_L10_except_error:;
+      __pyx_L7_except_error:;
+      __Pyx_XGIVEREF(__pyx_t_8);
       __Pyx_XGIVEREF(__pyx_t_9);
       __Pyx_XGIVEREF(__pyx_t_10);
-      __Pyx_XGIVEREF(__pyx_t_11);
-      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_10, __pyx_t_11);
+      __Pyx_ExceptionReset(__pyx_t_8, __pyx_t_9, __pyx_t_10);
       goto __pyx_L1_error;
-      __pyx_L9_exception_handled:;
+      __pyx_L6_exception_handled:;
+      __Pyx_XGIVEREF(__pyx_t_8);
       __Pyx_XGIVEREF(__pyx_t_9);
       __Pyx_XGIVEREF(__pyx_t_10);
-      __Pyx_XGIVEREF(__pyx_t_11);
-      __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_10, __pyx_t_11);
-      __pyx_L13_try_end:;
+      __Pyx_ExceptionReset(__pyx_t_8, __pyx_t_9, __pyx_t_10);
+      __pyx_L10_try_end:;
     }
 
-    /* "LeetdMassExport.py":381
+    /* "LeetdMassExport.py":380
  *                 print(str('merge all Animation failures {}').format(arm.name))
  *                 pass
  *             arm.Anim_Layers.update()             # <<<<<<<<<<<<<<
  *             bpy.ops.object.mode_set(mode = 'OBJECT')
  *         NewLayerName = str("Bake_{bone}").format(bone=arm.name)
  */
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 381, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_update); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 381, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 380, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = NULL;
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_update); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 380, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_2 = NULL;
     __pyx_t_6 = 0;
     #if CYTHON_UNPACK_METHODS
-    if (likely(PyMethod_Check(__pyx_t_2))) {
-      __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_2);
-      if (likely(__pyx_t_5)) {
-        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-        __Pyx_INCREF(__pyx_t_5);
+    if (likely(PyMethod_Check(__pyx_t_4))) {
+      __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_4);
+      if (likely(__pyx_t_2)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+        __Pyx_INCREF(__pyx_t_2);
         __Pyx_INCREF(function);
-        __Pyx_DECREF_SET(__pyx_t_2, function);
+        __Pyx_DECREF_SET(__pyx_t_4, function);
         __pyx_t_6 = 1;
       }
     }
     #endif
     {
-      PyObject *__pyx_callargs[2] = {__pyx_t_5, NULL};
-      __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
-      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 381, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      PyObject *__pyx_callargs[2] = {__pyx_t_2, NULL};
+      __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_6, 0+__pyx_t_6);
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 380, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     }
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "LeetdMassExport.py":382
+    /* "LeetdMassExport.py":381
  *                 pass
  *             arm.Anim_Layers.update()
  *             bpy.ops.object.mode_set(mode = 'OBJECT')             # <<<<<<<<<<<<<<
  *         NewLayerName = str("Bake_{bone}").format(bone=arm.name)
- *         arm.Anim_Layers[0].name = NewLayerName
+ *         arm.Anim_Layers[len(arm.Anim_Layers)-1].name = NewLayerName
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 382, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 382, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_2);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_object); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 382, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 382, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_2);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 382, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_mode, __pyx_n_s_OBJECT) < 0) __PYX_ERR(0, 382, __pyx_L1_error)
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 382, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 381, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_ops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 381, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_object); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 381, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 381, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 381, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_mode, __pyx_n_s_OBJECT) < 0) __PYX_ERR(0, 381, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 381, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":361
+    /* "LeetdMassExport.py":359
  * 
  *         ##Count Layer  > 0
  *         if LayerCount > 1:             # <<<<<<<<<<<<<<
@@ -14903,74 +14851,79 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
  */
   }
 
-  /* "LeetdMassExport.py":383
+  /* "LeetdMassExport.py":382
  *             arm.Anim_Layers.update()
  *             bpy.ops.object.mode_set(mode = 'OBJECT')
  *         NewLayerName = str("Bake_{bone}").format(bone=arm.name)             # <<<<<<<<<<<<<<
- *         arm.Anim_Layers[0].name = NewLayerName
+ *         arm.Anim_Layers[len(arm.Anim_Layers)-1].name = NewLayerName
  *         bpy.context.scene.arp_export_name_string = NewLayerName
  */
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Bake__bone, __pyx_n_s_format); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Bake__bone, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 382, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 382, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 382, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 383, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_bone, __pyx_t_2) < 0) __PYX_ERR(0, 383, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 383, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_bone, __pyx_t_4) < 0) __PYX_ERR(0, 382, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_v_NewLayerName = __pyx_t_2;
-  __pyx_t_2 = 0;
+  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 382, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_v_NewLayerName = __pyx_t_4;
+  __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":384
+  /* "LeetdMassExport.py":383
  *             bpy.ops.object.mode_set(mode = 'OBJECT')
  *         NewLayerName = str("Bake_{bone}").format(bone=arm.name)
- *         arm.Anim_Layers[0].name = NewLayerName             # <<<<<<<<<<<<<<
+ *         arm.Anim_Layers[len(arm.Anim_Layers)-1].name = NewLayerName             # <<<<<<<<<<<<<<
  *         bpy.context.scene.arp_export_name_string = NewLayerName
  *         arm.als.turn_on=False
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 384, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_2, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 384, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 383, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_4, __pyx_n_s_name, __pyx_v_NewLayerName) < 0) __PYX_ERR(0, 384, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_Anim_Layers); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_7 = PyObject_Length(__pyx_t_5); if (unlikely(__pyx_t_7 == ((Py_ssize_t)-1))) __PYX_ERR(0, 383, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_14 = (__pyx_t_7 - 1);
+  __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_4, __pyx_t_14, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 1, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_5, __pyx_n_s_name, __pyx_v_NewLayerName) < 0) __PYX_ERR(0, 383, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":385
+  /* "LeetdMassExport.py":384
  *         NewLayerName = str("Bake_{bone}").format(bone=arm.name)
- *         arm.Anim_Layers[0].name = NewLayerName
+ *         arm.Anim_Layers[len(arm.Anim_Layers)-1].name = NewLayerName
  *         bpy.context.scene.arp_export_name_string = NewLayerName             # <<<<<<<<<<<<<<
  *         arm.als.turn_on=False
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_bpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 385, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 384, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_context); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 384, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_context); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 385, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_scene); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 384, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_scene); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 385, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_4, __pyx_n_s_arp_export_name_string, __pyx_v_NewLayerName) < 0) __PYX_ERR(0, 385, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_5, __pyx_n_s_arp_export_name_string, __pyx_v_NewLayerName) < 0) __PYX_ERR(0, 384, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":386
- *         arm.Anim_Layers[0].name = NewLayerName
+  /* "LeetdMassExport.py":385
+ *         arm.Anim_Layers[len(arm.Anim_Layers)-1].name = NewLayerName
  *         bpy.context.scene.arp_export_name_string = NewLayerName
  *         arm.als.turn_on=False             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 386, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_4, __pyx_n_s_turn_on, Py_False) < 0) __PYX_ERR(0, 386, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 385, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_5, __pyx_n_s_turn_on, Py_False) < 0) __PYX_ERR(0, 385, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":351
+  /* "LeetdMassExport.py":349
  * 
  * 
  *     def BakeAnimLayer(self,arm):             # <<<<<<<<<<<<<<
@@ -14986,15 +14939,12 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_11);
   __Pyx_XDECREF(__pyx_t_12);
   __Pyx_XDECREF(__pyx_t_13);
-  __Pyx_XDECREF(__pyx_t_14);
   __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.BakeAnimLayer", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
-  __Pyx_XDECREF(__pyx_v_LayerCount);
-  __Pyx_XDECREF(__pyx_v_i);
-  __Pyx_XDECREF(__pyx_v_bone);
   __Pyx_XDECREF(__pyx_v_result);
   __Pyx_XDECREF(__pyx_v_NewLayerName);
   __Pyx_XGIVEREF(__pyx_r);
@@ -15002,7 +14952,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_54BakeAnimLayer(CYTH
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":390
+/* "LeetdMassExport.py":389
  * 
  * 
  *     def SetActiveAllBoneInAmature(self,arm):             # <<<<<<<<<<<<<<
@@ -15066,7 +15016,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 390, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 389, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -15074,14 +15024,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 390, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 389, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("SetActiveAllBoneInAmature", 1, 2, 2, 1); __PYX_ERR(0, 390, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("SetActiveAllBoneInAmature", 1, 2, 2, 1); __PYX_ERR(0, 389, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "SetActiveAllBoneInAmature") < 0)) __PYX_ERR(0, 390, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "SetActiveAllBoneInAmature") < 0)) __PYX_ERR(0, 389, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -15094,7 +15044,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("SetActiveAllBoneInAmature", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 390, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("SetActiveAllBoneInAmature", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 389, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -15125,7 +15075,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
   long __pyx_v_x;
   PyObject *__pyx_v_bones = NULL;
   PyObject *__pyx_v_b = NULL;
-  PyObject *__pyx_8genexpr5__pyx_v_b = NULL;
+  PyObject *__pyx_8genexpr6__pyx_v_b = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -15143,7 +15093,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("SetActiveAllBoneInAmature", 1);
 
-  /* "LeetdMassExport.py":391
+  /* "LeetdMassExport.py":390
  * 
  *     def SetActiveAllBoneInAmature(self,arm):
  *         if arm is None: return             # <<<<<<<<<<<<<<
@@ -15157,7 +15107,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":394
+  /* "LeetdMassExport.py":393
  * 
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -15173,7 +15123,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
     __Pyx_XGOTREF(__pyx_t_4);
     /*try:*/ {
 
-      /* "LeetdMassExport.py":395
+      /* "LeetdMassExport.py":394
  * 
  *         try:
  *             for x in range(7):             # <<<<<<<<<<<<<<
@@ -15183,23 +15133,23 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
       for (__pyx_t_5 = 0; __pyx_t_5 < 7; __pyx_t_5+=1) {
         __pyx_v_x = __pyx_t_5;
 
-        /* "LeetdMassExport.py":396
+        /* "LeetdMassExport.py":395
  *         try:
  *             for x in range(7):
  *                 arm.data.layers[x]=True             # <<<<<<<<<<<<<<
  *         except: pass
  * 
  */
-        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 396, __pyx_L4_error)
+        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 395, __pyx_L4_error)
         __Pyx_GOTREF(__pyx_t_6);
-        __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_layers); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 396, __pyx_L4_error)
+        __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_layers); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 395, __pyx_L4_error)
         __Pyx_GOTREF(__pyx_t_7);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-        if (unlikely((__Pyx_SetItemInt(__pyx_t_7, __pyx_v_x, Py_True, long, 1, __Pyx_PyInt_From_long, 0, 1, 1) < 0))) __PYX_ERR(0, 396, __pyx_L4_error)
+        if (unlikely((__Pyx_SetItemInt(__pyx_t_7, __pyx_v_x, Py_True, long, 1, __Pyx_PyInt_From_long, 0, 1, 1) < 0))) __PYX_ERR(0, 395, __pyx_L4_error)
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       }
 
-      /* "LeetdMassExport.py":394
+      /* "LeetdMassExport.py":393
  * 
  * 
  *         try:             # <<<<<<<<<<<<<<
@@ -15215,7 +15165,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "LeetdMassExport.py":397
+    /* "LeetdMassExport.py":396
  *             for x in range(7):
  *                 arm.data.layers[x]=True
  *         except: pass             # <<<<<<<<<<<<<<
@@ -15234,100 +15184,100 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
     __pyx_L9_try_end:;
   }
 
-  /* "LeetdMassExport.py":399
+  /* "LeetdMassExport.py":398
  *         except: pass
  * 
  *         bpy.ops.object.mode_set(mode = 'POSE')             # <<<<<<<<<<<<<<
  *         bpy.ops.pose.select_all(action='SELECT')
  *         bpy.ops.pose.bone_layers(layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_bpy); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 399, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_bpy); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 398, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_ops); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 399, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_ops); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 398, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_object); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 399, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_object); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 398, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 399, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 398, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 399, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 398, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_mode, __pyx_n_s_POSE) < 0) __PYX_ERR(0, 399, __pyx_L1_error)
-  __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_empty_tuple, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 399, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_mode, __pyx_n_s_POSE) < 0) __PYX_ERR(0, 398, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_empty_tuple, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 398, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-  /* "LeetdMassExport.py":400
+  /* "LeetdMassExport.py":399
  * 
  *         bpy.ops.object.mode_set(mode = 'POSE')
  *         bpy.ops.pose.select_all(action='SELECT')             # <<<<<<<<<<<<<<
  *         bpy.ops.pose.bone_layers(layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
- * 
+ *         #print(bpy.context.object.data.layers[1])
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 400, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_bpy); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 399, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_ops); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 400, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_ops); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 399, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_pose); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 400, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_pose); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 399, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_select_all); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 400, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_select_all); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 399, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 400, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 399, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_action, __pyx_n_s_SELECT) < 0) __PYX_ERR(0, 400, __pyx_L1_error)
-  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_empty_tuple, __pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 400, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_action, __pyx_n_s_SELECT) < 0) __PYX_ERR(0, 399, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_empty_tuple, __pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 399, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "LeetdMassExport.py":401
+  /* "LeetdMassExport.py":400
  *         bpy.ops.object.mode_set(mode = 'POSE')
  *         bpy.ops.pose.select_all(action='SELECT')
  *         bpy.ops.pose.bone_layers(layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))             # <<<<<<<<<<<<<<
- * 
- * 
+ *         #print(bpy.context.object.data.layers[1])
+ *         bones = [b for b in arm.data.bones]
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_bpy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 401, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_bpy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 400, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_ops); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 401, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_ops); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 400, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_pose); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 401, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_pose); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 400, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_bone_layers); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 401, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_bone_layers); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 400, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 401, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 400, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  if (PyDict_SetItem(__pyx_t_6, __pyx_n_s_layers, __pyx_tuple__11) < 0) __PYX_ERR(0, 401, __pyx_L1_error)
-  __pyx_t_7 = __Pyx_PyObject_Call(__pyx_t_8, __pyx_empty_tuple, __pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 401, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_6, __pyx_n_s_layers, __pyx_tuple__11) < 0) __PYX_ERR(0, 400, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_Call(__pyx_t_8, __pyx_empty_tuple, __pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 400, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "LeetdMassExport.py":405
- * 
+  /* "LeetdMassExport.py":402
+ *         bpy.ops.pose.bone_layers(layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
  *         #print(bpy.context.object.data.layers[1])
  *         bones = [b for b in arm.data.bones]             # <<<<<<<<<<<<<<
  *         for b in bones:
  *             b.select=True
  */
   { /* enter inner scope */
-    __pyx_t_7 = PyList_New(0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 405, __pyx_L14_error)
+    __pyx_t_7 = PyList_New(0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 402, __pyx_L14_error)
     __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 405, __pyx_L14_error)
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 402, __pyx_L14_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_bones); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 405, __pyx_L14_error)
+    __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_bones); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 402, __pyx_L14_error)
     __Pyx_GOTREF(__pyx_t_8);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     if (likely(PyList_CheckExact(__pyx_t_8)) || PyTuple_CheckExact(__pyx_t_8)) {
@@ -15335,9 +15285,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
       __pyx_t_9 = 0;
       __pyx_t_10 = NULL;
     } else {
-      __pyx_t_9 = -1; __pyx_t_6 = PyObject_GetIter(__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 405, __pyx_L14_error)
+      __pyx_t_9 = -1; __pyx_t_6 = PyObject_GetIter(__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 402, __pyx_L14_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_10 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 405, __pyx_L14_error)
+      __pyx_t_10 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_6); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 402, __pyx_L14_error)
     }
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     for (;;) {
@@ -15346,28 +15296,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
           {
             Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_6);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 405, __pyx_L14_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 402, __pyx_L14_error)
             #endif
             if (__pyx_t_9 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_8 = PyList_GET_ITEM(__pyx_t_6, __pyx_t_9); __Pyx_INCREF(__pyx_t_8); __pyx_t_9++; if (unlikely((0 < 0))) __PYX_ERR(0, 405, __pyx_L14_error)
+          __pyx_t_8 = PyList_GET_ITEM(__pyx_t_6, __pyx_t_9); __Pyx_INCREF(__pyx_t_8); __pyx_t_9++; if (unlikely((0 < 0))) __PYX_ERR(0, 402, __pyx_L14_error)
           #else
-          __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_6, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 405, __pyx_L14_error)
+          __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_6, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 402, __pyx_L14_error)
           __Pyx_GOTREF(__pyx_t_8);
           #endif
         } else {
           {
             Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_6);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 405, __pyx_L14_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 402, __pyx_L14_error)
             #endif
             if (__pyx_t_9 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_8 = PyTuple_GET_ITEM(__pyx_t_6, __pyx_t_9); __Pyx_INCREF(__pyx_t_8); __pyx_t_9++; if (unlikely((0 < 0))) __PYX_ERR(0, 405, __pyx_L14_error)
+          __pyx_t_8 = PyTuple_GET_ITEM(__pyx_t_6, __pyx_t_9); __Pyx_INCREF(__pyx_t_8); __pyx_t_9++; if (unlikely((0 < 0))) __PYX_ERR(0, 402, __pyx_L14_error)
           #else
-          __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_6, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 405, __pyx_L14_error)
+          __pyx_t_8 = __Pyx_PySequence_ITEM(__pyx_t_6, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 402, __pyx_L14_error)
           __Pyx_GOTREF(__pyx_t_8);
           #endif
         }
@@ -15377,33 +15327,33 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 405, __pyx_L14_error)
+            else __PYX_ERR(0, 402, __pyx_L14_error)
           }
           break;
         }
         __Pyx_GOTREF(__pyx_t_8);
       }
-      __Pyx_XDECREF_SET(__pyx_8genexpr5__pyx_v_b, __pyx_t_8);
+      __Pyx_XDECREF_SET(__pyx_8genexpr6__pyx_v_b, __pyx_t_8);
       __pyx_t_8 = 0;
-      if (unlikely(__Pyx_ListComp_Append(__pyx_t_7, (PyObject*)__pyx_8genexpr5__pyx_v_b))) __PYX_ERR(0, 405, __pyx_L14_error)
+      if (unlikely(__Pyx_ListComp_Append(__pyx_t_7, (PyObject*)__pyx_8genexpr6__pyx_v_b))) __PYX_ERR(0, 402, __pyx_L14_error)
     }
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __Pyx_XDECREF(__pyx_8genexpr5__pyx_v_b); __pyx_8genexpr5__pyx_v_b = 0;
+    __Pyx_XDECREF(__pyx_8genexpr6__pyx_v_b); __pyx_8genexpr6__pyx_v_b = 0;
     goto __pyx_L18_exit_scope;
     __pyx_L14_error:;
-    __Pyx_XDECREF(__pyx_8genexpr5__pyx_v_b); __pyx_8genexpr5__pyx_v_b = 0;
+    __Pyx_XDECREF(__pyx_8genexpr6__pyx_v_b); __pyx_8genexpr6__pyx_v_b = 0;
     goto __pyx_L1_error;
     __pyx_L18_exit_scope:;
   } /* exit inner scope */
   __pyx_v_bones = ((PyObject*)__pyx_t_7);
   __pyx_t_7 = 0;
 
-  /* "LeetdMassExport.py":406
+  /* "LeetdMassExport.py":403
  *         #print(bpy.context.object.data.layers[1])
  *         bones = [b for b in arm.data.bones]
  *         for b in bones:             # <<<<<<<<<<<<<<
  *             b.select=True
- * 
+ *         bpy.ops.object.mode_set(mode = 'OBJECT')
  */
   __pyx_t_7 = __pyx_v_bones; __Pyx_INCREF(__pyx_t_7);
   __pyx_t_9 = 0;
@@ -15411,66 +15361,66 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
     {
       Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_7);
       #if !CYTHON_ASSUME_SAFE_MACROS
-      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 406, __pyx_L1_error)
+      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 403, __pyx_L1_error)
       #endif
       if (__pyx_t_9 >= __pyx_temp) break;
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-    __pyx_t_6 = PyList_GET_ITEM(__pyx_t_7, __pyx_t_9); __Pyx_INCREF(__pyx_t_6); __pyx_t_9++; if (unlikely((0 < 0))) __PYX_ERR(0, 406, __pyx_L1_error)
+    __pyx_t_6 = PyList_GET_ITEM(__pyx_t_7, __pyx_t_9); __Pyx_INCREF(__pyx_t_6); __pyx_t_9++; if (unlikely((0 < 0))) __PYX_ERR(0, 403, __pyx_L1_error)
     #else
-    __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_7, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 406, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PySequence_ITEM(__pyx_t_7, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 403, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     #endif
     __Pyx_XDECREF_SET(__pyx_v_b, __pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "LeetdMassExport.py":407
+    /* "LeetdMassExport.py":404
  *         bones = [b for b in arm.data.bones]
  *         for b in bones:
  *             b.select=True             # <<<<<<<<<<<<<<
- * 
+ *         bpy.ops.object.mode_set(mode = 'OBJECT')
  * 
  */
-    if (__Pyx_PyObject_SetAttrStr(__pyx_v_b, __pyx_n_s_select, Py_True) < 0) __PYX_ERR(0, 407, __pyx_L1_error)
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_b, __pyx_n_s_select, Py_True) < 0) __PYX_ERR(0, 404, __pyx_L1_error)
 
-    /* "LeetdMassExport.py":406
+    /* "LeetdMassExport.py":403
  *         #print(bpy.context.object.data.layers[1])
  *         bones = [b for b in arm.data.bones]
  *         for b in bones:             # <<<<<<<<<<<<<<
  *             b.select=True
- * 
+ *         bpy.ops.object.mode_set(mode = 'OBJECT')
  */
   }
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "LeetdMassExport.py":410
- * 
- * 
+  /* "LeetdMassExport.py":405
+ *         for b in bones:
+ *             b.select=True
  *         bpy.ops.object.mode_set(mode = 'OBJECT')             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_bpy); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 410, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_bpy); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 405, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_ops); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 410, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_ops); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 405, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_object); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 410, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_object); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 405, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 410, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 405, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 410, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 405, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_mode, __pyx_n_s_OBJECT) < 0) __PYX_ERR(0, 410, __pyx_L1_error)
-  __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_empty_tuple, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 410, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_mode, __pyx_n_s_OBJECT) < 0) __PYX_ERR(0, 405, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_empty_tuple, __pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 405, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-  /* "LeetdMassExport.py":390
+  /* "LeetdMassExport.py":389
  * 
  * 
  *     def SetActiveAllBoneInAmature(self,arm):             # <<<<<<<<<<<<<<
@@ -15490,13 +15440,13 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_56SetActiveAllBoneIn
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_bones);
   __Pyx_XDECREF(__pyx_v_b);
-  __Pyx_XDECREF(__pyx_8genexpr5__pyx_v_b);
+  __Pyx_XDECREF(__pyx_8genexpr6__pyx_v_b);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":414
+/* "LeetdMassExport.py":409
  * 
  * 
  *     def GetAddonLayerName(self,arm):             # <<<<<<<<<<<<<<
@@ -15560,7 +15510,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 414, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 409, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
@@ -15568,14 +15518,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[1]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 414, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 409, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("GetAddonLayerName", 1, 2, 2, 1); __PYX_ERR(0, 414, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("GetAddonLayerName", 1, 2, 2, 1); __PYX_ERR(0, 409, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetAddonLayerName") < 0)) __PYX_ERR(0, 414, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "GetAddonLayerName") < 0)) __PYX_ERR(0, 409, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
@@ -15588,7 +15538,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("GetAddonLayerName", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 414, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("GetAddonLayerName", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 409, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -15628,7 +15578,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_58GetAddonLayerName(
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("GetAddonLayerName", 1);
 
-  /* "LeetdMassExport.py":415
+  /* "LeetdMassExport.py":410
  * 
  *     def GetAddonLayerName(self,arm):
  *         if arm is None or not arm.als.turn_on: return             # <<<<<<<<<<<<<<
@@ -15641,12 +15591,12 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_58GetAddonLayerName(
     __pyx_t_1 = __pyx_t_2;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 415, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 410, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_turn_on); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 415, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_turn_on); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 410, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 415, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 410, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_5 = (!__pyx_t_2);
   __pyx_t_1 = __pyx_t_5;
@@ -15657,19 +15607,19 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_58GetAddonLayerName(
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":417
+  /* "LeetdMassExport.py":412
  *         if arm is None or not arm.als.turn_on: return
  *         #arm.Anim_Layers[0].name = str("{bone}_{MassLayer}").format(bone=arm.name,MassLayer="MassLayer")
  *         arm.als.turn_on=False             # <<<<<<<<<<<<<<
  * 
  *     ####################MASSEXPORT FUNC###########################################
  */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 417, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_als); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 412, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_PyObject_SetAttrStr(__pyx_t_4, __pyx_n_s_turn_on, Py_False) < 0) __PYX_ERR(0, 417, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_t_4, __pyx_n_s_turn_on, Py_False) < 0) __PYX_ERR(0, 412, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":414
+  /* "LeetdMassExport.py":409
  * 
  * 
  *     def GetAddonLayerName(self,arm):             # <<<<<<<<<<<<<<
@@ -15691,7 +15641,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_58GetAddonLayerName(
   return __pyx_r;
 }
 
-/* "LeetdMassExport.py":420
+/* "LeetdMassExport.py":415
  * 
  *     ####################MASSEXPORT FUNC###########################################
  *     def LeeMassExport(self,Fbx_platform='AutoRigPro',isTesting=False):             # <<<<<<<<<<<<<<
@@ -15760,26 +15710,26 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
           (void)__Pyx_Arg_NewRef_FASTCALL(values[0]);
           kw_args--;
         }
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 420, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 415, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_Fbx_platform);
           if (value) { values[1] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 420, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 415, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_isTesting);
           if (value) { values[2] = __Pyx_Arg_NewRef_FASTCALL(value); kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 420, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 415, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "LeeMassExport") < 0)) __PYX_ERR(0, 420, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "LeeMassExport") < 0)) __PYX_ERR(0, 415, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
@@ -15798,7 +15748,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("LeeMassExport", 0, 1, 3, __pyx_nargs); __PYX_ERR(0, 420, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("LeeMassExport", 0, 1, 3, __pyx_nargs); __PYX_ERR(0, 415, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -15864,14 +15814,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("LeeMassExport", 1);
 
-  /* "LeetdMassExport.py":421
+  /* "LeetdMassExport.py":416
  *     ####################MASSEXPORT FUNC###########################################
  *     def LeeMassExport(self,Fbx_platform='AutoRigPro',isTesting=False):
  *         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"             # <<<<<<<<<<<<<<
  * 
  *         if col is None :
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetMassFbxCollection); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 421, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetMassFbxCollection); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 416, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -15891,7 +15841,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_n_s_massexport};
     __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 421, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 416, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
@@ -15901,7 +15851,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     if (unlikely(size != 2)) {
       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-      __PYX_ERR(0, 421, __pyx_L1_error)
+      __PYX_ERR(0, 416, __pyx_L1_error)
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
@@ -15914,15 +15864,15 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     __Pyx_INCREF(__pyx_t_2);
     __Pyx_INCREF(__pyx_t_3);
     #else
-    __pyx_t_2 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 421, __pyx_L1_error)
+    __pyx_t_2 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 416, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 421, __pyx_L1_error)
+    __pyx_t_3 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 416, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     #endif
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   } else {
     Py_ssize_t index = -1;
-    __pyx_t_5 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 421, __pyx_L1_error)
+    __pyx_t_5 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 416, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_t_6 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5);
@@ -15930,7 +15880,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     __Pyx_GOTREF(__pyx_t_2);
     index = 1; __pyx_t_3 = __pyx_t_6(__pyx_t_5); if (unlikely(!__pyx_t_3)) goto __pyx_L3_unpacking_failed;
     __Pyx_GOTREF(__pyx_t_3);
-    if (__Pyx_IternextUnpackEndCheck(__pyx_t_6(__pyx_t_5), 2) < 0) __PYX_ERR(0, 421, __pyx_L1_error)
+    if (__Pyx_IternextUnpackEndCheck(__pyx_t_6(__pyx_t_5), 2) < 0) __PYX_ERR(0, 416, __pyx_L1_error)
     __pyx_t_6 = NULL;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     goto __pyx_L4_unpacking_done;
@@ -15938,7 +15888,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_t_6 = NULL;
     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-    __PYX_ERR(0, 421, __pyx_L1_error)
+    __PYX_ERR(0, 416, __pyx_L1_error)
     __pyx_L4_unpacking_done:;
   }
   __pyx_v_Export = __pyx_t_2;
@@ -15946,7 +15896,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
   __pyx_v_col = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":423
+  /* "LeetdMassExport.py":418
  *         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
  * 
  *         if col is None :             # <<<<<<<<<<<<<<
@@ -15956,20 +15906,20 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
   __pyx_t_7 = (__pyx_v_col == Py_None);
   if (unlikely(__pyx_t_7)) {
 
-    /* "LeetdMassExport.py":424
+    /* "LeetdMassExport.py":419
  * 
  *         if col is None :
  *             raise Exception("Sorry, No Collection MassExport Check your Animator Memer")             # <<<<<<<<<<<<<<
  *         #col = bpy.data.collections[Export]
  * 
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_tuple__10, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 424, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_tuple__10, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 419, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_Raise(__pyx_t_1, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __PYX_ERR(0, 424, __pyx_L1_error)
+    __PYX_ERR(0, 419, __pyx_L1_error)
 
-    /* "LeetdMassExport.py":423
+    /* "LeetdMassExport.py":418
  *         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
  * 
  *         if col is None :             # <<<<<<<<<<<<<<
@@ -15978,7 +15928,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
  */
   }
 
-  /* "LeetdMassExport.py":429
+  /* "LeetdMassExport.py":424
  *         #self.ArpIsLoaded()
  *         #bpy.ops.object.make_local(type='ALL')
  *         try:             # <<<<<<<<<<<<<<
@@ -15994,34 +15944,34 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     __Pyx_XGOTREF(__pyx_t_10);
     /*try:*/ {
 
-      /* "LeetdMassExport.py":430
+      /* "LeetdMassExport.py":425
  *         #bpy.ops.object.make_local(type='ALL')
  *         try:
  *             bpy.ops.object.mode_set(mode = 'OBJECT')             # <<<<<<<<<<<<<<
  *         except: pass
  * 
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 430, __pyx_L6_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_bpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 425, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ops); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 430, __pyx_L6_error)
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ops); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 425, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_object); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 430, __pyx_L6_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_object); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 425, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 430, __pyx_L6_error)
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_mode_set); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 425, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 430, __pyx_L6_error)
+      __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 425, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_1);
-      if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_mode, __pyx_n_s_OBJECT) < 0) __PYX_ERR(0, 430, __pyx_L6_error)
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 430, __pyx_L6_error)
+      if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_mode, __pyx_n_s_OBJECT) < 0) __PYX_ERR(0, 425, __pyx_L6_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 425, __pyx_L6_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-      /* "LeetdMassExport.py":429
+      /* "LeetdMassExport.py":424
  *         #self.ArpIsLoaded()
  *         #bpy.ops.object.make_local(type='ALL')
  *         try:             # <<<<<<<<<<<<<<
@@ -16039,7 +15989,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "LeetdMassExport.py":431
+    /* "LeetdMassExport.py":426
  *         try:
  *             bpy.ops.object.mode_set(mode = 'OBJECT')
  *         except: pass             # <<<<<<<<<<<<<<
@@ -16058,14 +16008,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     __pyx_L11_try_end:;
   }
 
-  /* "LeetdMassExport.py":433
+  /* "LeetdMassExport.py":428
  *         except: pass
  * 
  *         armature = self.GetObjectTypes(col,'ARMATURE')             # <<<<<<<<<<<<<<
  * 
  *         cameras = self.GetObjectTypes(col,'CAMERA')
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectTypes); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 433, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectTypes); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 428, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -16085,21 +16035,21 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     PyObject *__pyx_callargs[3] = {__pyx_t_3, __pyx_v_col, __pyx_n_s_ARMATURE};
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_1, __pyx_callargs+1-__pyx_t_4, 2+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 433, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 428, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
   __pyx_v_armature = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":435
+  /* "LeetdMassExport.py":430
  *         armature = self.GetObjectTypes(col,'ARMATURE')
  * 
  *         cameras = self.GetObjectTypes(col,'CAMERA')             # <<<<<<<<<<<<<<
  * 
  *         if not isTesting:
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectTypes); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 435, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetObjectTypes); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 430, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -16119,36 +16069,36 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     PyObject *__pyx_callargs[3] = {__pyx_t_3, __pyx_v_col, __pyx_n_s_CAMERA};
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_1, __pyx_callargs+1-__pyx_t_4, 2+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 435, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 430, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
   __pyx_v_cameras = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "LeetdMassExport.py":437
+  /* "LeetdMassExport.py":432
  *         cameras = self.GetObjectTypes(col,'CAMERA')
  * 
  *         if not isTesting:             # <<<<<<<<<<<<<<
  *             print('=================EXPORT CAMERA====================')
  *             for cam in cameras:
  */
-  __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_v_isTesting); if (unlikely((__pyx_t_7 < 0))) __PYX_ERR(0, 437, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_v_isTesting); if (unlikely((__pyx_t_7 < 0))) __PYX_ERR(0, 432, __pyx_L1_error)
   __pyx_t_11 = (!__pyx_t_7);
   if (__pyx_t_11) {
 
-    /* "LeetdMassExport.py":438
+    /* "LeetdMassExport.py":433
  * 
  *         if not isTesting:
  *             print('=================EXPORT CAMERA====================')             # <<<<<<<<<<<<<<
  *             for cam in cameras:
  *                 self.set_active_object(cam.name)
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__12, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 438, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__12, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 433, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":439
+    /* "LeetdMassExport.py":434
  *         if not isTesting:
  *             print('=================EXPORT CAMERA====================')
  *             for cam in cameras:             # <<<<<<<<<<<<<<
@@ -16160,9 +16110,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
       __pyx_t_12 = 0;
       __pyx_t_13 = NULL;
     } else {
-      __pyx_t_12 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_cameras); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 439, __pyx_L1_error)
+      __pyx_t_12 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_cameras); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 434, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_13 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 439, __pyx_L1_error)
+      __pyx_t_13 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 434, __pyx_L1_error)
     }
     for (;;) {
       if (likely(!__pyx_t_13)) {
@@ -16170,28 +16120,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
           {
             Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_2);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 439, __pyx_L1_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 434, __pyx_L1_error)
             #endif
             if (__pyx_t_12 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_12); __Pyx_INCREF(__pyx_t_1); __pyx_t_12++; if (unlikely((0 < 0))) __PYX_ERR(0, 439, __pyx_L1_error)
+          __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_12); __Pyx_INCREF(__pyx_t_1); __pyx_t_12++; if (unlikely((0 < 0))) __PYX_ERR(0, 434, __pyx_L1_error)
           #else
-          __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 439, __pyx_L1_error)
+          __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 434, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_1);
           #endif
         } else {
           {
             Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_2);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 439, __pyx_L1_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 434, __pyx_L1_error)
             #endif
             if (__pyx_t_12 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_12); __Pyx_INCREF(__pyx_t_1); __pyx_t_12++; if (unlikely((0 < 0))) __PYX_ERR(0, 439, __pyx_L1_error)
+          __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_12); __Pyx_INCREF(__pyx_t_1); __pyx_t_12++; if (unlikely((0 < 0))) __PYX_ERR(0, 434, __pyx_L1_error)
           #else
-          __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 439, __pyx_L1_error)
+          __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 434, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_1);
           #endif
         }
@@ -16201,7 +16151,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 439, __pyx_L1_error)
+            else __PYX_ERR(0, 434, __pyx_L1_error)
           }
           break;
         }
@@ -16210,16 +16160,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
       __Pyx_XDECREF_SET(__pyx_v_cam, __pyx_t_1);
       __pyx_t_1 = 0;
 
-      /* "LeetdMassExport.py":440
+      /* "LeetdMassExport.py":435
  *             print('=================EXPORT CAMERA====================')
  *             for cam in cameras:
  *                 self.set_active_object(cam.name)             # <<<<<<<<<<<<<<
  *                 startf,endf = self.GetStartEndFrame(cam)
  *                 print("Frame : ",startf,endf)
  */
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 440, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 435, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_cam, __pyx_n_s_name); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 440, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_cam, __pyx_n_s_name); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 435, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __pyx_t_14 = NULL;
       __pyx_t_4 = 0;
@@ -16240,20 +16190,20 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
         __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 440, __pyx_L1_error)
+        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 435, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       }
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-      /* "LeetdMassExport.py":441
+      /* "LeetdMassExport.py":436
  *             for cam in cameras:
  *                 self.set_active_object(cam.name)
  *                 startf,endf = self.GetStartEndFrame(cam)             # <<<<<<<<<<<<<<
  *                 print("Frame : ",startf,endf)
  *                 startf = math.ceil(startf)
  */
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetStartEndFrame); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 441, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetStartEndFrame); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 436, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __pyx_t_5 = NULL;
       __pyx_t_4 = 0;
@@ -16273,7 +16223,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_v_cam};
         __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
         __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 441, __pyx_L1_error)
+        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 436, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       }
@@ -16283,7 +16233,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         if (unlikely(size != 2)) {
           if (size > 2) __Pyx_RaiseTooManyValuesError(2);
           else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-          __PYX_ERR(0, 441, __pyx_L1_error)
+          __PYX_ERR(0, 436, __pyx_L1_error)
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
         if (likely(PyTuple_CheckExact(sequence))) {
@@ -16296,15 +16246,15 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __Pyx_INCREF(__pyx_t_3);
         __Pyx_INCREF(__pyx_t_5);
         #else
-        __pyx_t_3 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 441, __pyx_L1_error)
+        __pyx_t_3 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 436, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_5 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 441, __pyx_L1_error)
+        __pyx_t_5 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 436, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         #endif
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       } else {
         Py_ssize_t index = -1;
-        __pyx_t_14 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 441, __pyx_L1_error)
+        __pyx_t_14 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 436, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_14);
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         __pyx_t_6 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_14);
@@ -16312,7 +16262,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __Pyx_GOTREF(__pyx_t_3);
         index = 1; __pyx_t_5 = __pyx_t_6(__pyx_t_14); if (unlikely(!__pyx_t_5)) goto __pyx_L15_unpacking_failed;
         __Pyx_GOTREF(__pyx_t_5);
-        if (__Pyx_IternextUnpackEndCheck(__pyx_t_6(__pyx_t_14), 2) < 0) __PYX_ERR(0, 441, __pyx_L1_error)
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_6(__pyx_t_14), 2) < 0) __PYX_ERR(0, 436, __pyx_L1_error)
         __pyx_t_6 = NULL;
         __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
         goto __pyx_L16_unpacking_done;
@@ -16320,7 +16270,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
         __pyx_t_6 = NULL;
         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-        __PYX_ERR(0, 441, __pyx_L1_error)
+        __PYX_ERR(0, 436, __pyx_L1_error)
         __pyx_L16_unpacking_done:;
       }
       __Pyx_XDECREF_SET(__pyx_v_startf, __pyx_t_3);
@@ -16328,39 +16278,39 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
       __Pyx_XDECREF_SET(__pyx_v_endf, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "LeetdMassExport.py":442
+      /* "LeetdMassExport.py":437
  *                 self.set_active_object(cam.name)
  *                 startf,endf = self.GetStartEndFrame(cam)
  *                 print("Frame : ",startf,endf)             # <<<<<<<<<<<<<<
  *                 startf = math.ceil(startf)
  *                 endf = math.ceil(endf)
  */
-      __pyx_t_1 = PyTuple_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 442, __pyx_L1_error)
+      __pyx_t_1 = PyTuple_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 437, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_INCREF(__pyx_kp_s_Frame);
       __Pyx_GIVEREF(__pyx_kp_s_Frame);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_kp_s_Frame)) __PYX_ERR(0, 442, __pyx_L1_error);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_kp_s_Frame)) __PYX_ERR(0, 437, __pyx_L1_error);
       __Pyx_INCREF(__pyx_v_startf);
       __Pyx_GIVEREF(__pyx_v_startf);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_v_startf)) __PYX_ERR(0, 442, __pyx_L1_error);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_v_startf)) __PYX_ERR(0, 437, __pyx_L1_error);
       __Pyx_INCREF(__pyx_v_endf);
       __Pyx_GIVEREF(__pyx_v_endf);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 2, __pyx_v_endf)) __PYX_ERR(0, 442, __pyx_L1_error);
-      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_t_1, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 442, __pyx_L1_error)
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 2, __pyx_v_endf)) __PYX_ERR(0, 437, __pyx_L1_error);
+      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_t_1, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 437, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-      /* "LeetdMassExport.py":443
+      /* "LeetdMassExport.py":438
  *                 startf,endf = self.GetStartEndFrame(cam)
  *                 print("Frame : ",startf,endf)
  *                 startf = math.ceil(startf)             # <<<<<<<<<<<<<<
  *                 endf = math.ceil(endf)
  *                 bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_math); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 443, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_math); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 438, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ceil); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 443, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ceil); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 438, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __pyx_t_1 = NULL;
@@ -16381,23 +16331,23 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         PyObject *__pyx_callargs[2] = {__pyx_t_1, __pyx_v_startf};
         __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 443, __pyx_L1_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 438, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       }
       __Pyx_DECREF_SET(__pyx_v_startf, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "LeetdMassExport.py":444
+      /* "LeetdMassExport.py":439
  *                 print("Frame : ",startf,endf)
  *                 startf = math.ceil(startf)
  *                 endf = math.ceil(endf)             # <<<<<<<<<<<<<<
  *                 bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
- *                 expPath = str(self.ExportDir).format(fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+ *                 expPath = str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_math); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 444, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_math); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 439, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ceil); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 444, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ceil); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 439, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __pyx_t_3 = NULL;
@@ -16418,99 +16368,97 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_v_endf};
         __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_1, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 444, __pyx_L1_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 439, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       }
       __Pyx_DECREF_SET(__pyx_v_endf, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "LeetdMassExport.py":445
+      /* "LeetdMassExport.py":440
  *                 startf = math.ceil(startf)
  *                 endf = math.ceil(endf)
  *                 bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})             # <<<<<<<<<<<<<<
- *                 expPath = str(self.ExportDir).format(fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+ *                 expPath = str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
  *                 if cam: self.BlenderExport(expPath,True)
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 445, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 440, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_ops); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 445, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_ops); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 440, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_nla); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 445, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_nla); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 440, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_bake); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 445, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_bake); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 440, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = __Pyx_PyDict_NewPresized(7); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 445, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyDict_NewPresized(7); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 440, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_frame_start, __pyx_v_startf) < 0) __PYX_ERR(0, 445, __pyx_L1_error)
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_frame_end, __pyx_v_endf) < 0) __PYX_ERR(0, 445, __pyx_L1_error)
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_only_selected, Py_True) < 0) __PYX_ERR(0, 445, __pyx_L1_error)
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_visual_keying, Py_True) < 0) __PYX_ERR(0, 445, __pyx_L1_error)
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_clear_constraints, Py_True) < 0) __PYX_ERR(0, 445, __pyx_L1_error)
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_use_current_action, Py_True) < 0) __PYX_ERR(0, 445, __pyx_L1_error)
-      __pyx_t_3 = PySet_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 445, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_frame_start, __pyx_v_startf) < 0) __PYX_ERR(0, 440, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_frame_end, __pyx_v_endf) < 0) __PYX_ERR(0, 440, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_only_selected, Py_True) < 0) __PYX_ERR(0, 440, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_visual_keying, Py_True) < 0) __PYX_ERR(0, 440, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_clear_constraints, Py_True) < 0) __PYX_ERR(0, 440, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_use_current_action, Py_True) < 0) __PYX_ERR(0, 440, __pyx_L1_error)
+      __pyx_t_3 = PySet_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 440, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      if (PySet_Add(__pyx_t_3, __pyx_n_s_OBJECT) < 0) __PYX_ERR(0, 445, __pyx_L1_error)
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_bake_types, __pyx_t_3) < 0) __PYX_ERR(0, 445, __pyx_L1_error)
+      if (PySet_Add(__pyx_t_3, __pyx_n_s_OBJECT) < 0) __PYX_ERR(0, 440, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_bake_types, __pyx_t_3) < 0) __PYX_ERR(0, 440, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 445, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 440, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "LeetdMassExport.py":446
+      /* "LeetdMassExport.py":441
  *                 endf = math.ceil(endf)
  *                 bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
- *                 expPath = str(self.ExportDir).format(fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"             # <<<<<<<<<<<<<<
+ *                 expPath = str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"             # <<<<<<<<<<<<<<
  *                 if cam: self.BlenderExport(expPath,True)
  * 
  */
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ExportDir); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 446, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_dir_prefix___fName___suffix, __pyx_n_s_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 441, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_5 = __Pyx_PyObject_Str(__pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 446, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyDict_NewPresized(4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 441, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 446, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 446, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_cam, __pyx_n_s_name); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 446, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ExportDir); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 441, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_fName, __pyx_t_1) < 0) __PYX_ERR(0, 446, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_dir, __pyx_t_1) < 0) __PYX_ERR(0, 441, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_prefix); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 446, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_cam, __pyx_n_s_name); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 441, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_prefix, __pyx_t_1) < 0) __PYX_ERR(0, 446, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_fName, __pyx_t_1) < 0) __PYX_ERR(0, 441, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_suffix); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 446, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_prefix); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 441, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_suffix, __pyx_t_1) < 0) __PYX_ERR(0, 446, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_prefix, __pyx_t_1) < 0) __PYX_ERR(0, 441, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 446, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_suffix); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 441, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_suffix, __pyx_t_1) < 0) __PYX_ERR(0, 441, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 441, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = PyNumber_Add(__pyx_t_1, __pyx_kp_s_fbx_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 446, __pyx_L1_error)
+      __pyx_t_5 = PyNumber_Add(__pyx_t_1, __pyx_kp_s_fbx_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 441, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_XDECREF_SET(__pyx_v_expPath, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "LeetdMassExport.py":447
+      /* "LeetdMassExport.py":442
  *                 bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
- *                 expPath = str(self.ExportDir).format(fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+ *                 expPath = str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
  *                 if cam: self.BlenderExport(expPath,True)             # <<<<<<<<<<<<<<
  * 
  *             print('=================END EXPORT CAMERA====================')
  */
-      __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_v_cam); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 447, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_v_cam); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 442, __pyx_L1_error)
       if (__pyx_t_11) {
-        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_BlenderExport); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 447, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_BlenderExport); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 442, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         __pyx_t_3 = NULL;
         __pyx_t_4 = 0;
@@ -16530,14 +16478,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
           PyObject *__pyx_callargs[3] = {__pyx_t_3, __pyx_v_expPath, Py_True};
           __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_1, __pyx_callargs+1-__pyx_t_4, 2+__pyx_t_4);
           __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-          if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 447, __pyx_L1_error)
+          if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 442, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         }
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
 
-      /* "LeetdMassExport.py":439
+      /* "LeetdMassExport.py":434
  *         if not isTesting:
  *             print('=================EXPORT CAMERA====================')
  *             for cam in cameras:             # <<<<<<<<<<<<<<
@@ -16547,18 +16495,18 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     }
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":449
+    /* "LeetdMassExport.py":444
  *                 if cam: self.BlenderExport(expPath,True)
  * 
  *             print('=================END EXPORT CAMERA====================')             # <<<<<<<<<<<<<<
  * 
  *         if armature.__len__() <= 0: return
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__13, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 449, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__13, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 444, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":437
+    /* "LeetdMassExport.py":432
  *         cameras = self.GetObjectTypes(col,'CAMERA')
  * 
  *         if not isTesting:             # <<<<<<<<<<<<<<
@@ -16567,14 +16515,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
  */
   }
 
-  /* "LeetdMassExport.py":451
+  /* "LeetdMassExport.py":446
  *             print('=================END EXPORT CAMERA====================')
  * 
  *         if armature.__len__() <= 0: return             # <<<<<<<<<<<<<<
  * 
- *         self.LeeBakeFunc(Export)
+ *         self.LeeBakeFunc(Export,isTesting)
  */
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_armature, __pyx_n_s_len); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_armature, __pyx_n_s_len); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 446, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_t_1 = NULL;
   __pyx_t_4 = 0;
@@ -16594,13 +16542,13 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     PyObject *__pyx_callargs[2] = {__pyx_t_1, NULL};
     __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_5, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 451, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 446, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
-  __pyx_t_5 = PyObject_RichCompare(__pyx_t_2, __pyx_int_0, Py_LE); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_5 = PyObject_RichCompare(__pyx_t_2, __pyx_int_0, Py_LE); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 446, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 451, __pyx_L1_error)
+  __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 446, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   if (__pyx_t_11) {
     __Pyx_XDECREF(__pyx_r);
@@ -16608,14 +16556,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     goto __pyx_L0;
   }
 
-  /* "LeetdMassExport.py":453
+  /* "LeetdMassExport.py":448
  *         if armature.__len__() <= 0: return
  * 
- *         self.LeeBakeFunc(Export)             # <<<<<<<<<<<<<<
+ *         self.LeeBakeFunc(Export,isTesting)             # <<<<<<<<<<<<<<
  *         # self.ArpIsLoaded()
  *         if self.Skeletal.endswith("BaseSkeleton"):
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_LeeBakeFunc); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 453, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_LeeBakeFunc); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 448, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_1 = NULL;
   __pyx_t_4 = 0;
@@ -16632,25 +16580,25 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
   }
   #endif
   {
-    PyObject *__pyx_callargs[2] = {__pyx_t_1, __pyx_v_Export};
-    __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
+    PyObject *__pyx_callargs[3] = {__pyx_t_1, __pyx_v_Export, __pyx_v_isTesting};
+    __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 2+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 453, __pyx_L1_error)
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 448, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "LeetdMassExport.py":455
- *         self.LeeBakeFunc(Export)
+  /* "LeetdMassExport.py":450
+ *         self.LeeBakeFunc(Export,isTesting)
  *         # self.ArpIsLoaded()
  *         if self.Skeletal.endswith("BaseSkeleton"):             # <<<<<<<<<<<<<<
  *             self.InitScriptExpSkeletal()
  * 
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_Skeletal); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 455, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_Skeletal); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 450, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_endswith); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 455, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_endswith); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 450, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = NULL;
@@ -16671,22 +16619,22 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_n_s_BaseSkeleton};
     __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_1, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 455, __pyx_L1_error)
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 450, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
-  __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 455, __pyx_L1_error)
+  __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 450, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   if (__pyx_t_11) {
 
-    /* "LeetdMassExport.py":456
+    /* "LeetdMassExport.py":451
  *         # self.ArpIsLoaded()
  *         if self.Skeletal.endswith("BaseSkeleton"):
  *             self.InitScriptExpSkeletal()             # <<<<<<<<<<<<<<
  * 
  *         ##=================BAKE====================
  */
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_InitScriptExpSkeletal); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 456, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_InitScriptExpSkeletal); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 451, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_t_2 = NULL;
     __pyx_t_4 = 0;
@@ -16706,14 +16654,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
       PyObject *__pyx_callargs[2] = {__pyx_t_2, NULL};
       __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_1, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 456, __pyx_L1_error)
+      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 451, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     }
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "LeetdMassExport.py":455
- *         self.LeeBakeFunc(Export)
+    /* "LeetdMassExport.py":450
+ *         self.LeeBakeFunc(Export,isTesting)
  *         # self.ArpIsLoaded()
  *         if self.Skeletal.endswith("BaseSkeleton"):             # <<<<<<<<<<<<<<
  *             self.InitScriptExpSkeletal()
@@ -16721,16 +16669,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
  */
   }
 
-  /* "LeetdMassExport.py":459
+  /* "LeetdMassExport.py":454
  * 
  *         ##=================BAKE====================
  *         if self.MassGeo.startswith("On"):             # <<<<<<<<<<<<<<
  *             bpy.ops.object.make_local(type='ALL')
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_MassGeo); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 459, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_MassGeo); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 454, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_startswith); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 459, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_startswith); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 454, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_1 = NULL;
@@ -16751,42 +16699,42 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     PyObject *__pyx_callargs[2] = {__pyx_t_1, __pyx_n_s_On};
     __pyx_t_5 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 459, __pyx_L1_error)
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 454, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
-  __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 459, __pyx_L1_error)
+  __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 454, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   if (__pyx_t_11) {
 
-    /* "LeetdMassExport.py":460
+    /* "LeetdMassExport.py":455
  *         ##=================BAKE====================
  *         if self.MassGeo.startswith("On"):
  *             bpy.ops.object.make_local(type='ALL')             # <<<<<<<<<<<<<<
  * 
  *         print('=================EXPORT ARMATURES====================')
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 460, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_bpy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 455, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 460, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_ops); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 455, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_object); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 460, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_object); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 455, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_make_local); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 460, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_make_local); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 455, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 460, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 455, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_type, __pyx_n_s_ALL) < 0) __PYX_ERR(0, 460, __pyx_L1_error)
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 460, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_type, __pyx_n_s_ALL) < 0) __PYX_ERR(0, 455, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 455, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "LeetdMassExport.py":459
+    /* "LeetdMassExport.py":454
  * 
  *         ##=================BAKE====================
  *         if self.MassGeo.startswith("On"):             # <<<<<<<<<<<<<<
@@ -16795,22 +16743,22 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
  */
   }
 
-  /* "LeetdMassExport.py":462
+  /* "LeetdMassExport.py":457
  *             bpy.ops.object.make_local(type='ALL')
  * 
  *         print('=================EXPORT ARMATURES====================')             # <<<<<<<<<<<<<<
  * 
  *         for i,arm in enumerate(armature):
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 462, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 457, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":464
+  /* "LeetdMassExport.py":459
  *         print('=================EXPORT ARMATURES====================')
  * 
  *         for i,arm in enumerate(armature):             # <<<<<<<<<<<<<<
- *             #self.ClearSelection()
+ *             self.ClearSelection()
  *             Geos = self.GetAllGeometryAttachedArmature(arm)
  */
   __Pyx_INCREF(__pyx_int_0);
@@ -16820,9 +16768,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     __pyx_t_12 = 0;
     __pyx_t_13 = NULL;
   } else {
-    __pyx_t_12 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_v_armature); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 464, __pyx_L1_error)
+    __pyx_t_12 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_v_armature); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 459, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_13 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 464, __pyx_L1_error)
+    __pyx_t_13 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_5); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 459, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_13)) {
@@ -16830,28 +16778,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_5);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 464, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 459, __pyx_L1_error)
           #endif
           if (__pyx_t_12 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_12); __Pyx_INCREF(__pyx_t_2); __pyx_t_12++; if (unlikely((0 < 0))) __PYX_ERR(0, 464, __pyx_L1_error)
+        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_12); __Pyx_INCREF(__pyx_t_2); __pyx_t_12++; if (unlikely((0 < 0))) __PYX_ERR(0, 459, __pyx_L1_error)
         #else
-        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 464, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 459, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       } else {
         {
           Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_5);
           #if !CYTHON_ASSUME_SAFE_MACROS
-          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 464, __pyx_L1_error)
+          if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 459, __pyx_L1_error)
           #endif
           if (__pyx_t_12 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_12); __Pyx_INCREF(__pyx_t_2); __pyx_t_12++; if (unlikely((0 < 0))) __PYX_ERR(0, 464, __pyx_L1_error)
+        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_12); __Pyx_INCREF(__pyx_t_2); __pyx_t_12++; if (unlikely((0 < 0))) __PYX_ERR(0, 459, __pyx_L1_error)
         #else
-        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 464, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PySequence_ITEM(__pyx_t_5, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 459, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       }
@@ -16861,7 +16809,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 464, __pyx_L1_error)
+          else __PYX_ERR(0, 459, __pyx_L1_error)
         }
         break;
       }
@@ -16871,54 +16819,20 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     __pyx_t_2 = 0;
     __Pyx_INCREF(__pyx_t_1);
     __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_1);
-    __pyx_t_2 = __Pyx_PyInt_AddObjC(__pyx_t_1, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 464, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyInt_AddObjC(__pyx_t_1, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 459, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1);
     __pyx_t_1 = __pyx_t_2;
     __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":466
+    /* "LeetdMassExport.py":460
+ * 
  *         for i,arm in enumerate(armature):
- *             #self.ClearSelection()
- *             Geos = self.GetAllGeometryAttachedArmature(arm)             # <<<<<<<<<<<<<<
- *             arm.make_local()
- *             for geo in Geos:
- */
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetAllGeometryAttachedArmature); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 466, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_14 = NULL;
-    __pyx_t_4 = 0;
-    #if CYTHON_UNPACK_METHODS
-    if (likely(PyMethod_Check(__pyx_t_3))) {
-      __pyx_t_14 = PyMethod_GET_SELF(__pyx_t_3);
-      if (likely(__pyx_t_14)) {
-        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
-        __Pyx_INCREF(__pyx_t_14);
-        __Pyx_INCREF(function);
-        __Pyx_DECREF_SET(__pyx_t_3, function);
-        __pyx_t_4 = 1;
-      }
-    }
-    #endif
-    {
-      PyObject *__pyx_callargs[2] = {__pyx_t_14, __pyx_v_arm};
-      __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
-      __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
-      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 466, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    }
-    __Pyx_XDECREF_SET(__pyx_v_Geos, __pyx_t_2);
-    __pyx_t_2 = 0;
-
-    /* "LeetdMassExport.py":467
- *             #self.ClearSelection()
+ *             self.ClearSelection()             # <<<<<<<<<<<<<<
  *             Geos = self.GetAllGeometryAttachedArmature(arm)
- *             arm.make_local()             # <<<<<<<<<<<<<<
- *             for geo in Geos:
- *                 try:
+ *             arm.make_local()
  */
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_make_local); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 467, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ClearSelection); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 460, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_14 = NULL;
     __pyx_t_4 = 0;
@@ -16938,13 +16852,80 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
       PyObject *__pyx_callargs[2] = {__pyx_t_14, NULL};
       __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
       __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
-      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 467, __pyx_L1_error)
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 460, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     }
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":468
+    /* "LeetdMassExport.py":461
+ *         for i,arm in enumerate(armature):
+ *             self.ClearSelection()
+ *             Geos = self.GetAllGeometryAttachedArmature(arm)             # <<<<<<<<<<<<<<
+ *             arm.make_local()
+ *             for geo in Geos:
+ */
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_GetAllGeometryAttachedArmature); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 461, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_14 = NULL;
+    __pyx_t_4 = 0;
+    #if CYTHON_UNPACK_METHODS
+    if (likely(PyMethod_Check(__pyx_t_3))) {
+      __pyx_t_14 = PyMethod_GET_SELF(__pyx_t_3);
+      if (likely(__pyx_t_14)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+        __Pyx_INCREF(__pyx_t_14);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_3, function);
+        __pyx_t_4 = 1;
+      }
+    }
+    #endif
+    {
+      PyObject *__pyx_callargs[2] = {__pyx_t_14, __pyx_v_arm};
+      __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
+      __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 461, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    }
+    __Pyx_XDECREF_SET(__pyx_v_Geos, __pyx_t_2);
+    __pyx_t_2 = 0;
+
+    /* "LeetdMassExport.py":462
+ *             self.ClearSelection()
+ *             Geos = self.GetAllGeometryAttachedArmature(arm)
+ *             arm.make_local()             # <<<<<<<<<<<<<<
+ *             for geo in Geos:
+ *                 try:
+ */
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_make_local); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 462, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_14 = NULL;
+    __pyx_t_4 = 0;
+    #if CYTHON_UNPACK_METHODS
+    if (likely(PyMethod_Check(__pyx_t_3))) {
+      __pyx_t_14 = PyMethod_GET_SELF(__pyx_t_3);
+      if (likely(__pyx_t_14)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+        __Pyx_INCREF(__pyx_t_14);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_3, function);
+        __pyx_t_4 = 1;
+      }
+    }
+    #endif
+    {
+      PyObject *__pyx_callargs[2] = {__pyx_t_14, NULL};
+      __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
+      __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 462, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    }
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+    /* "LeetdMassExport.py":463
  *             Geos = self.GetAllGeometryAttachedArmature(arm)
  *             arm.make_local()
  *             for geo in Geos:             # <<<<<<<<<<<<<<
@@ -16956,9 +16937,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
       __pyx_t_15 = 0;
       __pyx_t_16 = NULL;
     } else {
-      __pyx_t_15 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_Geos); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 468, __pyx_L1_error)
+      __pyx_t_15 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_Geos); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 463, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_16 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 468, __pyx_L1_error)
+      __pyx_t_16 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 463, __pyx_L1_error)
     }
     for (;;) {
       if (likely(!__pyx_t_16)) {
@@ -16966,28 +16947,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
           {
             Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_2);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 468, __pyx_L1_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 463, __pyx_L1_error)
             #endif
             if (__pyx_t_15 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_3 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_15); __Pyx_INCREF(__pyx_t_3); __pyx_t_15++; if (unlikely((0 < 0))) __PYX_ERR(0, 468, __pyx_L1_error)
+          __pyx_t_3 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_15); __Pyx_INCREF(__pyx_t_3); __pyx_t_15++; if (unlikely((0 < 0))) __PYX_ERR(0, 463, __pyx_L1_error)
           #else
-          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_15); __pyx_t_15++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 468, __pyx_L1_error)
+          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_15); __pyx_t_15++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 463, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
         } else {
           {
             Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_2);
             #if !CYTHON_ASSUME_SAFE_MACROS
-            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 468, __pyx_L1_error)
+            if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 463, __pyx_L1_error)
             #endif
             if (__pyx_t_15 >= __pyx_temp) break;
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_15); __Pyx_INCREF(__pyx_t_3); __pyx_t_15++; if (unlikely((0 < 0))) __PYX_ERR(0, 468, __pyx_L1_error)
+          __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_15); __Pyx_INCREF(__pyx_t_3); __pyx_t_15++; if (unlikely((0 < 0))) __PYX_ERR(0, 463, __pyx_L1_error)
           #else
-          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_15); __pyx_t_15++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 468, __pyx_L1_error)
+          __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_15); __pyx_t_15++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 463, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
         }
@@ -16997,7 +16978,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 468, __pyx_L1_error)
+            else __PYX_ERR(0, 463, __pyx_L1_error)
           }
           break;
         }
@@ -17006,7 +16987,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
       __Pyx_XDECREF_SET(__pyx_v_geo, __pyx_t_3);
       __pyx_t_3 = 0;
 
-      /* "LeetdMassExport.py":469
+      /* "LeetdMassExport.py":464
  *             arm.make_local()
  *             for geo in Geos:
  *                 try:             # <<<<<<<<<<<<<<
@@ -17022,14 +17003,14 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __Pyx_XGOTREF(__pyx_t_8);
         /*try:*/ {
 
-          /* "LeetdMassExport.py":470
+          /* "LeetdMassExport.py":465
  *             for geo in Geos:
  *                 try:
  *                     geo.make_local()             # <<<<<<<<<<<<<<
  *                 except: pass
  *                 if self.MassGeo.startswith("On"):
  */
-          __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_v_geo, __pyx_n_s_make_local); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 470, __pyx_L26_error)
+          __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_v_geo, __pyx_n_s_make_local); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 465, __pyx_L26_error)
           __Pyx_GOTREF(__pyx_t_14);
           __pyx_t_17 = NULL;
           __pyx_t_4 = 0;
@@ -17049,13 +17030,13 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
             PyObject *__pyx_callargs[2] = {__pyx_t_17, NULL};
             __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_14, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
             __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
-            if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 470, __pyx_L26_error)
+            if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 465, __pyx_L26_error)
             __Pyx_GOTREF(__pyx_t_3);
             __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
           }
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-          /* "LeetdMassExport.py":469
+          /* "LeetdMassExport.py":464
  *             arm.make_local()
  *             for geo in Geos:
  *                 try:             # <<<<<<<<<<<<<<
@@ -17072,7 +17053,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-        /* "LeetdMassExport.py":471
+        /* "LeetdMassExport.py":466
  *                 try:
  *                     geo.make_local()
  *                 except: pass             # <<<<<<<<<<<<<<
@@ -17091,16 +17072,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __pyx_L33_try_end:;
       }
 
-      /* "LeetdMassExport.py":472
+      /* "LeetdMassExport.py":467
  *                     geo.make_local()
  *                 except: pass
  *                 if self.MassGeo.startswith("On"):             # <<<<<<<<<<<<<<
  *                     self.set_active_object(geo.name)
  * 
  */
-      __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_MassGeo); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 472, __pyx_L1_error)
+      __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_MassGeo); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 467, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_14);
-      __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s_startswith); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 472, __pyx_L1_error)
+      __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s_startswith); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 467, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_17);
       __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
       __pyx_t_14 = NULL;
@@ -17121,24 +17102,24 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         PyObject *__pyx_callargs[2] = {__pyx_t_14, __pyx_n_s_On};
         __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_17, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
         __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 472, __pyx_L1_error)
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 467, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
       }
-      __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 472, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 467, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       if (__pyx_t_11) {
 
-        /* "LeetdMassExport.py":473
+        /* "LeetdMassExport.py":468
  *                 except: pass
  *                 if self.MassGeo.startswith("On"):
  *                     self.set_active_object(geo.name)             # <<<<<<<<<<<<<<
  * 
  *             self.set_active_object(arm.name)
  */
-        __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 473, __pyx_L1_error)
+        __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 468, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_17);
-        __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_v_geo, __pyx_n_s_name); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 473, __pyx_L1_error)
+        __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_v_geo, __pyx_n_s_name); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 468, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_14);
         __pyx_t_18 = NULL;
         __pyx_t_4 = 0;
@@ -17159,13 +17140,13 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
           __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_17, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
           __Pyx_XDECREF(__pyx_t_18); __pyx_t_18 = 0;
           __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 473, __pyx_L1_error)
+          if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 468, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
           __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
         }
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-        /* "LeetdMassExport.py":472
+        /* "LeetdMassExport.py":467
  *                     geo.make_local()
  *                 except: pass
  *                 if self.MassGeo.startswith("On"):             # <<<<<<<<<<<<<<
@@ -17174,7 +17155,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
  */
       }
 
-      /* "LeetdMassExport.py":468
+      /* "LeetdMassExport.py":463
  *             Geos = self.GetAllGeometryAttachedArmature(arm)
  *             arm.make_local()
  *             for geo in Geos:             # <<<<<<<<<<<<<<
@@ -17184,16 +17165,16 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
     }
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":475
+    /* "LeetdMassExport.py":470
  *                     self.set_active_object(geo.name)
  * 
  *             self.set_active_object(arm.name)             # <<<<<<<<<<<<<<
  * 
- *             expPath = str(self.ExportDir).format(fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+ *             expPath =  str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
  */
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 475, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_set_active_object); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 470, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 475, __pyx_L1_error)
+    __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 470, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_17);
     __pyx_t_14 = NULL;
     __pyx_t_4 = 0;
@@ -17214,150 +17195,148 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
       __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
       __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
       __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
-      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 475, __pyx_L1_error)
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 470, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     }
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "LeetdMassExport.py":477
+    /* "LeetdMassExport.py":472
  *             self.set_active_object(arm.name)
  * 
- *             expPath = str(self.ExportDir).format(fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"             # <<<<<<<<<<<<<<
+ *             expPath =  str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"             # <<<<<<<<<<<<<<
  * 
  *             if Fbx_platform=="Blender":
  */
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ExportDir); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 477, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_dir_prefix___fName___suffix, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = __Pyx_PyObject_Str(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 477, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyDict_NewPresized(4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 477, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_2);
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 477, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 477, __pyx_L1_error)
+    __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ExportDir); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_17);
-    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_fName, __pyx_t_17) < 0) __PYX_ERR(0, 477, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dir, __pyx_t_17) < 0) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
-    __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_prefix); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 477, __pyx_L1_error)
+    __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_name); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_17);
-    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_prefix, __pyx_t_17) < 0) __PYX_ERR(0, 477, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_fName, __pyx_t_17) < 0) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
-    __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_suffix); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 477, __pyx_L1_error)
+    __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_prefix); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_17);
-    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_suffix, __pyx_t_17) < 0) __PYX_ERR(0, 477, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_prefix, __pyx_t_17) < 0) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
-    __pyx_t_17 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 477, __pyx_L1_error)
+    __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_suffix); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 472, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_17);
+    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_suffix, __pyx_t_17) < 0) __PYX_ERR(0, 472, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+    __pyx_t_17 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_17);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = PyNumber_Add(__pyx_t_17, __pyx_kp_s_fbx_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 477, __pyx_L1_error)
+    __pyx_t_3 = PyNumber_Add(__pyx_t_17, __pyx_kp_s_fbx_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
     __Pyx_XDECREF_SET(__pyx_v_expPath, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "LeetdMassExport.py":479
- *             expPath = str(self.ExportDir).format(fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+    /* "LeetdMassExport.py":474
+ *             expPath =  str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
  * 
  *             if Fbx_platform=="Blender":             # <<<<<<<<<<<<<<
  *                 bpy.ops.export_scene.fbx(filepath=expPath,
  *                                             use_selection=True,
  */
-    __pyx_t_11 = (__Pyx_PyString_Equals(__pyx_v_Fbx_platform, __pyx_n_s_Blender, Py_EQ)); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 479, __pyx_L1_error)
+    __pyx_t_11 = (__Pyx_PyString_Equals(__pyx_v_Fbx_platform, __pyx_n_s_Blender, Py_EQ)); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 474, __pyx_L1_error)
     if (__pyx_t_11) {
 
-      /* "LeetdMassExport.py":480
+      /* "LeetdMassExport.py":475
  * 
  *             if Fbx_platform=="Blender":
  *                 bpy.ops.export_scene.fbx(filepath=expPath,             # <<<<<<<<<<<<<<
  *                                             use_selection=True,
  *                                             object_types={'ARMATURE','MESH','OTHER'},
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 480, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_bpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 475, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ops); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 480, __pyx_L1_error)
+      __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ops); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 475, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_17);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_17, __pyx_n_s_export_scene); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 480, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_17, __pyx_n_s_export_scene); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 475, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
-      __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_fbx); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 480, __pyx_L1_error)
+      __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_fbx); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 475, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_17);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_3 = __Pyx_PyDict_NewPresized(7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 480, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyDict_NewPresized(7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 475, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_filepath, __pyx_v_expPath) < 0) __PYX_ERR(0, 480, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_filepath, __pyx_v_expPath) < 0) __PYX_ERR(0, 475, __pyx_L1_error)
 
-      /* "LeetdMassExport.py":481
+      /* "LeetdMassExport.py":476
  *             if Fbx_platform=="Blender":
  *                 bpy.ops.export_scene.fbx(filepath=expPath,
  *                                             use_selection=True,             # <<<<<<<<<<<<<<
  *                                             object_types={'ARMATURE','MESH','OTHER'},
  *                                             use_custom_props=True,
  */
-      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_selection, Py_True) < 0) __PYX_ERR(0, 480, __pyx_L1_error)
-      __pyx_t_2 = PySet_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 482, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_selection, Py_True) < 0) __PYX_ERR(0, 475, __pyx_L1_error)
+      __pyx_t_2 = PySet_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 477, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      if (PySet_Add(__pyx_t_2, __pyx_n_s_ARMATURE) < 0) __PYX_ERR(0, 482, __pyx_L1_error)
-      if (PySet_Add(__pyx_t_2, __pyx_n_s_MESH) < 0) __PYX_ERR(0, 482, __pyx_L1_error)
-      if (PySet_Add(__pyx_t_2, __pyx_n_s_OTHER) < 0) __PYX_ERR(0, 482, __pyx_L1_error)
-      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_object_types, __pyx_t_2) < 0) __PYX_ERR(0, 480, __pyx_L1_error)
+      if (PySet_Add(__pyx_t_2, __pyx_n_s_ARMATURE) < 0) __PYX_ERR(0, 477, __pyx_L1_error)
+      if (PySet_Add(__pyx_t_2, __pyx_n_s_MESH) < 0) __PYX_ERR(0, 477, __pyx_L1_error)
+      if (PySet_Add(__pyx_t_2, __pyx_n_s_OTHER) < 0) __PYX_ERR(0, 477, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_object_types, __pyx_t_2) < 0) __PYX_ERR(0, 475, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-      /* "LeetdMassExport.py":483
+      /* "LeetdMassExport.py":478
  *                                             use_selection=True,
  *                                             object_types={'ARMATURE','MESH','OTHER'},
  *                                             use_custom_props=True,             # <<<<<<<<<<<<<<
  *                                             bake_anim_force_startend_keying=False,
  *                                             use_mesh_modifiers=False,
  */
-      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_custom_props, Py_True) < 0) __PYX_ERR(0, 480, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_custom_props, Py_True) < 0) __PYX_ERR(0, 475, __pyx_L1_error)
 
-      /* "LeetdMassExport.py":484
+      /* "LeetdMassExport.py":479
  *                                             object_types={'ARMATURE','MESH','OTHER'},
  *                                             use_custom_props=True,
  *                                             bake_anim_force_startend_keying=False,             # <<<<<<<<<<<<<<
  *                                             use_mesh_modifiers=False,
  *                                             use_visible=True
  */
-      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_bake_anim_force_startend_keying, Py_False) < 0) __PYX_ERR(0, 480, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_bake_anim_force_startend_keying, Py_False) < 0) __PYX_ERR(0, 475, __pyx_L1_error)
 
-      /* "LeetdMassExport.py":485
+      /* "LeetdMassExport.py":480
  *                                             use_custom_props=True,
  *                                             bake_anim_force_startend_keying=False,
  *                                             use_mesh_modifiers=False,             # <<<<<<<<<<<<<<
  *                                             use_visible=True
  *                                             )
  */
-      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_mesh_modifiers, Py_False) < 0) __PYX_ERR(0, 480, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_mesh_modifiers, Py_False) < 0) __PYX_ERR(0, 475, __pyx_L1_error)
 
-      /* "LeetdMassExport.py":486
+      /* "LeetdMassExport.py":481
  *                                             bake_anim_force_startend_keying=False,
  *                                             use_mesh_modifiers=False,
  *                                             use_visible=True             # <<<<<<<<<<<<<<
  *                                             )
  * 
  */
-      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_visible, Py_True) < 0) __PYX_ERR(0, 480, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_use_visible, Py_True) < 0) __PYX_ERR(0, 475, __pyx_L1_error)
 
-      /* "LeetdMassExport.py":480
+      /* "LeetdMassExport.py":475
  * 
  *             if Fbx_platform=="Blender":
  *                 bpy.ops.export_scene.fbx(filepath=expPath,             # <<<<<<<<<<<<<<
  *                                             use_selection=True,
  *                                             object_types={'ARMATURE','MESH','OTHER'},
  */
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_17, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 480, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_17, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 475, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-      /* "LeetdMassExport.py":479
- *             expPath = str(self.ExportDir).format(fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+      /* "LeetdMassExport.py":474
+ *             expPath =  str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
  * 
  *             if Fbx_platform=="Blender":             # <<<<<<<<<<<<<<
  *                 bpy.ops.export_scene.fbx(filepath=expPath,
@@ -17366,26 +17345,26 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
       goto __pyx_L36;
     }
 
-    /* "LeetdMassExport.py":489
+    /* "LeetdMassExport.py":484
  *                                             )
  * 
  *             elif Fbx_platform=="AutoRigPro":             # <<<<<<<<<<<<<<
- *                 #self.LeeArpExport(expPath)
  *                 for bone in arm.data.bones:
+ *                     bone.select=True
  */
-    __pyx_t_11 = (__Pyx_PyString_Equals(__pyx_v_Fbx_platform, __pyx_n_s_AutoRigPro, Py_EQ)); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 489, __pyx_L1_error)
+    __pyx_t_11 = (__Pyx_PyString_Equals(__pyx_v_Fbx_platform, __pyx_n_s_AutoRigPro, Py_EQ)); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 484, __pyx_L1_error)
     if (__pyx_t_11) {
 
-      /* "LeetdMassExport.py":491
+      /* "LeetdMassExport.py":485
+ * 
  *             elif Fbx_platform=="AutoRigPro":
- *                 #self.LeeArpExport(expPath)
  *                 for bone in arm.data.bones:             # <<<<<<<<<<<<<<
  *                     bone.select=True
  * 
  */
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 491, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_arm, __pyx_n_s_data); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 485, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_bones); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 491, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_bones); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 485, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       if (likely(PyList_CheckExact(__pyx_t_3)) || PyTuple_CheckExact(__pyx_t_3)) {
@@ -17393,9 +17372,9 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __pyx_t_15 = 0;
         __pyx_t_16 = NULL;
       } else {
-        __pyx_t_15 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 491, __pyx_L1_error)
+        __pyx_t_15 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 485, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_16 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 491, __pyx_L1_error)
+        __pyx_t_16 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_2); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 485, __pyx_L1_error)
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       for (;;) {
@@ -17404,28 +17383,28 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
             {
               Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_2);
               #if !CYTHON_ASSUME_SAFE_MACROS
-              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 491, __pyx_L1_error)
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 485, __pyx_L1_error)
               #endif
               if (__pyx_t_15 >= __pyx_temp) break;
             }
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_3 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_15); __Pyx_INCREF(__pyx_t_3); __pyx_t_15++; if (unlikely((0 < 0))) __PYX_ERR(0, 491, __pyx_L1_error)
+            __pyx_t_3 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_15); __Pyx_INCREF(__pyx_t_3); __pyx_t_15++; if (unlikely((0 < 0))) __PYX_ERR(0, 485, __pyx_L1_error)
             #else
-            __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_15); __pyx_t_15++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 491, __pyx_L1_error)
+            __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_15); __pyx_t_15++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 485, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_3);
             #endif
           } else {
             {
               Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_2);
               #if !CYTHON_ASSUME_SAFE_MACROS
-              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 491, __pyx_L1_error)
+              if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 485, __pyx_L1_error)
               #endif
               if (__pyx_t_15 >= __pyx_temp) break;
             }
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_15); __Pyx_INCREF(__pyx_t_3); __pyx_t_15++; if (unlikely((0 < 0))) __PYX_ERR(0, 491, __pyx_L1_error)
+            __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_15); __Pyx_INCREF(__pyx_t_3); __pyx_t_15++; if (unlikely((0 < 0))) __PYX_ERR(0, 485, __pyx_L1_error)
             #else
-            __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_15); __pyx_t_15++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 491, __pyx_L1_error)
+            __pyx_t_3 = __Pyx_PySequence_ITEM(__pyx_t_2, __pyx_t_15); __pyx_t_15++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 485, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_3);
             #endif
           }
@@ -17435,7 +17414,7 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
               if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-              else __PYX_ERR(0, 491, __pyx_L1_error)
+              else __PYX_ERR(0, 485, __pyx_L1_error)
             }
             break;
           }
@@ -17444,18 +17423,18 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __Pyx_XDECREF_SET(__pyx_v_bone, __pyx_t_3);
         __pyx_t_3 = 0;
 
-        /* "LeetdMassExport.py":492
- *                 #self.LeeArpExport(expPath)
+        /* "LeetdMassExport.py":486
+ *             elif Fbx_platform=="AutoRigPro":
  *                 for bone in arm.data.bones:
  *                     bone.select=True             # <<<<<<<<<<<<<<
  * 
  *                 try:
  */
-        if (__Pyx_PyObject_SetAttrStr(__pyx_v_bone, __pyx_n_s_select, Py_True) < 0) __PYX_ERR(0, 492, __pyx_L1_error)
+        if (__Pyx_PyObject_SetAttrStr(__pyx_v_bone, __pyx_n_s_select, Py_True) < 0) __PYX_ERR(0, 486, __pyx_L1_error)
 
-        /* "LeetdMassExport.py":491
+        /* "LeetdMassExport.py":485
+ * 
  *             elif Fbx_platform=="AutoRigPro":
- *                 #self.LeeArpExport(expPath)
  *                 for bone in arm.data.bones:             # <<<<<<<<<<<<<<
  *                     bone.select=True
  * 
@@ -17463,12 +17442,12 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
       }
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-      /* "LeetdMassExport.py":494
+      /* "LeetdMassExport.py":488
  *                     bone.select=True
  * 
  *                 try:             # <<<<<<<<<<<<<<
+ *                     if isTesting: continue
  *                     self.LeeArpExport(expPath)
- *                     print("Exported  : " + expPath + "\n")
  */
       {
         __Pyx_PyThreadState_declare
@@ -17479,14 +17458,26 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __Pyx_XGOTREF(__pyx_t_10);
         /*try:*/ {
 
-          /* "LeetdMassExport.py":495
+          /* "LeetdMassExport.py":489
  * 
  *                 try:
+ *                     if isTesting: continue             # <<<<<<<<<<<<<<
+ *                     self.LeeArpExport(expPath)
+ *                     print("Exported  : " + expPath + "\n")
+ */
+          __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_v_isTesting); if (unlikely((__pyx_t_11 < 0))) __PYX_ERR(0, 489, __pyx_L40_error)
+          if (__pyx_t_11) {
+            goto __pyx_L46_try_continue;
+          }
+
+          /* "LeetdMassExport.py":490
+ *                 try:
+ *                     if isTesting: continue
  *                     self.LeeArpExport(expPath)             # <<<<<<<<<<<<<<
  *                     print("Exported  : " + expPath + "\n")
- *                 except:
+ *                     self.ClearSelection()
  */
-          __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_LeeArpExport); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 495, __pyx_L40_error)
+          __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_LeeArpExport); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 490, __pyx_L40_error)
           __Pyx_GOTREF(__pyx_t_3);
           __pyx_t_17 = NULL;
           __pyx_t_4 = 0;
@@ -17506,35 +17497,68 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
             PyObject *__pyx_callargs[2] = {__pyx_t_17, __pyx_v_expPath};
             __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 1+__pyx_t_4);
             __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
-            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 495, __pyx_L40_error)
+            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 490, __pyx_L40_error)
             __Pyx_GOTREF(__pyx_t_2);
             __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
           }
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-          /* "LeetdMassExport.py":496
- *                 try:
+          /* "LeetdMassExport.py":491
+ *                     if isTesting: continue
  *                     self.LeeArpExport(expPath)
  *                     print("Exported  : " + expPath + "\n")             # <<<<<<<<<<<<<<
+ *                     self.ClearSelection()
  *                 except:
- *                     print("Issue Export: " + expPath)
  */
-          __pyx_t_2 = PyNumber_Add(__pyx_kp_s_Exported_2, __pyx_v_expPath); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 496, __pyx_L40_error)
+          __pyx_t_2 = PyNumber_Add(__pyx_kp_s_Exported_2, __pyx_v_expPath); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 491, __pyx_L40_error)
           __Pyx_GOTREF(__pyx_t_2);
-          __pyx_t_3 = PyNumber_Add(__pyx_t_2, __pyx_kp_s__15); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 496, __pyx_L40_error)
+          __pyx_t_3 = PyNumber_Add(__pyx_t_2, __pyx_kp_s__15); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 491, __pyx_L40_error)
           __Pyx_GOTREF(__pyx_t_3);
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-          __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 496, __pyx_L40_error)
+          __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 491, __pyx_L40_error)
           __Pyx_GOTREF(__pyx_t_2);
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-          /* "LeetdMassExport.py":494
+          /* "LeetdMassExport.py":492
+ *                     self.LeeArpExport(expPath)
+ *                     print("Exported  : " + expPath + "\n")
+ *                     self.ClearSelection()             # <<<<<<<<<<<<<<
+ *                 except:
+ *                     print("Issue Export: " + expPath)
+ */
+          __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ClearSelection); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 492, __pyx_L40_error)
+          __Pyx_GOTREF(__pyx_t_3);
+          __pyx_t_17 = NULL;
+          __pyx_t_4 = 0;
+          #if CYTHON_UNPACK_METHODS
+          if (likely(PyMethod_Check(__pyx_t_3))) {
+            __pyx_t_17 = PyMethod_GET_SELF(__pyx_t_3);
+            if (likely(__pyx_t_17)) {
+              PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+              __Pyx_INCREF(__pyx_t_17);
+              __Pyx_INCREF(function);
+              __Pyx_DECREF_SET(__pyx_t_3, function);
+              __pyx_t_4 = 1;
+            }
+          }
+          #endif
+          {
+            PyObject *__pyx_callargs[2] = {__pyx_t_17, NULL};
+            __pyx_t_2 = __Pyx_PyObject_FastCall(__pyx_t_3, __pyx_callargs+1-__pyx_t_4, 0+__pyx_t_4);
+            __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
+            if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 492, __pyx_L40_error)
+            __Pyx_GOTREF(__pyx_t_2);
+            __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+          }
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+          /* "LeetdMassExport.py":488
  *                     bone.select=True
  * 
  *                 try:             # <<<<<<<<<<<<<<
+ *                     if isTesting: continue
  *                     self.LeeArpExport(expPath)
- *                     print("Exported  : " + expPath + "\n")
  */
         }
         __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
@@ -17548,30 +17572,30 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-        /* "LeetdMassExport.py":497
- *                     self.LeeArpExport(expPath)
+        /* "LeetdMassExport.py":493
  *                     print("Exported  : " + expPath + "\n")
+ *                     self.ClearSelection()
  *                 except:             # <<<<<<<<<<<<<<
  *                     print("Issue Export: " + expPath)
  * 
  */
         /*except:*/ {
           __Pyx_AddTraceback("LeetdMassExport.MassExportFbx.LeeMassExport", __pyx_clineno, __pyx_lineno, __pyx_filename);
-          if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_3, &__pyx_t_17) < 0) __PYX_ERR(0, 497, __pyx_L42_except_error)
+          if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_3, &__pyx_t_17) < 0) __PYX_ERR(0, 493, __pyx_L42_except_error)
           __Pyx_XGOTREF(__pyx_t_2);
           __Pyx_XGOTREF(__pyx_t_3);
           __Pyx_XGOTREF(__pyx_t_17);
 
-          /* "LeetdMassExport.py":498
- *                     print("Exported  : " + expPath + "\n")
+          /* "LeetdMassExport.py":494
+ *                     self.ClearSelection()
  *                 except:
  *                     print("Issue Export: " + expPath)             # <<<<<<<<<<<<<<
  * 
  *         print('=================END EXPORT ARMATURES====================')
  */
-          __pyx_t_14 = PyNumber_Add(__pyx_kp_s_Issue_Export, __pyx_v_expPath); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 498, __pyx_L42_except_error)
+          __pyx_t_14 = PyNumber_Add(__pyx_kp_s_Issue_Export, __pyx_v_expPath); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 494, __pyx_L42_except_error)
           __Pyx_GOTREF(__pyx_t_14);
-          __pyx_t_18 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_14); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 498, __pyx_L42_except_error)
+          __pyx_t_18 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_14); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 494, __pyx_L42_except_error)
           __Pyx_GOTREF(__pyx_t_18);
           __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
           __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
@@ -17581,12 +17605,12 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
           goto __pyx_L41_exception_handled;
         }
 
-        /* "LeetdMassExport.py":494
+        /* "LeetdMassExport.py":488
  *                     bone.select=True
  * 
  *                 try:             # <<<<<<<<<<<<<<
+ *                     if isTesting: continue
  *                     self.LeeArpExport(expPath)
- *                     print("Exported  : " + expPath + "\n")
  */
         __pyx_L42_except_error:;
         __Pyx_XGIVEREF(__pyx_t_8);
@@ -17594,6 +17618,12 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __Pyx_XGIVEREF(__pyx_t_10);
         __Pyx_ExceptionReset(__pyx_t_8, __pyx_t_9, __pyx_t_10);
         goto __pyx_L1_error;
+        __pyx_L46_try_continue:;
+        __Pyx_XGIVEREF(__pyx_t_8);
+        __Pyx_XGIVEREF(__pyx_t_9);
+        __Pyx_XGIVEREF(__pyx_t_10);
+        __Pyx_ExceptionReset(__pyx_t_8, __pyx_t_9, __pyx_t_10);
+        goto __pyx_L22_continue;
         __pyx_L41_exception_handled:;
         __Pyx_XGIVEREF(__pyx_t_8);
         __Pyx_XGIVEREF(__pyx_t_9);
@@ -17602,39 +17632,38 @@ static PyObject *__pyx_pf_15LeetdMassExport_13MassExportFbx_60LeeMassExport(CYTH
         __pyx_L47_try_end:;
       }
 
-      /* "LeetdMassExport.py":489
+      /* "LeetdMassExport.py":484
  *                                             )
  * 
  *             elif Fbx_platform=="AutoRigPro":             # <<<<<<<<<<<<<<
- *                 #self.LeeArpExport(expPath)
  *                 for bone in arm.data.bones:
+ *                     bone.select=True
  */
     }
     __pyx_L36:;
 
-    /* "LeetdMassExport.py":464
+    /* "LeetdMassExport.py":459
  *         print('=================EXPORT ARMATURES====================')
  * 
  *         for i,arm in enumerate(armature):             # <<<<<<<<<<<<<<
- *             #self.ClearSelection()
+ *             self.ClearSelection()
  *             Geos = self.GetAllGeometryAttachedArmature(arm)
  */
+    __pyx_L22_continue:;
   }
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":500
+  /* "LeetdMassExport.py":496
  *                     print("Issue Export: " + expPath)
  * 
  *         print('=================END EXPORT ARMATURES====================')             # <<<<<<<<<<<<<<
- * 
- * 
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__16, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 500, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__16, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 496, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "LeetdMassExport.py":420
+  /* "LeetdMassExport.py":415
  * 
  *     ####################MASSEXPORT FUNC###########################################
  *     def LeeMassExport(self,Fbx_platform='AutoRigPro',isTesting=False):             # <<<<<<<<<<<<<<
@@ -17713,6 +17742,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_CAMERA, __pyx_k_CAMERA, sizeof(__pyx_k_CAMERA), 0, 0, 1, 1},
     {&__pyx_n_s_ClearSelection, __pyx_k_ClearSelection, sizeof(__pyx_k_ClearSelection), 0, 0, 1, 1},
     {&__pyx_n_s_Collection, __pyx_k_Collection, sizeof(__pyx_k_Collection), 0, 0, 1, 1},
+    {&__pyx_kp_s_Command, __pyx_k_Command, sizeof(__pyx_k_Command), 0, 0, 1, 0},
     {&__pyx_n_s_DESELECT, __pyx_k_DESELECT, sizeof(__pyx_k_DESELECT), 0, 0, 1, 1},
     {&__pyx_kp_s_END_EXPORT_ARMATURES, __pyx_k_END_EXPORT_ARMATURES, sizeof(__pyx_k_END_EXPORT_ARMATURES), 0, 0, 1, 0},
     {&__pyx_kp_s_END_EXPORT_CAMERA, __pyx_k_END_EXPORT_CAMERA, sizeof(__pyx_k_END_EXPORT_CAMERA), 0, 0, 1, 0},
@@ -17741,7 +17771,6 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_InitScriptExpSkeletal, __pyx_k_InitScriptExpSkeletal, sizeof(__pyx_k_InitScriptExpSkeletal), 0, 0, 1, 1},
     {&__pyx_kp_s_Issue_Export, __pyx_k_Issue_Export, sizeof(__pyx_k_Issue_Export), 0, 0, 1, 0},
     {&__pyx_n_s_LayerCount, __pyx_k_LayerCount, sizeof(__pyx_k_LayerCount), 0, 0, 1, 1},
-    {&__pyx_n_s_Layers, __pyx_k_Layers, sizeof(__pyx_k_Layers), 0, 0, 1, 1},
     {&__pyx_n_s_LeeArmatureBake, __pyx_k_LeeArmatureBake, sizeof(__pyx_k_LeeArmatureBake), 0, 0, 1, 1},
     {&__pyx_n_s_LeeArpExport, __pyx_k_LeeArpExport, sizeof(__pyx_k_LeeArpExport), 0, 0, 1, 1},
     {&__pyx_n_s_LeeBakeFunc, __pyx_k_LeeBakeFunc, sizeof(__pyx_k_LeeBakeFunc), 0, 0, 1, 1},
@@ -17749,7 +17778,6 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_LeetdMassExport, __pyx_k_LeetdMassExport, sizeof(__pyx_k_LeetdMassExport), 0, 0, 1, 1},
     {&__pyx_kp_s_LeetdMassExport_py, __pyx_k_LeetdMassExport_py, sizeof(__pyx_k_LeetdMassExport_py), 0, 0, 1, 0},
     {&__pyx_n_s_Libs, __pyx_k_Libs, sizeof(__pyx_k_Libs), 0, 0, 1, 1},
-    {&__pyx_n_s_MERGE, __pyx_k_MERGE, sizeof(__pyx_k_MERGE), 0, 0, 1, 1},
     {&__pyx_n_s_MESH, __pyx_k_MESH, sizeof(__pyx_k_MESH), 0, 0, 1, 1},
     {&__pyx_n_s_MassExportFbx, __pyx_k_MassExportFbx, sizeof(__pyx_k_MassExportFbx), 0, 0, 1, 1},
     {&__pyx_n_s_MassExportFbx_ArpIsLoaded, __pyx_k_MassExportFbx_ArpIsLoaded, sizeof(__pyx_k_MassExportFbx_ArpIsLoaded), 0, 0, 1, 1},
@@ -17786,6 +17814,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_MassFbx, __pyx_k_MassFbx, sizeof(__pyx_k_MassFbx), 0, 0, 1, 1},
     {&__pyx_n_s_MassGeo, __pyx_k_MassGeo, sizeof(__pyx_k_MassGeo), 0, 0, 1, 1},
     {&__pyx_n_s_Multikey, __pyx_k_Multikey, sizeof(__pyx_k_Multikey), 0, 0, 1, 1},
+    {&__pyx_n_s_NEW, __pyx_k_NEW, sizeof(__pyx_k_NEW), 0, 0, 1, 1},
     {&__pyx_n_s_NewLayerName, __pyx_k_NewLayerName, sizeof(__pyx_k_NewLayerName), 0, 0, 1, 1},
     {&__pyx_n_s_None, __pyx_k_None, sizeof(__pyx_k_None), 0, 0, 1, 1},
     {&__pyx_n_s_OBJECT, __pyx_k_OBJECT, sizeof(__pyx_k_OBJECT), 0, 0, 1, 1},
@@ -17795,6 +17824,8 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_OpenBlenderFile, __pyx_k_OpenBlenderFile, sizeof(__pyx_k_OpenBlenderFile), 0, 0, 1, 1},
     {&__pyx_n_s_POSE, __pyx_k_POSE, sizeof(__pyx_k_POSE), 0, 0, 1, 1},
     {&__pyx_n_s_Path, __pyx_k_Path, sizeof(__pyx_k_Path), 0, 0, 1, 1},
+    {&__pyx_n_s_Process, __pyx_k_Process, sizeof(__pyx_k_Process), 0, 0, 1, 1},
+    {&__pyx_n_s_Processes, __pyx_k_Processes, sizeof(__pyx_k_Processes), 0, 0, 1, 1},
     {&__pyx_n_s_Rig, __pyx_k_Rig, sizeof(__pyx_k_Rig), 0, 0, 1, 1},
     {&__pyx_n_s_SCENE, __pyx_k_SCENE, sizeof(__pyx_k_SCENE), 0, 0, 1, 1},
     {&__pyx_n_s_SELECT, __pyx_k_SELECT, sizeof(__pyx_k_SELECT), 0, 0, 1, 1},
@@ -17843,6 +17874,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_arp_fix_fbx_rot, __pyx_k_arp_fix_fbx_rot, sizeof(__pyx_k_arp_fix_fbx_rot), 0, 0, 1, 1},
     {&__pyx_n_s_arp_frame_range_type, __pyx_k_arp_frame_range_type, sizeof(__pyx_k_arp_frame_range_type), 0, 0, 1, 1},
     {&__pyx_n_s_arp_ge_sel_only, __pyx_k_arp_ge_sel_only, sizeof(__pyx_k_arp_ge_sel_only), 0, 0, 1, 1},
+    {&__pyx_n_s_arp_only_containing, __pyx_k_arp_only_containing, sizeof(__pyx_k_arp_only_containing), 0, 0, 1, 1},
     {&__pyx_n_s_asyncio_coroutines, __pyx_k_asyncio_coroutines, sizeof(__pyx_k_asyncio_coroutines), 0, 0, 1, 1},
     {&__pyx_kp_s_auto_rig_pro_master, __pyx_k_auto_rig_pro_master, sizeof(__pyx_k_auto_rig_pro_master), 0, 0, 1, 0},
     {&__pyx_n_s_b, __pyx_k_b, sizeof(__pyx_k_b), 0, 0, 1, 1},
@@ -17851,6 +17883,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_bake_range_type, __pyx_k_bake_range_type, sizeof(__pyx_k_bake_range_type), 0, 0, 1, 1},
     {&__pyx_n_s_bake_types, __pyx_k_bake_types, sizeof(__pyx_k_bake_types), 0, 0, 1, 1},
     {&__pyx_n_s_baketype, __pyx_k_baketype, sizeof(__pyx_k_baketype), 0, 0, 1, 1},
+    {&__pyx_n_s_baseScript, __pyx_k_baseScript, sizeof(__pyx_k_baseScript), 0, 0, 1, 1},
     {&__pyx_n_s_blProgram, __pyx_k_blProgram, sizeof(__pyx_k_blProgram), 0, 0, 1, 1},
     {&__pyx_n_s_blend_data, __pyx_k_blend_data, sizeof(__pyx_k_blend_data), 0, 0, 1, 1},
     {&__pyx_n_s_blender, __pyx_k_blender, sizeof(__pyx_k_blender), 0, 0, 1, 1},
@@ -17877,6 +17910,8 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_data_path, __pyx_k_data_path, sizeof(__pyx_k_data_path), 0, 0, 1, 1},
     {&__pyx_n_s_delete, __pyx_k_delete, sizeof(__pyx_k_delete), 0, 0, 1, 1},
     {&__pyx_n_s_dict, __pyx_k_dict, sizeof(__pyx_k_dict), 0, 0, 1, 1},
+    {&__pyx_n_s_dir, __pyx_k_dir, sizeof(__pyx_k_dir), 0, 0, 1, 1},
+    {&__pyx_kp_s_dir_prefix___fName___suffix, __pyx_k_dir_prefix___fName___suffix, sizeof(__pyx_k_dir_prefix___fName___suffix), 0, 0, 1, 0},
     {&__pyx_n_s_direction, __pyx_k_direction, sizeof(__pyx_k_direction), 0, 0, 1, 1},
     {&__pyx_n_s_display_name, __pyx_k_display_name, sizeof(__pyx_k_display_name), 0, 0, 1, 1},
     {&__pyx_n_s_doc, __pyx_k_doc, sizeof(__pyx_k_doc), 0, 0, 1, 1},
@@ -17934,9 +17969,11 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_isCamera, __pyx_k_isCamera, sizeof(__pyx_k_isCamera), 0, 0, 1, 1},
     {&__pyx_n_s_isCollection, __pyx_k_isCollection, sizeof(__pyx_k_isCollection), 0, 0, 1, 1},
     {&__pyx_n_s_isObjectType, __pyx_k_isObjectType, sizeof(__pyx_k_isObjectType), 0, 0, 1, 1},
+    {&__pyx_n_s_isTest, __pyx_k_isTest, sizeof(__pyx_k_isTest), 0, 0, 1, 1},
     {&__pyx_n_s_isTesting, __pyx_k_isTesting, sizeof(__pyx_k_isTesting), 0, 0, 1, 1},
     {&__pyx_n_s_is_coroutine, __pyx_k_is_coroutine, sizeof(__pyx_k_is_coroutine), 0, 0, 1, 1},
     {&__pyx_n_s_is_file, __pyx_k_is_file, sizeof(__pyx_k_is_file), 0, 0, 1, 1},
+    {&__pyx_n_s_join, __pyx_k_join, sizeof(__pyx_k_join), 0, 0, 1, 1},
     {&__pyx_n_s_layer, __pyx_k_layer, sizeof(__pyx_k_layer), 0, 0, 1, 1},
     {&__pyx_n_s_layer_index, __pyx_k_layer_index, sizeof(__pyx_k_layer_index), 0, 0, 1, 1},
     {&__pyx_n_s_layers, __pyx_k_layers, sizeof(__pyx_k_layers), 0, 0, 1, 1},
@@ -17962,6 +17999,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_module, __pyx_k_module, sizeof(__pyx_k_module), 0, 0, 1, 1},
     {&__pyx_n_s_modules, __pyx_k_modules, sizeof(__pyx_k_modules), 0, 0, 1, 1},
     {&__pyx_n_s_modules_refresh, __pyx_k_modules_refresh, sizeof(__pyx_k_modules_refresh), 0, 0, 1, 1},
+    {&__pyx_n_s_multiprocessing, __pyx_k_multiprocessing, sizeof(__pyx_k_multiprocessing), 0, 0, 1, 1},
     {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
     {&__pyx_n_s_name_2, __pyx_k_name_2, sizeof(__pyx_k_name_2), 0, 0, 1, 1},
     {&__pyx_n_s_nla, __pyx_k_nla, sizeof(__pyx_k_nla), 0, 0, 1, 1},
@@ -17978,12 +18016,12 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_operator, __pyx_k_operator, sizeof(__pyx_k_operator), 0, 0, 1, 1},
     {&__pyx_n_s_ops, __pyx_k_ops, sizeof(__pyx_k_ops), 0, 0, 1, 1},
     {&__pyx_n_s_os, __pyx_k_os, sizeof(__pyx_k_os), 0, 0, 1, 1},
+    {&__pyx_n_s_p, __pyx_k_p, sizeof(__pyx_k_p), 0, 0, 1, 1},
     {&__pyx_n_s_path, __pyx_k_path, sizeof(__pyx_k_path), 0, 0, 1, 1},
     {&__pyx_n_s_pathlib, __pyx_k_pathlib, sizeof(__pyx_k_pathlib), 0, 0, 1, 1},
     {&__pyx_n_s_pose, __pyx_k_pose, sizeof(__pyx_k_pose), 0, 0, 1, 1},
     {&__pyx_kp_s_pose_bones, __pyx_k_pose_bones, sizeof(__pyx_k_pose_bones), 0, 0, 1, 0},
     {&__pyx_n_s_prefix, __pyx_k_prefix, sizeof(__pyx_k_prefix), 0, 0, 1, 1},
-    {&__pyx_kp_s_prefix___fName___suffix, __pyx_k_prefix___fName___suffix, sizeof(__pyx_k_prefix___fName___suffix), 0, 0, 1, 0},
     {&__pyx_n_s_prepare, __pyx_k_prepare, sizeof(__pyx_k_prepare), 0, 0, 1, 1},
     {&__pyx_n_s_print, __pyx_k_print, sizeof(__pyx_k_print), 0, 0, 1, 1},
     {&__pyx_kp_s_py, __pyx_k_py, sizeof(__pyx_k_py), 0, 0, 1, 0},
@@ -18013,6 +18051,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_spec, __pyx_k_spec, sizeof(__pyx_k_spec), 0, 0, 1, 1},
     {&__pyx_n_s_split, __pyx_k_split, sizeof(__pyx_k_split), 0, 0, 1, 1},
     {&__pyx_n_s_srcPy, __pyx_k_srcPy, sizeof(__pyx_k_srcPy), 0, 0, 1, 1},
+    {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
     {&__pyx_n_s_startf, __pyx_k_startf, sizeof(__pyx_k_startf), 0, 0, 1, 1},
     {&__pyx_n_s_startswith, __pyx_k_startswith, sizeof(__pyx_k_startswith), 0, 0, 1, 1},
     {&__pyx_n_s_state, __pyx_k_state, sizeof(__pyx_k_state), 0, 0, 1, 1},
@@ -18020,6 +18059,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_suffix, __pyx_k_suffix, sizeof(__pyx_k_suffix), 0, 0, 1, 1},
     {&__pyx_n_s_super, __pyx_k_super, sizeof(__pyx_k_super), 0, 0, 1, 1},
     {&__pyx_n_s_system, __pyx_k_system, sizeof(__pyx_k_system), 0, 0, 1, 1},
+    {&__pyx_n_s_target, __pyx_k_target, sizeof(__pyx_k_target), 0, 0, 1, 1},
     {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
     {&__pyx_n_s_text, __pyx_k_text, sizeof(__pyx_k_text), 0, 0, 1, 1},
     {&__pyx_n_s_transientPath, __pyx_k_transientPath, sizeof(__pyx_k_transientPath), 0, 0, 1, 1},
@@ -18046,10 +18086,10 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
 }
 /* #### Code section: cached_builtins ### */
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_print = __Pyx_GetBuiltinName(__pyx_n_s_print); if (!__pyx_builtin_print) __PYX_ERR(0, 122, __pyx_L1_error)
-  __pyx_builtin_open = __Pyx_GetBuiltinName(__pyx_n_s_open); if (!__pyx_builtin_open) __PYX_ERR(0, 299, __pyx_L1_error)
-  __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_n_s_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(0, 305, __pyx_L1_error)
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 395, __pyx_L1_error)
+  __pyx_builtin_print = __Pyx_GetBuiltinName(__pyx_n_s_print); if (!__pyx_builtin_print) __PYX_ERR(0, 128, __pyx_L1_error)
+  __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_n_s_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(0, 152, __pyx_L1_error)
+  __pyx_builtin_open = __Pyx_GetBuiltinName(__pyx_n_s_open); if (!__pyx_builtin_open) __PYX_ERR(0, 297, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 394, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -18060,477 +18100,475 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "LeetdMassExport.py":171
+  /* "LeetdMassExport.py":178
  *             bpy.ops.anim.bones_in_layers()
  *         except:
  *             print("Exceptions : Bone In Layer")             # <<<<<<<<<<<<<<
  *             return
  * 
  */
-  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_s_Exceptions_Bone_In_Layer); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 171, __pyx_L1_error)
+  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_s_Exceptions_Bone_In_Layer); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 178, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
-  /* "LeetdMassExport.py":309
+  /* "LeetdMassExport.py":307
  *             if str(scr).endswith("Rig"):
  *                 srcPy = scr + ".py"
  *                 srcPy = str(srcPy).replace(" ","")             # <<<<<<<<<<<<<<
- *                 scrPath = str(self.ScriptDir).format(py=srcPy)
+ *                 scrPath = str(self.ScriptDir + '{py}').format(py=srcPy)
  *                 fbxPath = self.ExportDir.format(fName=str("BaseSkeletal/" +scr))
  */
-  __pyx_tuple__6 = PyTuple_Pack(2, __pyx_kp_s__5, __pyx_kp_s__2); if (unlikely(!__pyx_tuple__6)) __PYX_ERR(0, 309, __pyx_L1_error)
+  __pyx_tuple__6 = PyTuple_Pack(2, __pyx_kp_s__5, __pyx_kp_s__2); if (unlikely(!__pyx_tuple__6)) __PYX_ERR(0, 307, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__6);
   __Pyx_GIVEREF(__pyx_tuple__6);
 
-  /* "LeetdMassExport.py":319
+  /* "LeetdMassExport.py":317
  *                 iCmd += str('{file}  -P ').format(file=fpath)
  *                 iCmd += str("{Str} -Y").format(Str=scrPath)
  *                 iCmd = iCmd.replace("\\","/")             # <<<<<<<<<<<<<<
  *                 infoCmd = os.system(iCmd)
  *                 print("Exported : " + fpath)
  */
-  __pyx_tuple__9 = PyTuple_Pack(2, __pyx_kp_s__7, __pyx_kp_s__8); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 319, __pyx_L1_error)
+  __pyx_tuple__9 = PyTuple_Pack(2, __pyx_kp_s__7, __pyx_kp_s__8); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 317, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
 
-  /* "LeetdMassExport.py":334
+  /* "LeetdMassExport.py":332
  *             if str(obj.name).lower() == inCollection: return obj.name,obj
  * 
  *         raise Exception("Sorry, No Collection MassExport Check your Animator Memer")             # <<<<<<<<<<<<<<
  * 
  *     def BlenderExport(self,expPath,isCamera=False):
  */
-  __pyx_tuple__10 = PyTuple_Pack(1, __pyx_kp_s_Sorry_No_Collection_MassExport_C); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 334, __pyx_L1_error)
+  __pyx_tuple__10 = PyTuple_Pack(1, __pyx_kp_s_Sorry_No_Collection_MassExport_C); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 332, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__10);
   __Pyx_GIVEREF(__pyx_tuple__10);
 
-  /* "LeetdMassExport.py":401
+  /* "LeetdMassExport.py":400
  *         bpy.ops.object.mode_set(mode = 'POSE')
  *         bpy.ops.pose.select_all(action='SELECT')
  *         bpy.ops.pose.bone_layers(layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))             # <<<<<<<<<<<<<<
- * 
- * 
+ *         #print(bpy.context.object.data.layers[1])
+ *         bones = [b for b in arm.data.bones]
  */
-  __pyx_tuple__11 = PyTuple_Pack(32, Py_True, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 401, __pyx_L1_error)
+  __pyx_tuple__11 = PyTuple_Pack(32, Py_True, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False, Py_False); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 400, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
 
-  /* "LeetdMassExport.py":438
+  /* "LeetdMassExport.py":433
  * 
  *         if not isTesting:
  *             print('=================EXPORT CAMERA====================')             # <<<<<<<<<<<<<<
  *             for cam in cameras:
  *                 self.set_active_object(cam.name)
  */
-  __pyx_tuple__12 = PyTuple_Pack(1, __pyx_kp_s_EXPORT_CAMERA); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 438, __pyx_L1_error)
+  __pyx_tuple__12 = PyTuple_Pack(1, __pyx_kp_s_EXPORT_CAMERA); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 433, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
 
-  /* "LeetdMassExport.py":449
+  /* "LeetdMassExport.py":444
  *                 if cam: self.BlenderExport(expPath,True)
  * 
  *             print('=================END EXPORT CAMERA====================')             # <<<<<<<<<<<<<<
  * 
  *         if armature.__len__() <= 0: return
  */
-  __pyx_tuple__13 = PyTuple_Pack(1, __pyx_kp_s_END_EXPORT_CAMERA); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 449, __pyx_L1_error)
+  __pyx_tuple__13 = PyTuple_Pack(1, __pyx_kp_s_END_EXPORT_CAMERA); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 444, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
 
-  /* "LeetdMassExport.py":462
+  /* "LeetdMassExport.py":457
  *             bpy.ops.object.make_local(type='ALL')
  * 
  *         print('=================EXPORT ARMATURES====================')             # <<<<<<<<<<<<<<
  * 
  *         for i,arm in enumerate(armature):
  */
-  __pyx_tuple__14 = PyTuple_Pack(1, __pyx_kp_s_EXPORT_ARMATURES); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 462, __pyx_L1_error)
+  __pyx_tuple__14 = PyTuple_Pack(1, __pyx_kp_s_EXPORT_ARMATURES); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 457, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
 
-  /* "LeetdMassExport.py":500
+  /* "LeetdMassExport.py":496
  *                     print("Issue Export: " + expPath)
  * 
  *         print('=================END EXPORT ARMATURES====================')             # <<<<<<<<<<<<<<
- * 
- * 
  */
-  __pyx_tuple__16 = PyTuple_Pack(1, __pyx_kp_s_END_EXPORT_ARMATURES); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 500, __pyx_L1_error)
+  __pyx_tuple__16 = PyTuple_Pack(1, __pyx_kp_s_END_EXPORT_ARMATURES); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 496, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
 
-  /* "LeetdMassExport.py":10
- * class MassExportFbx():
- * 
+  /* "LeetdMassExport.py":16
+ *     suffix=''
+ *     MassGeo=''
  *     def __init__(self) -> None:             # <<<<<<<<<<<<<<
- *         self.ExportDir=str
- *         self.ScriptDir=str
+ *         # self.ExportDir=str
+ *         # self.ScriptDir=str
  */
-  __pyx_tuple__19 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__19)) __PYX_ERR(0, 10, __pyx_L1_error)
+  __pyx_tuple__19 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__19)) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
-  __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_init, 10, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(0, 10, __pyx_L1_error)
+  __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_init, 16, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(0, 16, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":20
+  /* "LeetdMassExport.py":26
  *         pass
  * 
  *     def SetInittDir(self,inExportDir=str,inScriptDir=str):             # <<<<<<<<<<<<<<
  *         '''
  *         Init Directories
  */
-  __pyx_tuple__21 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_inExportDir, __pyx_n_s_inScriptDir); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 20, __pyx_L1_error)
+  __pyx_tuple__21 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_inExportDir, __pyx_n_s_inScriptDir); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__21);
   __Pyx_GIVEREF(__pyx_tuple__21);
-  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_SetInittDir, 20, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 20, __pyx_L1_error)
+  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_SetInittDir, 26, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 26, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":27
- *         self.ScriptDir = str('{}{py}').format(inScriptDir)
+  /* "LeetdMassExport.py":33
+ *         self.ScriptDir = inScriptDir
  * 
  *     def SetStringFix(self,inPrefix=str,inSuffix=str,inSkel=str,inBlenderP=str):             # <<<<<<<<<<<<<<
  *         '''
  *         Init String Format Requirements
  */
-  __pyx_tuple__23 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_inPrefix, __pyx_n_s_inSuffix, __pyx_n_s_inSkel, __pyx_n_s_inBlenderP); if (unlikely(!__pyx_tuple__23)) __PYX_ERR(0, 27, __pyx_L1_error)
+  __pyx_tuple__23 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_inPrefix, __pyx_n_s_inSuffix, __pyx_n_s_inSkel, __pyx_n_s_inBlenderP); if (unlikely(!__pyx_tuple__23)) __PYX_ERR(0, 33, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__23);
   __Pyx_GIVEREF(__pyx_tuple__23);
-  __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(5, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__23, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_SetStringFix, 27, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 27, __pyx_L1_error)
+  __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(5, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__23, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_SetStringFix, 33, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 33, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":36
+  /* "LeetdMassExport.py":42
  *         self.blProgram =str('{}').format(inBlenderP)
  * 
  *     def SetMassGeo(self,inMassGeo=str):             # <<<<<<<<<<<<<<
  *         self.MassGeo=inMassGeo
  * 
  */
-  __pyx_tuple__25 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_inMassGeo); if (unlikely(!__pyx_tuple__25)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __pyx_tuple__25 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_inMassGeo); if (unlikely(!__pyx_tuple__25)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__25);
   __Pyx_GIVEREF(__pyx_tuple__25);
-  __pyx_codeobj__26 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__25, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_SetMassGeo, 36, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__26)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __pyx_codeobj__26 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__25, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_SetMassGeo, 42, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__26)) __PYX_ERR(0, 42, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":39
+  /* "LeetdMassExport.py":45
  *         self.MassGeo=inMassGeo
  * 
  *     def GetSelections(self):             # <<<<<<<<<<<<<<
  *         return bpy.context.selected_objects
  * 
  */
-  __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetSelections, 39, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 39, __pyx_L1_error)
+  __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetSelections, 45, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 45, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":42
+  /* "LeetdMassExport.py":48
  *         return bpy.context.selected_objects
  * 
  *     def ClearSelection(self): return bpy.ops.object.select_all(action='DESELECT')             # <<<<<<<<<<<<<<
  * 
  *     def isObjectType(self,inObject): return type(inObject) == bpy.types.Object
  */
-  __pyx_codeobj__28 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_ClearSelection, 42, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__28)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_codeobj__28 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_ClearSelection, 48, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__28)) __PYX_ERR(0, 48, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":44
+  /* "LeetdMassExport.py":50
  *     def ClearSelection(self): return bpy.ops.object.select_all(action='DESELECT')
  * 
  *     def isObjectType(self,inObject): return type(inObject) == bpy.types.Object             # <<<<<<<<<<<<<<
  * 
  *     def isCollection(self,inObject): return type(inObject) == bpy.types.Collection
  */
-  __pyx_tuple__29 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_inObject); if (unlikely(!__pyx_tuple__29)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_tuple__29 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_inObject); if (unlikely(!__pyx_tuple__29)) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__29);
   __Pyx_GIVEREF(__pyx_tuple__29);
-  __pyx_codeobj__30 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__29, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_isObjectType, 44, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__30)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_codeobj__30 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__29, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_isObjectType, 50, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__30)) __PYX_ERR(0, 50, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":46
+  /* "LeetdMassExport.py":52
  *     def isObjectType(self,inObject): return type(inObject) == bpy.types.Object
  * 
  *     def isCollection(self,inObject): return type(inObject) == bpy.types.Collection             # <<<<<<<<<<<<<<
  * 
  *     def GetObjectsInCollection(self,collection):
  */
-  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__29, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_isCollection, 46, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__29, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_isCollection, 52, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) __PYX_ERR(0, 52, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":48
+  /* "LeetdMassExport.py":54
  *     def isCollection(self,inObject): return type(inObject) == bpy.types.Collection
  * 
  *     def GetObjectsInCollection(self,collection):             # <<<<<<<<<<<<<<
  *         if collection is None: return []
  *         return [obj for obj in collection.all_objects if obj.visible_get()]
  */
-  __pyx_tuple__32 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_collection, __pyx_n_s_obj); if (unlikely(!__pyx_tuple__32)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_tuple__32 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_collection, __pyx_n_s_obj); if (unlikely(!__pyx_tuple__32)) __PYX_ERR(0, 54, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__32);
   __Pyx_GIVEREF(__pyx_tuple__32);
-  __pyx_codeobj__33 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__32, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetObjectsInCollection, 48, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__33)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_codeobj__33 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__32, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetObjectsInCollection, 54, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__33)) __PYX_ERR(0, 54, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":52
+  /* "LeetdMassExport.py":58
  *         return [obj for obj in collection.all_objects if obj.visible_get()]
  * 
  *     def OpenBlenderFile(self,path):             # <<<<<<<<<<<<<<
  *         iPath = Path(path)
  *         if not iPath.is_file(): return
  */
-  __pyx_tuple__34 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_path, __pyx_n_s_iPath); if (unlikely(!__pyx_tuple__34)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_tuple__34 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_path, __pyx_n_s_iPath); if (unlikely(!__pyx_tuple__34)) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__34);
   __Pyx_GIVEREF(__pyx_tuple__34);
-  __pyx_codeobj__35 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__34, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_OpenBlenderFile, 52, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__35)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_codeobj__35 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__34, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_OpenBlenderFile, 58, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__35)) __PYX_ERR(0, 58, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":57
+  /* "LeetdMassExport.py":63
  *         bpy.ops.wm.open_mainfile(filepath=path)
  * 
  *     def GetAllLibraries(self):             # <<<<<<<<<<<<<<
  *         libraries = bpy.context.blend_data.libraries
  *         libs = []
  */
-  __pyx_tuple__36 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_libraries, __pyx_n_s_libs, __pyx_n_s_lib); if (unlikely(!__pyx_tuple__36)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __pyx_tuple__36 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_libraries, __pyx_n_s_libs, __pyx_n_s_lib); if (unlikely(!__pyx_tuple__36)) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__36);
   __Pyx_GIVEREF(__pyx_tuple__36);
-  __pyx_codeobj__37 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__36, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetAllLibraries, 57, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__37)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __pyx_codeobj__37 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__36, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetAllLibraries, 63, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__37)) __PYX_ERR(0, 63, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":64
+  /* "LeetdMassExport.py":70
  *         return libs
  * 
  *     def set_active_object(self,object_name):             # <<<<<<<<<<<<<<
  *         try:
  *             bpy.context.view_layer.objects.active = bpy.data.objects.get(object_name)
  */
-  __pyx_tuple__38 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_object_name); if (unlikely(!__pyx_tuple__38)) __PYX_ERR(0, 64, __pyx_L1_error)
+  __pyx_tuple__38 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_object_name); if (unlikely(!__pyx_tuple__38)) __PYX_ERR(0, 70, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__38);
   __Pyx_GIVEREF(__pyx_tuple__38);
-  __pyx_codeobj__39 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__38, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_set_active_object, 64, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__39)) __PYX_ERR(0, 64, __pyx_L1_error)
+  __pyx_codeobj__39 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__38, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_set_active_object, 70, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__39)) __PYX_ERR(0, 70, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":70
+  /* "LeetdMassExport.py":76
  *         except: pass
  * 
  *     def SelectAllObjsInCollection(self,inCollection):             # <<<<<<<<<<<<<<
  *         if inCollection is None: return
  * 
  */
-  __pyx_tuple__40 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_inCollection, __pyx_n_s_objecsList, __pyx_n_s_obj); if (unlikely(!__pyx_tuple__40)) __PYX_ERR(0, 70, __pyx_L1_error)
+  __pyx_tuple__40 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_inCollection, __pyx_n_s_objecsList, __pyx_n_s_obj); if (unlikely(!__pyx_tuple__40)) __PYX_ERR(0, 76, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__40);
   __Pyx_GIVEREF(__pyx_tuple__40);
-  __pyx_codeobj__41 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__40, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_SelectAllObjsInCollection, 70, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__41)) __PYX_ERR(0, 70, __pyx_L1_error)
+  __pyx_codeobj__41 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__40, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_SelectAllObjsInCollection, 76, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__41)) __PYX_ERR(0, 76, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":89
+  /* "LeetdMassExport.py":95
  *         return objecsList
  * 
  *     def GetObjectTypes(self,inCollection,inType=''):             # <<<<<<<<<<<<<<
  *         if not inType or not inCollection: return []
  * 
  */
-  __pyx_tuple__42 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_inCollection, __pyx_n_s_inType, __pyx_n_s_objects, __pyx_n_s_obj); if (unlikely(!__pyx_tuple__42)) __PYX_ERR(0, 89, __pyx_L1_error)
+  __pyx_tuple__42 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_inCollection, __pyx_n_s_inType, __pyx_n_s_objects, __pyx_n_s_obj); if (unlikely(!__pyx_tuple__42)) __PYX_ERR(0, 95, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__42);
   __Pyx_GIVEREF(__pyx_tuple__42);
-  __pyx_codeobj__43 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__42, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetObjectTypes, 89, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__43)) __PYX_ERR(0, 89, __pyx_L1_error)
-  __pyx_tuple__44 = PyTuple_Pack(1, ((PyObject*)__pyx_kp_s__2)); if (unlikely(!__pyx_tuple__44)) __PYX_ERR(0, 89, __pyx_L1_error)
+  __pyx_codeobj__43 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__42, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetObjectTypes, 95, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__43)) __PYX_ERR(0, 95, __pyx_L1_error)
+  __pyx_tuple__44 = PyTuple_Pack(1, ((PyObject*)__pyx_kp_s__2)); if (unlikely(!__pyx_tuple__44)) __PYX_ERR(0, 95, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__44);
   __Pyx_GIVEREF(__pyx_tuple__44);
 
-  /* "LeetdMassExport.py":96
+  /* "LeetdMassExport.py":102
  *         return [obj for obj in objects if obj.type == inType]
  * 
  *     def GetActionsFromBone(self,inBone):             # <<<<<<<<<<<<<<
  *         if inBone is None: return None
  * 
  */
-  __pyx_tuple__45 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_inBone); if (unlikely(!__pyx_tuple__45)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __pyx_tuple__45 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_inBone); if (unlikely(!__pyx_tuple__45)) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__45);
   __Pyx_GIVEREF(__pyx_tuple__45);
-  __pyx_codeobj__46 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__45, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetActionsFromBone, 96, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__46)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __pyx_codeobj__46 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__45, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetActionsFromBone, 102, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__46)) __PYX_ERR(0, 102, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":101
+  /* "LeetdMassExport.py":107
  *         return inBone.animation_data.action
  * 
  *     def GetStartEndFrame(self,inBone):             # <<<<<<<<<<<<<<
  *         if inBone is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
  * 
  */
-  __pyx_tuple__47 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_inBone, __pyx_n_s_act); if (unlikely(!__pyx_tuple__47)) __PYX_ERR(0, 101, __pyx_L1_error)
+  __pyx_tuple__47 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_inBone, __pyx_n_s_act); if (unlikely(!__pyx_tuple__47)) __PYX_ERR(0, 107, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__47);
   __Pyx_GIVEREF(__pyx_tuple__47);
-  __pyx_codeobj__48 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__47, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetStartEndFrame, 101, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__48)) __PYX_ERR(0, 101, __pyx_L1_error)
+  __pyx_codeobj__48 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__47, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetStartEndFrame, 107, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__48)) __PYX_ERR(0, 107, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":110
+  /* "LeetdMassExport.py":116
  *         return act.frame_range[0],act.frame_range[1]
  * 
  *     def GetAllArmatureInColl(self,inCollectioName=''):             # <<<<<<<<<<<<<<
  *         if not inCollectioName: return []
  *         col = bpy.data.collections[inCollectioName]
  */
-  __pyx_tuple__49 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_inCollectioName, __pyx_n_s_col); if (unlikely(!__pyx_tuple__49)) __PYX_ERR(0, 110, __pyx_L1_error)
+  __pyx_tuple__49 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_inCollectioName, __pyx_n_s_col); if (unlikely(!__pyx_tuple__49)) __PYX_ERR(0, 116, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__49);
   __Pyx_GIVEREF(__pyx_tuple__49);
-  __pyx_codeobj__50 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__49, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetAllArmatureInColl, 110, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__50)) __PYX_ERR(0, 110, __pyx_L1_error)
+  __pyx_codeobj__50 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__49, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetAllArmatureInColl, 116, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__50)) __PYX_ERR(0, 116, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":116
+  /* "LeetdMassExport.py":122
  *         return self.GetObjectTypes(col,'ARMATURE')
  * 
  *     def GetAllGeometryAttachedArmature(self,inARMATURE):             # <<<<<<<<<<<<<<
  *         Geos = []
  *         if not inARMATURE: return Geos
  */
-  __pyx_tuple__51 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_inARMATURE, __pyx_n_s_Geos, __pyx_n_s_obj, __pyx_n_s_m); if (unlikely(!__pyx_tuple__51)) __PYX_ERR(0, 116, __pyx_L1_error)
+  __pyx_tuple__51 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_inARMATURE, __pyx_n_s_Geos, __pyx_n_s_obj, __pyx_n_s_m); if (unlikely(!__pyx_tuple__51)) __PYX_ERR(0, 122, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__51);
   __Pyx_GIVEREF(__pyx_tuple__51);
-  __pyx_codeobj__52 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__51, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetAllGeometryAttachedArmature, 116, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__52)) __PYX_ERR(0, 116, __pyx_L1_error)
+  __pyx_codeobj__52 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__51, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetAllGeometryAttachedArmature, 122, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__52)) __PYX_ERR(0, 122, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":126
+  /* "LeetdMassExport.py":132
  *         return Geos
  * 
  *     def isArmatureAction(self,inAct,inArmature):             # <<<<<<<<<<<<<<
  *         if inAct is None or inArmature is None: return False
  * 
  */
-  __pyx_tuple__53 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_inAct, __pyx_n_s_inArmature, __pyx_n_s_layer, __pyx_n_s_info); if (unlikely(!__pyx_tuple__53)) __PYX_ERR(0, 126, __pyx_L1_error)
+  __pyx_tuple__53 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_inAct, __pyx_n_s_inArmature, __pyx_n_s_layer, __pyx_n_s_info); if (unlikely(!__pyx_tuple__53)) __PYX_ERR(0, 132, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__53);
   __Pyx_GIVEREF(__pyx_tuple__53);
-  __pyx_codeobj__54 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__53, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_isArmatureAction, 126, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__54)) __PYX_ERR(0, 126, __pyx_L1_error)
+  __pyx_codeobj__54 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__53, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_isArmatureAction, 132, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__54)) __PYX_ERR(0, 132, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":140
+  /* "LeetdMassExport.py":146
  * 
  *     ##################################################################
- *     def LeeBakeFunc(self,Collection=None):             # <<<<<<<<<<<<<<
+ *     def LeeBakeFunc(self,Collection=None,isTest=False):             # <<<<<<<<<<<<<<
  *         if Collection is None: return
  *         col = bpy.data.collections[Collection]
  */
-  __pyx_tuple__55 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_Collection, __pyx_n_s_col, __pyx_n_s_armature, __pyx_n_s_bone); if (unlikely(!__pyx_tuple__55)) __PYX_ERR(0, 140, __pyx_L1_error)
+  __pyx_tuple__55 = PyTuple_Pack(9, __pyx_n_s_self, __pyx_n_s_Collection, __pyx_n_s_isTest, __pyx_n_s_col, __pyx_n_s_armature, __pyx_n_s_Processes, __pyx_n_s_p, __pyx_n_s_i, __pyx_n_s_bone); if (unlikely(!__pyx_tuple__55)) __PYX_ERR(0, 146, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__55);
   __Pyx_GIVEREF(__pyx_tuple__55);
-  __pyx_codeobj__56 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__55, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_LeeBakeFunc, 140, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__56)) __PYX_ERR(0, 140, __pyx_L1_error)
-  __pyx_tuple__57 = PyTuple_Pack(1, Py_None); if (unlikely(!__pyx_tuple__57)) __PYX_ERR(0, 140, __pyx_L1_error)
+  __pyx_codeobj__56 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 9, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__55, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_LeeBakeFunc, 146, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__56)) __PYX_ERR(0, 146, __pyx_L1_error)
+  __pyx_tuple__57 = PyTuple_Pack(2, Py_None, ((PyObject *)Py_False)); if (unlikely(!__pyx_tuple__57)) __PYX_ERR(0, 146, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__57);
   __Pyx_GIVEREF(__pyx_tuple__57);
 
-  /* "LeetdMassExport.py":152
- *             # self.LeeArmatureBake(bone)
+  /* "LeetdMassExport.py":159
+ * 
  * 
  *     def LeeArmatureBake(self,arm):             # <<<<<<<<<<<<<<
  *         if arm is None: return
  * 
  */
-  __pyx_tuple__58 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_arm, __pyx_n_s_startf, __pyx_n_s_endf, __pyx_n_s_act, __pyx_n_s_info); if (unlikely(!__pyx_tuple__58)) __PYX_ERR(0, 152, __pyx_L1_error)
+  __pyx_tuple__58 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_arm, __pyx_n_s_startf, __pyx_n_s_endf, __pyx_n_s_act, __pyx_n_s_info); if (unlikely(!__pyx_tuple__58)) __PYX_ERR(0, 159, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__58);
   __Pyx_GIVEREF(__pyx_tuple__58);
-  __pyx_codeobj__59 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__58, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_LeeArmatureBake, 152, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__59)) __PYX_ERR(0, 152, __pyx_L1_error)
+  __pyx_codeobj__59 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__58, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_LeeArmatureBake, 159, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__59)) __PYX_ERR(0, 159, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":189
+  /* "LeetdMassExport.py":196
  * 
  *     ##===================AutoRigProInterGrade======================
  *     def LeeArpExport(self,fileoutput):             # <<<<<<<<<<<<<<
  *         '''
  *         Auto Rig Pro Fbx Intergrade
  */
-  __pyx_tuple__60 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_fileoutput); if (unlikely(!__pyx_tuple__60)) __PYX_ERR(0, 189, __pyx_L1_error)
+  __pyx_tuple__60 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_fileoutput); if (unlikely(!__pyx_tuple__60)) __PYX_ERR(0, 196, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__60);
   __Pyx_GIVEREF(__pyx_tuple__60);
-  __pyx_codeobj__61 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__60, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_LeeArpExport, 189, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__61)) __PYX_ERR(0, 189, __pyx_L1_error)
+  __pyx_codeobj__61 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__60, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_LeeArpExport, 196, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__61)) __PYX_ERR(0, 196, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":242
+  /* "LeetdMassExport.py":250
  * 
  * 
  *     def ArpIsLoaded(self):             # <<<<<<<<<<<<<<
  *         '''
  *         check Addon
  */
-  __pyx_tuple__62 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_Addons, __pyx_n_s_BAddons, __pyx_n_s_checkloaded, __pyx_n_s_addon, __pyx_n_s_mod); if (unlikely(!__pyx_tuple__62)) __PYX_ERR(0, 242, __pyx_L1_error)
+  __pyx_tuple__62 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_Addons, __pyx_n_s_BAddons, __pyx_n_s_checkloaded, __pyx_n_s_addon, __pyx_n_s_mod); if (unlikely(!__pyx_tuple__62)) __PYX_ERR(0, 250, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__62);
   __Pyx_GIVEREF(__pyx_tuple__62);
-  __pyx_codeobj__63 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__62, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_ArpIsLoaded, 242, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__63)) __PYX_ERR(0, 242, __pyx_L1_error)
+  __pyx_codeobj__63 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__62, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_ArpIsLoaded, 250, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__63)) __PYX_ERR(0, 250, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":276
+  /* "LeetdMassExport.py":273
  *         return checkloaded
  * 
  *     def select_layer_bones(self,arm):             # <<<<<<<<<<<<<<
  *         '''
  *         Select Bone In Animation Layers ( nla tracks)
  */
-  __pyx_tuple__64 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_arm, __pyx_n_s_strips, __pyx_n_s_fcu, __pyx_n_s_bone); if (unlikely(!__pyx_tuple__64)) __PYX_ERR(0, 276, __pyx_L1_error)
+  __pyx_tuple__64 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_arm, __pyx_n_s_strips, __pyx_n_s_fcu, __pyx_n_s_bone); if (unlikely(!__pyx_tuple__64)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__64);
   __Pyx_GIVEREF(__pyx_tuple__64);
-  __pyx_codeobj__65 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__64, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_select_layer_bones, 276, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__65)) __PYX_ERR(0, 276, __pyx_L1_error)
+  __pyx_codeobj__65 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__64, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_select_layer_bones, 273, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__65)) __PYX_ERR(0, 273, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":291
+  /* "LeetdMassExport.py":288
  *                     arm.data.bones[bone].select = True
  * 
  *     def InitScriptExpSkeletal(self,scriptLoc=''):             # <<<<<<<<<<<<<<
  *         #dir = self.ScriptDir #os.path.dirname(os.path.abspath(__file__))
  * 
  */
-  __pyx_tuple__66 = PyTuple_Pack(16, __pyx_n_s_self, __pyx_n_s_scriptLoc, __pyx_n_s_SkeBaseScr, __pyx_n_s_f, __pyx_n_s_text, __pyx_n_s_Libs, __pyx_n_s_transientPath, __pyx_n_s_i, __pyx_n_s_lib, __pyx_n_s_scr, __pyx_n_s_srcPy, __pyx_n_s_scrPath, __pyx_n_s_fbxPath, __pyx_n_s_fpath, __pyx_n_s_iCmd, __pyx_n_s_infoCmd); if (unlikely(!__pyx_tuple__66)) __PYX_ERR(0, 291, __pyx_L1_error)
+  __pyx_tuple__66 = PyTuple_Pack(17, __pyx_n_s_self, __pyx_n_s_scriptLoc, __pyx_n_s_baseScript, __pyx_n_s_SkeBaseScr, __pyx_n_s_f, __pyx_n_s_text, __pyx_n_s_Libs, __pyx_n_s_transientPath, __pyx_n_s_i, __pyx_n_s_lib, __pyx_n_s_scr, __pyx_n_s_srcPy, __pyx_n_s_scrPath, __pyx_n_s_fbxPath, __pyx_n_s_fpath, __pyx_n_s_iCmd, __pyx_n_s_infoCmd); if (unlikely(!__pyx_tuple__66)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__66);
   __Pyx_GIVEREF(__pyx_tuple__66);
-  __pyx_codeobj__67 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 16, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__66, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_InitScriptExpSkeletal, 291, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__67)) __PYX_ERR(0, 291, __pyx_L1_error)
+  __pyx_codeobj__67 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 17, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__66, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_InitScriptExpSkeletal, 288, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__67)) __PYX_ERR(0, 288, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":326
+  /* "LeetdMassExport.py":324
  * 
  * 
  *     def GetMassFbxCollection(self,inCollection=str):             # <<<<<<<<<<<<<<
  *         '''
  *         Get MassExport Collection in View_layers
  */
-  __pyx_tuple__68 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_inCollection, __pyx_n_s_collections, __pyx_n_s_i, __pyx_n_s_obj); if (unlikely(!__pyx_tuple__68)) __PYX_ERR(0, 326, __pyx_L1_error)
+  __pyx_tuple__68 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_inCollection, __pyx_n_s_collections, __pyx_n_s_i, __pyx_n_s_obj); if (unlikely(!__pyx_tuple__68)) __PYX_ERR(0, 324, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__68);
   __Pyx_GIVEREF(__pyx_tuple__68);
-  __pyx_codeobj__69 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__68, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetMassFbxCollection, 326, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__69)) __PYX_ERR(0, 326, __pyx_L1_error)
+  __pyx_codeobj__69 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__68, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetMassFbxCollection, 324, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__69)) __PYX_ERR(0, 324, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":336
+  /* "LeetdMassExport.py":334
  *         raise Exception("Sorry, No Collection MassExport Check your Animator Memer")
  * 
  *     def BlenderExport(self,expPath,isCamera=False):             # <<<<<<<<<<<<<<
  *         if not expPath: return
  *         Exportypes={}
  */
-  __pyx_tuple__70 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_expPath, __pyx_n_s_isCamera, __pyx_n_s_Exportypes); if (unlikely(!__pyx_tuple__70)) __PYX_ERR(0, 336, __pyx_L1_error)
+  __pyx_tuple__70 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_expPath, __pyx_n_s_isCamera, __pyx_n_s_Exportypes); if (unlikely(!__pyx_tuple__70)) __PYX_ERR(0, 334, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__70);
   __Pyx_GIVEREF(__pyx_tuple__70);
-  __pyx_codeobj__71 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__70, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_BlenderExport, 336, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__71)) __PYX_ERR(0, 336, __pyx_L1_error)
-  __pyx_tuple__72 = PyTuple_Pack(1, ((PyObject *)Py_False)); if (unlikely(!__pyx_tuple__72)) __PYX_ERR(0, 336, __pyx_L1_error)
+  __pyx_codeobj__71 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__70, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_BlenderExport, 334, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__71)) __PYX_ERR(0, 334, __pyx_L1_error)
+  __pyx_tuple__72 = PyTuple_Pack(1, ((PyObject *)Py_False)); if (unlikely(!__pyx_tuple__72)) __PYX_ERR(0, 334, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__72);
   __Pyx_GIVEREF(__pyx_tuple__72);
 
-  /* "LeetdMassExport.py":351
+  /* "LeetdMassExport.py":349
  * 
  * 
  *     def BakeAnimLayer(self,arm):             # <<<<<<<<<<<<<<
  *         if arm is None: return
  *         #select Layer 0
  */
-  __pyx_tuple__73 = PyTuple_Pack(7, __pyx_n_s_self, __pyx_n_s_arm, __pyx_n_s_LayerCount, __pyx_n_s_i, __pyx_n_s_bone, __pyx_n_s_result, __pyx_n_s_NewLayerName); if (unlikely(!__pyx_tuple__73)) __PYX_ERR(0, 351, __pyx_L1_error)
+  __pyx_tuple__73 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_arm, __pyx_n_s_LayerCount, __pyx_n_s_result, __pyx_n_s_NewLayerName); if (unlikely(!__pyx_tuple__73)) __PYX_ERR(0, 349, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__73);
   __Pyx_GIVEREF(__pyx_tuple__73);
-  __pyx_codeobj__74 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__73, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_BakeAnimLayer, 351, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__74)) __PYX_ERR(0, 351, __pyx_L1_error)
+  __pyx_codeobj__74 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__73, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_BakeAnimLayer, 349, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__74)) __PYX_ERR(0, 349, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":390
+  /* "LeetdMassExport.py":389
  * 
  * 
  *     def SetActiveAllBoneInAmature(self,arm):             # <<<<<<<<<<<<<<
  *         if arm is None: return
  * 
  */
-  __pyx_tuple__75 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_arm, __pyx_n_s_x, __pyx_n_s_bones, __pyx_n_s_b, __pyx_n_s_b); if (unlikely(!__pyx_tuple__75)) __PYX_ERR(0, 390, __pyx_L1_error)
+  __pyx_tuple__75 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_arm, __pyx_n_s_x, __pyx_n_s_bones, __pyx_n_s_b, __pyx_n_s_b); if (unlikely(!__pyx_tuple__75)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__75);
   __Pyx_GIVEREF(__pyx_tuple__75);
-  __pyx_codeobj__76 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__75, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_SetActiveAllBoneInAmature, 390, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__76)) __PYX_ERR(0, 390, __pyx_L1_error)
+  __pyx_codeobj__76 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__75, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_SetActiveAllBoneInAmature, 389, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__76)) __PYX_ERR(0, 389, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":414
+  /* "LeetdMassExport.py":409
  * 
  * 
  *     def GetAddonLayerName(self,arm):             # <<<<<<<<<<<<<<
  *         if arm is None or not arm.als.turn_on: return
  *         #arm.Anim_Layers[0].name = str("{bone}_{MassLayer}").format(bone=arm.name,MassLayer="MassLayer")
  */
-  __pyx_tuple__77 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_arm); if (unlikely(!__pyx_tuple__77)) __PYX_ERR(0, 414, __pyx_L1_error)
+  __pyx_tuple__77 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_arm); if (unlikely(!__pyx_tuple__77)) __PYX_ERR(0, 409, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__77);
   __Pyx_GIVEREF(__pyx_tuple__77);
-  __pyx_codeobj__78 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__77, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetAddonLayerName, 414, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__78)) __PYX_ERR(0, 414, __pyx_L1_error)
+  __pyx_codeobj__78 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__77, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_GetAddonLayerName, 409, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__78)) __PYX_ERR(0, 409, __pyx_L1_error)
 
-  /* "LeetdMassExport.py":420
+  /* "LeetdMassExport.py":415
  * 
  *     ####################MASSEXPORT FUNC###########################################
  *     def LeeMassExport(self,Fbx_platform='AutoRigPro',isTesting=False):             # <<<<<<<<<<<<<<
  *         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
  * 
  */
-  __pyx_tuple__79 = PyTuple_Pack(16, __pyx_n_s_self, __pyx_n_s_Fbx_platform, __pyx_n_s_isTesting, __pyx_n_s_Export, __pyx_n_s_col, __pyx_n_s_armature, __pyx_n_s_cameras, __pyx_n_s_cam, __pyx_n_s_startf, __pyx_n_s_endf, __pyx_n_s_expPath, __pyx_n_s_i, __pyx_n_s_arm, __pyx_n_s_Geos, __pyx_n_s_geo, __pyx_n_s_bone); if (unlikely(!__pyx_tuple__79)) __PYX_ERR(0, 420, __pyx_L1_error)
+  __pyx_tuple__79 = PyTuple_Pack(16, __pyx_n_s_self, __pyx_n_s_Fbx_platform, __pyx_n_s_isTesting, __pyx_n_s_Export, __pyx_n_s_col, __pyx_n_s_armature, __pyx_n_s_cameras, __pyx_n_s_cam, __pyx_n_s_startf, __pyx_n_s_endf, __pyx_n_s_expPath, __pyx_n_s_i, __pyx_n_s_arm, __pyx_n_s_Geos, __pyx_n_s_geo, __pyx_n_s_bone); if (unlikely(!__pyx_tuple__79)) __PYX_ERR(0, 415, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__79);
   __Pyx_GIVEREF(__pyx_tuple__79);
-  __pyx_codeobj__80 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 16, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__79, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_LeeMassExport, 420, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__80)) __PYX_ERR(0, 420, __pyx_L1_error)
-  __pyx_tuple__81 = PyTuple_Pack(2, ((PyObject*)__pyx_n_s_AutoRigPro), ((PyObject *)Py_False)); if (unlikely(!__pyx_tuple__81)) __PYX_ERR(0, 420, __pyx_L1_error)
+  __pyx_codeobj__80 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 16, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__79, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_LeetdMassExport_py, __pyx_n_s_LeeMassExport, 415, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__80)) __PYX_ERR(0, 415, __pyx_L1_error)
+  __pyx_tuple__81 = PyTuple_Pack(2, ((PyObject*)__pyx_n_s_AutoRigPro), ((PyObject *)Py_False)); if (unlikely(!__pyx_tuple__81)) __PYX_ERR(0, 415, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__81);
   __Pyx_GIVEREF(__pyx_tuple__81);
   __Pyx_RefNannyFinishContext();
@@ -18938,7 +18976,7 @@ if (!__Pyx_RefNanny) {
  * import addon_utils
  * from pathlib import Path             # <<<<<<<<<<<<<<
  * import os
- * 
+ * from multiprocessing import Process
  */
   __pyx_t_2 = PyList_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 4, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -18958,7 +18996,7 @@ if (!__Pyx_RefNanny) {
  * import addon_utils
  * from pathlib import Path
  * import os             # <<<<<<<<<<<<<<
- * 
+ * from multiprocessing import Process
  * 
  */
   __pyx_t_3 = __Pyx_ImportDottedModule(__pyx_n_s_os, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 5, __pyx_L1_error)
@@ -18966,43 +19004,127 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_os, __pyx_t_3) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "LeetdMassExport.py":8
+  /* "LeetdMassExport.py":6
+ * from pathlib import Path
+ * import os
+ * from multiprocessing import Process             # <<<<<<<<<<<<<<
  * 
+ * class MassExportFbx():
+ */
+  __pyx_t_3 = PyList_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 6, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_INCREF(__pyx_n_s_Process);
+  __Pyx_GIVEREF(__pyx_n_s_Process);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_3, 0, __pyx_n_s_Process)) __PYX_ERR(0, 6, __pyx_L1_error);
+  __pyx_t_2 = __Pyx_Import(__pyx_n_s_multiprocessing, __pyx_t_3, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 6, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_Process); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 6, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_Process, __pyx_t_3) < 0) __PYX_ERR(0, 6, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+  /* "LeetdMassExport.py":8
+ * from multiprocessing import Process
  * 
  * class MassExportFbx():             # <<<<<<<<<<<<<<
- * 
- *     def __init__(self) -> None:
+ *     ExportDir=''
+ *     ScriptDir=''
  */
-  __pyx_t_3 = __Pyx_Py3MetaclassPrepare((PyObject *) NULL, __pyx_empty_tuple, __pyx_n_s_MassExportFbx, __pyx_n_s_MassExportFbx, (PyObject *) NULL, __pyx_n_s_LeetdMassExport, (PyObject *) NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 8, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_2 = __Pyx_Py3MetaclassPrepare((PyObject *) NULL, __pyx_empty_tuple, __pyx_n_s_MassExportFbx, __pyx_n_s_MassExportFbx, (PyObject *) NULL, __pyx_n_s_LeetdMassExport, (PyObject *) NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 8, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+
+  /* "LeetdMassExport.py":9
+ * 
+ * class MassExportFbx():
+ *     ExportDir=''             # <<<<<<<<<<<<<<
+ *     ScriptDir=''
+ *     blProgram =''
+ */
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_ExportDir, __pyx_kp_s__2) < 0) __PYX_ERR(0, 9, __pyx_L1_error)
 
   /* "LeetdMassExport.py":10
  * class MassExportFbx():
- * 
- *     def __init__(self) -> None:             # <<<<<<<<<<<<<<
- *         self.ExportDir=str
- *         self.ScriptDir=str
+ *     ExportDir=''
+ *     ScriptDir=''             # <<<<<<<<<<<<<<
+ *     blProgram =''
+ *     Skeletal =''
  */
-  __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 10, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_return, __pyx_n_s_None) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_1__init__, 0, __pyx_n_s_MassExportFbx___init, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__20)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 10, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_ScriptDir, __pyx_kp_s__2) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
+
+  /* "LeetdMassExport.py":11
+ *     ExportDir=''
+ *     ScriptDir=''
+ *     blProgram =''             # <<<<<<<<<<<<<<
+ *     Skeletal =''
+ *     prefix =''
+ */
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_blProgram, __pyx_kp_s__2) < 0) __PYX_ERR(0, 11, __pyx_L1_error)
+
+  /* "LeetdMassExport.py":12
+ *     ScriptDir=''
+ *     blProgram =''
+ *     Skeletal =''             # <<<<<<<<<<<<<<
+ *     prefix =''
+ *     suffix=''
+ */
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_Skeletal, __pyx_kp_s__2) < 0) __PYX_ERR(0, 12, __pyx_L1_error)
+
+  /* "LeetdMassExport.py":13
+ *     blProgram =''
+ *     Skeletal =''
+ *     prefix =''             # <<<<<<<<<<<<<<
+ *     suffix=''
+ *     MassGeo=''
+ */
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_prefix, __pyx_kp_s__2) < 0) __PYX_ERR(0, 13, __pyx_L1_error)
+
+  /* "LeetdMassExport.py":14
+ *     Skeletal =''
+ *     prefix =''
+ *     suffix=''             # <<<<<<<<<<<<<<
+ *     MassGeo=''
+ *     def __init__(self) -> None:
+ */
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_suffix, __pyx_kp_s__2) < 0) __PYX_ERR(0, 14, __pyx_L1_error)
+
+  /* "LeetdMassExport.py":15
+ *     prefix =''
+ *     suffix=''
+ *     MassGeo=''             # <<<<<<<<<<<<<<
+ *     def __init__(self) -> None:
+ *         # self.ExportDir=str
+ */
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_MassGeo, __pyx_kp_s__2) < 0) __PYX_ERR(0, 15, __pyx_L1_error)
+
+  /* "LeetdMassExport.py":16
+ *     suffix=''
+ *     MassGeo=''
+ *     def __init__(self) -> None:             # <<<<<<<<<<<<<<
+ *         # self.ExportDir=str
+ *         # self.ScriptDir=str
+ */
+  __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 16, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_return, __pyx_n_s_None) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_1__init__, 0, __pyx_n_s_MassExportFbx___init, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__20)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_CyFunction_SetAnnotationsDict(__pyx_t_4, __pyx_t_2);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_init, __pyx_t_4) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
+  __Pyx_CyFunction_SetAnnotationsDict(__pyx_t_4, __pyx_t_3);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_init, __pyx_t_4) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":20
+  /* "LeetdMassExport.py":26
  *         pass
  * 
  *     def SetInittDir(self,inExportDir=str,inScriptDir=str):             # <<<<<<<<<<<<<<
  *         '''
  *         Init Directories
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_3SetInittDir, 0, __pyx_n_s_MassExportFbx_SetInittDir, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__22)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 20, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_3SetInittDir, 0, __pyx_n_s_MassExportFbx_SetInittDir, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__22)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_4, sizeof(__pyx_defaults), 2)) __PYX_ERR(0, 20, __pyx_L1_error)
+  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_4, sizeof(__pyx_defaults), 2)) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_INCREF((PyObject *)(&PyString_Type));
   __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_t_4)->__pyx_arg_inExportDir = ((PyObject *)(&PyString_Type));
   __Pyx_GIVEREF((&PyString_Type));
@@ -19010,19 +19132,19 @@ if (!__Pyx_RefNanny) {
   __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_t_4)->__pyx_arg_inScriptDir = ((PyObject *)(&PyString_Type));
   __Pyx_GIVEREF((&PyString_Type));
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_4, __pyx_pf_15LeetdMassExport___defaults__);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_SetInittDir, __pyx_t_4) < 0) __PYX_ERR(0, 20, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_SetInittDir, __pyx_t_4) < 0) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":27
- *         self.ScriptDir = str('{}{py}').format(inScriptDir)
+  /* "LeetdMassExport.py":33
+ *         self.ScriptDir = inScriptDir
  * 
  *     def SetStringFix(self,inPrefix=str,inSuffix=str,inSkel=str,inBlenderP=str):             # <<<<<<<<<<<<<<
  *         '''
  *         Init String Format Requirements
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_5SetStringFix, 0, __pyx_n_s_MassExportFbx_SetStringFix, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__24)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 27, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_5SetStringFix, 0, __pyx_n_s_MassExportFbx_SetStringFix, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__24)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 33, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_4, sizeof(__pyx_defaults1), 4)) __PYX_ERR(0, 27, __pyx_L1_error)
+  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_4, sizeof(__pyx_defaults1), 4)) __PYX_ERR(0, 33, __pyx_L1_error)
   __Pyx_INCREF((PyObject *)(&PyString_Type));
   __Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_t_4)->__pyx_arg_inPrefix = ((PyObject *)(&PyString_Type));
   __Pyx_GIVEREF((&PyString_Type));
@@ -19036,383 +19158,383 @@ if (!__Pyx_RefNanny) {
   __Pyx_CyFunction_Defaults(__pyx_defaults1, __pyx_t_4)->__pyx_arg_inBlenderP = ((PyObject *)(&PyString_Type));
   __Pyx_GIVEREF((&PyString_Type));
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_4, __pyx_pf_15LeetdMassExport_2__defaults__);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_SetStringFix, __pyx_t_4) < 0) __PYX_ERR(0, 27, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_SetStringFix, __pyx_t_4) < 0) __PYX_ERR(0, 33, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":36
+  /* "LeetdMassExport.py":42
  *         self.blProgram =str('{}').format(inBlenderP)
  * 
  *     def SetMassGeo(self,inMassGeo=str):             # <<<<<<<<<<<<<<
  *         self.MassGeo=inMassGeo
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_7SetMassGeo, 0, __pyx_n_s_MassExportFbx_SetMassGeo, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__26)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_7SetMassGeo, 0, __pyx_n_s_MassExportFbx_SetMassGeo, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__26)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_4, sizeof(__pyx_defaults2), 1)) __PYX_ERR(0, 36, __pyx_L1_error)
+  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_4, sizeof(__pyx_defaults2), 1)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_INCREF((PyObject *)(&PyString_Type));
   __Pyx_CyFunction_Defaults(__pyx_defaults2, __pyx_t_4)->__pyx_arg_inMassGeo = ((PyObject *)(&PyString_Type));
   __Pyx_GIVEREF((&PyString_Type));
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_4, __pyx_pf_15LeetdMassExport_4__defaults__);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_SetMassGeo, __pyx_t_4) < 0) __PYX_ERR(0, 36, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_SetMassGeo, __pyx_t_4) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":39
+  /* "LeetdMassExport.py":45
  *         self.MassGeo=inMassGeo
  * 
  *     def GetSelections(self):             # <<<<<<<<<<<<<<
  *         return bpy.context.selected_objects
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_9GetSelections, 0, __pyx_n_s_MassExportFbx_GetSelections, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__27)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 39, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_9GetSelections, 0, __pyx_n_s_MassExportFbx_GetSelections, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__27)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 45, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_GetSelections, __pyx_t_4) < 0) __PYX_ERR(0, 39, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_GetSelections, __pyx_t_4) < 0) __PYX_ERR(0, 45, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":42
+  /* "LeetdMassExport.py":48
  *         return bpy.context.selected_objects
  * 
  *     def ClearSelection(self): return bpy.ops.object.select_all(action='DESELECT')             # <<<<<<<<<<<<<<
  * 
  *     def isObjectType(self,inObject): return type(inObject) == bpy.types.Object
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_11ClearSelection, 0, __pyx_n_s_MassExportFbx_ClearSelection, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__28)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_11ClearSelection, 0, __pyx_n_s_MassExportFbx_ClearSelection, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__28)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_ClearSelection, __pyx_t_4) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_ClearSelection, __pyx_t_4) < 0) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":44
+  /* "LeetdMassExport.py":50
  *     def ClearSelection(self): return bpy.ops.object.select_all(action='DESELECT')
  * 
  *     def isObjectType(self,inObject): return type(inObject) == bpy.types.Object             # <<<<<<<<<<<<<<
  * 
  *     def isCollection(self,inObject): return type(inObject) == bpy.types.Collection
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_13isObjectType, 0, __pyx_n_s_MassExportFbx_isObjectType, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__30)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_13isObjectType, 0, __pyx_n_s_MassExportFbx_isObjectType, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__30)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_isObjectType, __pyx_t_4) < 0) __PYX_ERR(0, 44, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_isObjectType, __pyx_t_4) < 0) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":46
+  /* "LeetdMassExport.py":52
  *     def isObjectType(self,inObject): return type(inObject) == bpy.types.Object
  * 
  *     def isCollection(self,inObject): return type(inObject) == bpy.types.Collection             # <<<<<<<<<<<<<<
  * 
  *     def GetObjectsInCollection(self,collection):
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_15isCollection, 0, __pyx_n_s_MassExportFbx_isCollection, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__31)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_15isCollection, 0, __pyx_n_s_MassExportFbx_isCollection, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__31)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_isCollection, __pyx_t_4) < 0) __PYX_ERR(0, 46, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_isCollection, __pyx_t_4) < 0) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":48
+  /* "LeetdMassExport.py":54
  *     def isCollection(self,inObject): return type(inObject) == bpy.types.Collection
  * 
  *     def GetObjectsInCollection(self,collection):             # <<<<<<<<<<<<<<
  *         if collection is None: return []
  *         return [obj for obj in collection.all_objects if obj.visible_get()]
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_17GetObjectsInCollection, 0, __pyx_n_s_MassExportFbx_GetObjectsInCollec, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__33)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_17GetObjectsInCollection, 0, __pyx_n_s_MassExportFbx_GetObjectsInCollec, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__33)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 54, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_GetObjectsInCollection, __pyx_t_4) < 0) __PYX_ERR(0, 48, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_GetObjectsInCollection, __pyx_t_4) < 0) __PYX_ERR(0, 54, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":52
+  /* "LeetdMassExport.py":58
  *         return [obj for obj in collection.all_objects if obj.visible_get()]
  * 
  *     def OpenBlenderFile(self,path):             # <<<<<<<<<<<<<<
  *         iPath = Path(path)
  *         if not iPath.is_file(): return
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_19OpenBlenderFile, 0, __pyx_n_s_MassExportFbx_OpenBlenderFile, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__35)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_19OpenBlenderFile, 0, __pyx_n_s_MassExportFbx_OpenBlenderFile, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__35)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_OpenBlenderFile, __pyx_t_4) < 0) __PYX_ERR(0, 52, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_OpenBlenderFile, __pyx_t_4) < 0) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":57
+  /* "LeetdMassExport.py":63
  *         bpy.ops.wm.open_mainfile(filepath=path)
  * 
  *     def GetAllLibraries(self):             # <<<<<<<<<<<<<<
  *         libraries = bpy.context.blend_data.libraries
  *         libs = []
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_21GetAllLibraries, 0, __pyx_n_s_MassExportFbx_GetAllLibraries, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__37)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_21GetAllLibraries, 0, __pyx_n_s_MassExportFbx_GetAllLibraries, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__37)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_GetAllLibraries, __pyx_t_4) < 0) __PYX_ERR(0, 57, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_GetAllLibraries, __pyx_t_4) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":64
+  /* "LeetdMassExport.py":70
  *         return libs
  * 
  *     def set_active_object(self,object_name):             # <<<<<<<<<<<<<<
  *         try:
  *             bpy.context.view_layer.objects.active = bpy.data.objects.get(object_name)
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_23set_active_object, 0, __pyx_n_s_MassExportFbx_set_active_object, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__39)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 64, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_23set_active_object, 0, __pyx_n_s_MassExportFbx_set_active_object, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__39)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 70, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_set_active_object, __pyx_t_4) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_set_active_object, __pyx_t_4) < 0) __PYX_ERR(0, 70, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":70
+  /* "LeetdMassExport.py":76
  *         except: pass
  * 
  *     def SelectAllObjsInCollection(self,inCollection):             # <<<<<<<<<<<<<<
  *         if inCollection is None: return
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_25SelectAllObjsInCollection, 0, __pyx_n_s_MassExportFbx_SelectAllObjsInCol, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__41)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 70, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_25SelectAllObjsInCollection, 0, __pyx_n_s_MassExportFbx_SelectAllObjsInCol, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__41)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 76, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_SelectAllObjsInCollection, __pyx_t_4) < 0) __PYX_ERR(0, 70, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_SelectAllObjsInCollection, __pyx_t_4) < 0) __PYX_ERR(0, 76, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":89
+  /* "LeetdMassExport.py":95
  *         return objecsList
  * 
  *     def GetObjectTypes(self,inCollection,inType=''):             # <<<<<<<<<<<<<<
  *         if not inType or not inCollection: return []
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_27GetObjectTypes, 0, __pyx_n_s_MassExportFbx_GetObjectTypes, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__43)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 89, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_27GetObjectTypes, 0, __pyx_n_s_MassExportFbx_GetObjectTypes, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__43)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 95, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_4, __pyx_tuple__44);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_GetObjectTypes, __pyx_t_4) < 0) __PYX_ERR(0, 89, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_GetObjectTypes, __pyx_t_4) < 0) __PYX_ERR(0, 95, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":96
+  /* "LeetdMassExport.py":102
  *         return [obj for obj in objects if obj.type == inType]
  * 
  *     def GetActionsFromBone(self,inBone):             # <<<<<<<<<<<<<<
  *         if inBone is None: return None
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_29GetActionsFromBone, 0, __pyx_n_s_MassExportFbx_GetActionsFromBone, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__46)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_29GetActionsFromBone, 0, __pyx_n_s_MassExportFbx_GetActionsFromBone, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__46)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_GetActionsFromBone, __pyx_t_4) < 0) __PYX_ERR(0, 96, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_GetActionsFromBone, __pyx_t_4) < 0) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":101
+  /* "LeetdMassExport.py":107
  *         return inBone.animation_data.action
  * 
  *     def GetStartEndFrame(self,inBone):             # <<<<<<<<<<<<<<
  *         if inBone is None: return bpy.context.scene.frame_start,bpy.context.scene.frame_end
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_31GetStartEndFrame, 0, __pyx_n_s_MassExportFbx_GetStartEndFrame, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__48)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 101, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_31GetStartEndFrame, 0, __pyx_n_s_MassExportFbx_GetStartEndFrame, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__48)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 107, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_GetStartEndFrame, __pyx_t_4) < 0) __PYX_ERR(0, 101, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_GetStartEndFrame, __pyx_t_4) < 0) __PYX_ERR(0, 107, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":110
+  /* "LeetdMassExport.py":116
  *         return act.frame_range[0],act.frame_range[1]
  * 
  *     def GetAllArmatureInColl(self,inCollectioName=''):             # <<<<<<<<<<<<<<
  *         if not inCollectioName: return []
  *         col = bpy.data.collections[inCollectioName]
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_33GetAllArmatureInColl, 0, __pyx_n_s_MassExportFbx_GetAllArmatureInCo, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__50)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 110, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_33GetAllArmatureInColl, 0, __pyx_n_s_MassExportFbx_GetAllArmatureInCo, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__50)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 116, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_4, __pyx_tuple__44);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_GetAllArmatureInColl, __pyx_t_4) < 0) __PYX_ERR(0, 110, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_GetAllArmatureInColl, __pyx_t_4) < 0) __PYX_ERR(0, 116, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":116
+  /* "LeetdMassExport.py":122
  *         return self.GetObjectTypes(col,'ARMATURE')
  * 
  *     def GetAllGeometryAttachedArmature(self,inARMATURE):             # <<<<<<<<<<<<<<
  *         Geos = []
  *         if not inARMATURE: return Geos
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_35GetAllGeometryAttachedArmature, 0, __pyx_n_s_MassExportFbx_GetAllGeometryAtta, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__52)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 116, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_35GetAllGeometryAttachedArmature, 0, __pyx_n_s_MassExportFbx_GetAllGeometryAtta, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__52)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 122, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_GetAllGeometryAttachedArmature, __pyx_t_4) < 0) __PYX_ERR(0, 116, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_GetAllGeometryAttachedArmature, __pyx_t_4) < 0) __PYX_ERR(0, 122, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":126
+  /* "LeetdMassExport.py":132
  *         return Geos
  * 
  *     def isArmatureAction(self,inAct,inArmature):             # <<<<<<<<<<<<<<
  *         if inAct is None or inArmature is None: return False
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_37isArmatureAction, 0, __pyx_n_s_MassExportFbx_isArmatureAction, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__54)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 126, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_37isArmatureAction, 0, __pyx_n_s_MassExportFbx_isArmatureAction, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__54)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 132, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_isArmatureAction, __pyx_t_4) < 0) __PYX_ERR(0, 126, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_isArmatureAction, __pyx_t_4) < 0) __PYX_ERR(0, 132, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":140
+  /* "LeetdMassExport.py":146
  * 
  *     ##################################################################
- *     def LeeBakeFunc(self,Collection=None):             # <<<<<<<<<<<<<<
+ *     def LeeBakeFunc(self,Collection=None,isTest=False):             # <<<<<<<<<<<<<<
  *         if Collection is None: return
  *         col = bpy.data.collections[Collection]
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_39LeeBakeFunc, 0, __pyx_n_s_MassExportFbx_LeeBakeFunc, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__56)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 140, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_39LeeBakeFunc, 0, __pyx_n_s_MassExportFbx_LeeBakeFunc, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__56)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 146, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_4, __pyx_tuple__57);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_LeeBakeFunc, __pyx_t_4) < 0) __PYX_ERR(0, 140, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_LeeBakeFunc, __pyx_t_4) < 0) __PYX_ERR(0, 146, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":152
- *             # self.LeeArmatureBake(bone)
+  /* "LeetdMassExport.py":159
+ * 
  * 
  *     def LeeArmatureBake(self,arm):             # <<<<<<<<<<<<<<
  *         if arm is None: return
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_41LeeArmatureBake, 0, __pyx_n_s_MassExportFbx_LeeArmatureBake, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__59)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 152, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_41LeeArmatureBake, 0, __pyx_n_s_MassExportFbx_LeeArmatureBake, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__59)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 159, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_LeeArmatureBake, __pyx_t_4) < 0) __PYX_ERR(0, 152, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_LeeArmatureBake, __pyx_t_4) < 0) __PYX_ERR(0, 159, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":189
+  /* "LeetdMassExport.py":196
  * 
  *     ##===================AutoRigProInterGrade======================
  *     def LeeArpExport(self,fileoutput):             # <<<<<<<<<<<<<<
  *         '''
  *         Auto Rig Pro Fbx Intergrade
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_43LeeArpExport, 0, __pyx_n_s_MassExportFbx_LeeArpExport, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__61)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 189, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_43LeeArpExport, 0, __pyx_n_s_MassExportFbx_LeeArpExport, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__61)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 196, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_LeeArpExport, __pyx_t_4) < 0) __PYX_ERR(0, 189, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_LeeArpExport, __pyx_t_4) < 0) __PYX_ERR(0, 196, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":242
+  /* "LeetdMassExport.py":250
  * 
  * 
  *     def ArpIsLoaded(self):             # <<<<<<<<<<<<<<
  *         '''
  *         check Addon
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_45ArpIsLoaded, 0, __pyx_n_s_MassExportFbx_ArpIsLoaded, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__63)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 242, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_45ArpIsLoaded, 0, __pyx_n_s_MassExportFbx_ArpIsLoaded, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__63)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 250, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_ArpIsLoaded, __pyx_t_4) < 0) __PYX_ERR(0, 242, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_ArpIsLoaded, __pyx_t_4) < 0) __PYX_ERR(0, 250, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":276
+  /* "LeetdMassExport.py":273
  *         return checkloaded
  * 
  *     def select_layer_bones(self,arm):             # <<<<<<<<<<<<<<
  *         '''
  *         Select Bone In Animation Layers ( nla tracks)
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_47select_layer_bones, 0, __pyx_n_s_MassExportFbx_select_layer_bones, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__65)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 276, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_47select_layer_bones, 0, __pyx_n_s_MassExportFbx_select_layer_bones, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__65)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_select_layer_bones, __pyx_t_4) < 0) __PYX_ERR(0, 276, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_select_layer_bones, __pyx_t_4) < 0) __PYX_ERR(0, 273, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":291
+  /* "LeetdMassExport.py":288
  *                     arm.data.bones[bone].select = True
  * 
  *     def InitScriptExpSkeletal(self,scriptLoc=''):             # <<<<<<<<<<<<<<
  *         #dir = self.ScriptDir #os.path.dirname(os.path.abspath(__file__))
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_49InitScriptExpSkeletal, 0, __pyx_n_s_MassExportFbx_InitScriptExpSkele, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__67)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 291, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_49InitScriptExpSkeletal, 0, __pyx_n_s_MassExportFbx_InitScriptExpSkele, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__67)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_4, __pyx_tuple__44);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_InitScriptExpSkeletal, __pyx_t_4) < 0) __PYX_ERR(0, 291, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_InitScriptExpSkeletal, __pyx_t_4) < 0) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":326
+  /* "LeetdMassExport.py":324
  * 
  * 
  *     def GetMassFbxCollection(self,inCollection=str):             # <<<<<<<<<<<<<<
  *         '''
  *         Get MassExport Collection in View_layers
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_51GetMassFbxCollection, 0, __pyx_n_s_MassExportFbx_GetMassFbxCollecti, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__69)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 326, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_51GetMassFbxCollection, 0, __pyx_n_s_MassExportFbx_GetMassFbxCollecti, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__69)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 324, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_4, sizeof(__pyx_defaults3), 1)) __PYX_ERR(0, 326, __pyx_L1_error)
+  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_4, sizeof(__pyx_defaults3), 1)) __PYX_ERR(0, 324, __pyx_L1_error)
   __Pyx_INCREF((PyObject *)(&PyString_Type));
   __Pyx_CyFunction_Defaults(__pyx_defaults3, __pyx_t_4)->__pyx_arg_inCollection = ((PyObject *)(&PyString_Type));
   __Pyx_GIVEREF((&PyString_Type));
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_4, __pyx_pf_15LeetdMassExport_6__defaults__);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_GetMassFbxCollection, __pyx_t_4) < 0) __PYX_ERR(0, 326, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_GetMassFbxCollection, __pyx_t_4) < 0) __PYX_ERR(0, 324, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":336
+  /* "LeetdMassExport.py":334
  *         raise Exception("Sorry, No Collection MassExport Check your Animator Memer")
  * 
  *     def BlenderExport(self,expPath,isCamera=False):             # <<<<<<<<<<<<<<
  *         if not expPath: return
  *         Exportypes={}
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_53BlenderExport, 0, __pyx_n_s_MassExportFbx_BlenderExport, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__71)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 336, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_53BlenderExport, 0, __pyx_n_s_MassExportFbx_BlenderExport, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__71)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 334, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_4, __pyx_tuple__72);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_BlenderExport, __pyx_t_4) < 0) __PYX_ERR(0, 336, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_BlenderExport, __pyx_t_4) < 0) __PYX_ERR(0, 334, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":351
+  /* "LeetdMassExport.py":349
  * 
  * 
  *     def BakeAnimLayer(self,arm):             # <<<<<<<<<<<<<<
  *         if arm is None: return
  *         #select Layer 0
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_55BakeAnimLayer, 0, __pyx_n_s_MassExportFbx_BakeAnimLayer, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__74)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 351, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_55BakeAnimLayer, 0, __pyx_n_s_MassExportFbx_BakeAnimLayer, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__74)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 349, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_BakeAnimLayer, __pyx_t_4) < 0) __PYX_ERR(0, 351, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_BakeAnimLayer, __pyx_t_4) < 0) __PYX_ERR(0, 349, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":390
+  /* "LeetdMassExport.py":389
  * 
  * 
  *     def SetActiveAllBoneInAmature(self,arm):             # <<<<<<<<<<<<<<
  *         if arm is None: return
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_57SetActiveAllBoneInAmature, 0, __pyx_n_s_MassExportFbx_SetActiveAllBoneIn, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__76)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 390, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_57SetActiveAllBoneInAmature, 0, __pyx_n_s_MassExportFbx_SetActiveAllBoneIn, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__76)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_SetActiveAllBoneInAmature, __pyx_t_4) < 0) __PYX_ERR(0, 390, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_SetActiveAllBoneInAmature, __pyx_t_4) < 0) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":414
+  /* "LeetdMassExport.py":409
  * 
  * 
  *     def GetAddonLayerName(self,arm):             # <<<<<<<<<<<<<<
  *         if arm is None or not arm.als.turn_on: return
  *         #arm.Anim_Layers[0].name = str("{bone}_{MassLayer}").format(bone=arm.name,MassLayer="MassLayer")
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_59GetAddonLayerName, 0, __pyx_n_s_MassExportFbx_GetAddonLayerName, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__78)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 414, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_59GetAddonLayerName, 0, __pyx_n_s_MassExportFbx_GetAddonLayerName, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__78)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 409, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_GetAddonLayerName, __pyx_t_4) < 0) __PYX_ERR(0, 414, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_GetAddonLayerName, __pyx_t_4) < 0) __PYX_ERR(0, 409, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "LeetdMassExport.py":420
+  /* "LeetdMassExport.py":415
  * 
  *     ####################MASSEXPORT FUNC###########################################
  *     def LeeMassExport(self,Fbx_platform='AutoRigPro',isTesting=False):             # <<<<<<<<<<<<<<
  *         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_61LeeMassExport, 0, __pyx_n_s_MassExportFbx_LeeMassExport, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__80)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 420, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_15LeetdMassExport_13MassExportFbx_61LeeMassExport, 0, __pyx_n_s_MassExportFbx_LeeMassExport, NULL, __pyx_n_s_LeetdMassExport, __pyx_d, ((PyObject *)__pyx_codeobj__80)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 415, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_4, __pyx_tuple__81);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_LeeMassExport, __pyx_t_4) < 0) __PYX_ERR(0, 420, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_LeeMassExport, __pyx_t_4) < 0) __PYX_ERR(0, 415, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
   /* "LeetdMassExport.py":8
- * 
+ * from multiprocessing import Process
  * 
  * class MassExportFbx():             # <<<<<<<<<<<<<<
- * 
- *     def __init__(self) -> None:
+ *     ExportDir=''
+ *     ScriptDir=''
  */
-  __pyx_t_4 = __Pyx_Py3ClassCreate(((PyObject*)&PyType_Type), __pyx_n_s_MassExportFbx, __pyx_empty_tuple, __pyx_t_3, NULL, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 8, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_Py3ClassCreate(((PyObject*)&PyType_Type), __pyx_n_s_MassExportFbx, __pyx_empty_tuple, __pyx_t_2, NULL, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 8, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_MassExportFbx, __pyx_t_4) < 0) __PYX_ERR(0, 8, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "LeetdMassExport.py":1
  * import bpy             # <<<<<<<<<<<<<<
  * import math
  * import addon_utils
  */
-  __pyx_t_3 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_test, __pyx_t_3) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_2 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_test, __pyx_t_2) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /*--- Wrapped vars code ---*/
 
@@ -20874,98 +20996,6 @@ bad:
     return -1;
 }
 
-/* RaiseTooManyValuesToUnpack */
-static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
-    PyErr_Format(PyExc_ValueError,
-                 "too many values to unpack (expected %" CYTHON_FORMAT_SSIZE_T "d)", expected);
-}
-
-/* RaiseNeedMoreValuesToUnpack */
-static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
-    PyErr_Format(PyExc_ValueError,
-                 "need more than %" CYTHON_FORMAT_SSIZE_T "d value%.1s to unpack",
-                 index, (index == 1) ? "" : "s");
-}
-
-/* IterFinish */
-static CYTHON_INLINE int __Pyx_IterFinish(void) {
-    PyObject* exc_type;
-    __Pyx_PyThreadState_declare
-    __Pyx_PyThreadState_assign
-    exc_type = __Pyx_PyErr_CurrentExceptionType();
-    if (unlikely(exc_type)) {
-        if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration)))
-            return -1;
-        __Pyx_PyErr_Clear();
-        return 0;
-    }
-    return 0;
-}
-
-/* UnpackItemEndCheck */
-static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected) {
-    if (unlikely(retval)) {
-        Py_DECREF(retval);
-        __Pyx_RaiseTooManyValuesError(expected);
-        return -1;
-    }
-    return __Pyx_IterFinish();
-}
-
-/* SwapException */
-#if CYTHON_FAST_THREAD_STATE
-static CYTHON_INLINE void __Pyx__ExceptionSwap(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
-    PyObject *tmp_type, *tmp_value, *tmp_tb;
-  #if CYTHON_USE_EXC_INFO_STACK && PY_VERSION_HEX >= 0x030B00a4
-    _PyErr_StackItem *exc_info = tstate->exc_info;
-    tmp_value = exc_info->exc_value;
-    exc_info->exc_value = *value;
-    if (tmp_value == NULL || tmp_value == Py_None) {
-        Py_XDECREF(tmp_value);
-        tmp_value = NULL;
-        tmp_type = NULL;
-        tmp_tb = NULL;
-    } else {
-        tmp_type = (PyObject*) Py_TYPE(tmp_value);
-        Py_INCREF(tmp_type);
-        #if CYTHON_COMPILING_IN_CPYTHON
-        tmp_tb = ((PyBaseExceptionObject*) tmp_value)->traceback;
-        Py_XINCREF(tmp_tb);
-        #else
-        tmp_tb = PyException_GetTraceback(tmp_value);
-        #endif
-    }
-  #elif CYTHON_USE_EXC_INFO_STACK
-    _PyErr_StackItem *exc_info = tstate->exc_info;
-    tmp_type = exc_info->exc_type;
-    tmp_value = exc_info->exc_value;
-    tmp_tb = exc_info->exc_traceback;
-    exc_info->exc_type = *type;
-    exc_info->exc_value = *value;
-    exc_info->exc_traceback = *tb;
-  #else
-    tmp_type = tstate->exc_type;
-    tmp_value = tstate->exc_value;
-    tmp_tb = tstate->exc_traceback;
-    tstate->exc_type = *type;
-    tstate->exc_value = *value;
-    tstate->exc_traceback = *tb;
-  #endif
-    *type = tmp_type;
-    *value = tmp_value;
-    *tb = tmp_tb;
-}
-#else
-static CYTHON_INLINE void __Pyx_ExceptionSwap(PyObject **type, PyObject **value, PyObject **tb) {
-    PyObject *tmp_type, *tmp_value, *tmp_tb;
-    PyErr_GetExcInfo(&tmp_type, &tmp_value, &tmp_tb);
-    PyErr_SetExcInfo(*type, *value, *tb);
-    *type = tmp_type;
-    *value = tmp_value;
-    *tb = tmp_tb;
-}
-#endif
-
 /* PyIntBinop */
 #if !CYTHON_COMPILING_IN_PYPY
 static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
@@ -21096,6 +21126,98 @@ static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, long intval, 
             return PyFloat_FromDouble(result);
     }
     return (inplace ? PyNumber_InPlaceAdd : PyNumber_Add)(op1, op2);
+}
+#endif
+
+/* RaiseTooManyValuesToUnpack */
+static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
+    PyErr_Format(PyExc_ValueError,
+                 "too many values to unpack (expected %" CYTHON_FORMAT_SSIZE_T "d)", expected);
+}
+
+/* RaiseNeedMoreValuesToUnpack */
+static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
+    PyErr_Format(PyExc_ValueError,
+                 "need more than %" CYTHON_FORMAT_SSIZE_T "d value%.1s to unpack",
+                 index, (index == 1) ? "" : "s");
+}
+
+/* IterFinish */
+static CYTHON_INLINE int __Pyx_IterFinish(void) {
+    PyObject* exc_type;
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    exc_type = __Pyx_PyErr_CurrentExceptionType();
+    if (unlikely(exc_type)) {
+        if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration)))
+            return -1;
+        __Pyx_PyErr_Clear();
+        return 0;
+    }
+    return 0;
+}
+
+/* UnpackItemEndCheck */
+static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected) {
+    if (unlikely(retval)) {
+        Py_DECREF(retval);
+        __Pyx_RaiseTooManyValuesError(expected);
+        return -1;
+    }
+    return __Pyx_IterFinish();
+}
+
+/* SwapException */
+#if CYTHON_FAST_THREAD_STATE
+static CYTHON_INLINE void __Pyx__ExceptionSwap(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
+    PyObject *tmp_type, *tmp_value, *tmp_tb;
+  #if CYTHON_USE_EXC_INFO_STACK && PY_VERSION_HEX >= 0x030B00a4
+    _PyErr_StackItem *exc_info = tstate->exc_info;
+    tmp_value = exc_info->exc_value;
+    exc_info->exc_value = *value;
+    if (tmp_value == NULL || tmp_value == Py_None) {
+        Py_XDECREF(tmp_value);
+        tmp_value = NULL;
+        tmp_type = NULL;
+        tmp_tb = NULL;
+    } else {
+        tmp_type = (PyObject*) Py_TYPE(tmp_value);
+        Py_INCREF(tmp_type);
+        #if CYTHON_COMPILING_IN_CPYTHON
+        tmp_tb = ((PyBaseExceptionObject*) tmp_value)->traceback;
+        Py_XINCREF(tmp_tb);
+        #else
+        tmp_tb = PyException_GetTraceback(tmp_value);
+        #endif
+    }
+  #elif CYTHON_USE_EXC_INFO_STACK
+    _PyErr_StackItem *exc_info = tstate->exc_info;
+    tmp_type = exc_info->exc_type;
+    tmp_value = exc_info->exc_value;
+    tmp_tb = exc_info->exc_traceback;
+    exc_info->exc_type = *type;
+    exc_info->exc_value = *value;
+    exc_info->exc_traceback = *tb;
+  #else
+    tmp_type = tstate->exc_type;
+    tmp_value = tstate->exc_value;
+    tmp_tb = tstate->exc_traceback;
+    tstate->exc_type = *type;
+    tstate->exc_value = *value;
+    tstate->exc_traceback = *tb;
+  #endif
+    *type = tmp_type;
+    *value = tmp_value;
+    *tb = tmp_tb;
+}
+#else
+static CYTHON_INLINE void __Pyx_ExceptionSwap(PyObject **type, PyObject **value, PyObject **tb) {
+    PyObject *tmp_type, *tmp_value, *tmp_tb;
+    PyErr_GetExcInfo(&tmp_type, &tmp_value, &tmp_tb);
+    PyErr_SetExcInfo(*type, *value, *tb);
+    *type = tmp_type;
+    *value = tmp_value;
+    *tb = tmp_tb;
 }
 #endif
 
@@ -21257,139 +21379,6 @@ static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject 
 bad:
     Py_XDECREF(owned_instance);
     return;
-}
-#endif
-
-/* PyIntBinop */
-#if !CYTHON_COMPILING_IN_PYPY
-static PyObject* __Pyx_PyInt_SubtractObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check) {
-    CYTHON_MAYBE_UNUSED_VAR(intval);
-    CYTHON_MAYBE_UNUSED_VAR(inplace);
-    CYTHON_UNUSED_VAR(zerodivision_check);
-    #if PY_MAJOR_VERSION < 3
-    if (likely(PyInt_CheckExact(op1))) {
-        const long b = intval;
-        long x;
-        long a = PyInt_AS_LONG(op1);
-        
-            x = (long)((unsigned long)a - (unsigned long)b);
-            if (likely((x^a) >= 0 || (x^~b) >= 0))
-                return PyInt_FromLong(x);
-            return PyLong_Type.tp_as_number->nb_subtract(op1, op2);
-    }
-    #endif
-    #if CYTHON_USE_PYLONG_INTERNALS
-    if (likely(PyLong_CheckExact(op1))) {
-        const long b = intval;
-        long a, x;
-#ifdef HAVE_LONG_LONG
-        const PY_LONG_LONG llb = intval;
-        PY_LONG_LONG lla, llx;
-#endif
-        if (unlikely(__Pyx_PyLong_IsZero(op1))) {
-            return PyLong_FromLong(-intval);
-        }
-        if (likely(__Pyx_PyLong_IsCompact(op1))) {
-            a = __Pyx_PyLong_CompactValue(op1);
-        } else {
-            const digit* digits = __Pyx_PyLong_Digits(op1);
-            const Py_ssize_t size = __Pyx_PyLong_SignedDigitCount(op1);
-            switch (size) {
-                case -2:
-                    if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
-                        a = -(long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-                    #ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
-                        lla = -(PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-                    #endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                case 2:
-                    if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
-                        a = (long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-                    #ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
-                        lla = (PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-                    #endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                case -3:
-                    if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
-                        a = -(long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-                    #ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
-                        lla = -(PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-                    #endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                case 3:
-                    if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
-                        a = (long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-                    #ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
-                        lla = (PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-                    #endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                case -4:
-                    if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
-                        a = -(long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-                    #ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
-                        lla = -(PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-                    #endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                case 4:
-                    if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
-                        a = (long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-                    #ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
-                        lla = (PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-                    #endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                default: return PyLong_Type.tp_as_number->nb_subtract(op1, op2);
-            }
-        }
-                x = a - b;
-            return PyLong_FromLong(x);
-#ifdef HAVE_LONG_LONG
-        long_long:
-                llx = lla - llb;
-            return PyLong_FromLongLong(llx);
-#endif
-        
-        
-    }
-    #endif
-    if (PyFloat_CheckExact(op1)) {
-        const long b = intval;
-#if CYTHON_COMPILING_IN_LIMITED_API
-        double a = __pyx_PyFloat_AsDouble(op1);
-#else
-        double a = PyFloat_AS_DOUBLE(op1);
-#endif
-            double result;
-            
-            PyFPE_START_PROTECT("subtract", return NULL)
-            result = ((double)a) - (double)b;
-            PyFPE_END_PROTECT(result)
-            return PyFloat_FromDouble(result);
-    }
-    return (inplace ? PyNumber_InPlaceSubtract : PyNumber_Subtract)(op1, op2);
 }
 #endif
 

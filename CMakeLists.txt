@@ -15,6 +15,10 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Gui Core Network)
 
 set(SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Scripts)
 
+set(OUTSCRIPT_DIR ${CMAKE_CURRENT_BINARY_DIR}/Scripts)
+file(REMOVE_RECURSE ${OUTSCRIPT_DIR})
+
+
 set(USER $ENV{USERNAME})
 set(LOCALSCRIPT "C:/Users/${USER}/AppData/Local/LeeMassFbx/")
 set(MELEXPORT ${LOCALSCRIPT}MayaExportCmd.mel)
@@ -117,13 +121,18 @@ endif()
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Scripts)
 
 # Scripts Files
-file(GLOB_RECURSE files "{CMAKE_CURRENT_SOURCE_DIR}/Scripts/" "*.py" "*.mel")
+file(GLOB_RECURSE files
+    "{CMAKE_CURRENT_SOURCE_DIR}/Scripts/"
+    "BlenderExport.py"
+    "ALIntergrade.py"
+    "BaseExport.py"
+    "MayaExportCmd.mel")
 file(GLOB_RECURSE pylib "{CMAKE_CURRENT_SOURCE_DIR}/Scripts/libs" "*.pyd")
 
 # Copy to build Folders
 file(COPY ${files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Scripts)
 
-file(COPY ${pylib} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Scripts/libs)
+#file(COPY ${pylib} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Scripts/libs)
 
 
 set (CYTHON "py -m ${SETUP_PY} build_ext --inplace")
