@@ -301,3 +301,28 @@ bool MassFbxUltilities::ShowMessageConfirmBox()
     }
     return false;
 }
+
+QString MassFbxUltilities::GetBlenderVersion(QString inPath)
+{
+    if(inPath.isEmpty()) {
+        return QString();
+    }
+
+    inPath = inPath.replace("\\","/");
+    inPath = inPath.replace("Blender.exe","");
+    QStringList splitPath = inPath.split("/");
+
+    QString findVer;
+    int count{};
+    for(auto str : splitPath)
+    {
+        qDebug() << " LeeInfo : " << str << Qt::endl;
+        QStringList dotDetach = str.split(".");
+        if(dotDetach.length() > 1){
+            QStringList spaceDetach=str.split(" ");
+            return spaceDetach[spaceDetach.length()-1];
+        }
+        count++;
+    }
+    return QString();
+}

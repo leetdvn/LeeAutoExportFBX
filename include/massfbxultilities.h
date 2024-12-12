@@ -94,6 +94,8 @@ QString GetDirectoryFromFile(const QString inFile);
 
 bool ShowMessageConfirmBox();
 
+QString GetBlenderVersion(QString inPath);
+
 };
 
 #endif // MASSFBXULTILITIES_H

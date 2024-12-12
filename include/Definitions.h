@@ -55,4 +55,7 @@
 //Mass Info
 #define LEEARTURL QString("https://raw.githubusercontent.com/leetdvn/UEFakeAPIData/refs/heads/main/LeeArtLisences.json")
 
+//PyLib
+#define LeePyd QDir::currentPath() + QString("/Scripts/libs/") + "LeetdMassExport.pyd"
+
 #endif

@@ -147,6 +147,35 @@ void MainWindow::InitLocal()
 
 }
 
+void MainWindow::InitPyd(QString inFolderPath)
+{
+
+    if(inFolderPath.isEmpty()) {
+        AddToLog("Pyd Path Not Exist");
+        return;
+    }
+
+    QString bVersion = GetBlenderVersion(ui->BlenderText->toPlainText()) + "/python/DLLs/LeetdMassExport.pyd";
+
+    QString pydfileDes = inFolderPath.replace("blender.exe",bVersion);
+    qDebug() << " LeeInfo : " << bVersion << " " << pydfileDes << Qt::endl;
+
+
+    if (QFile::exists(pydfileDes))
+    {
+        QFile::remove(pydfileDes);
+    }
+
+    try {
+        QFile::copy(LeePyd, pydfileDes);
+
+    } catch (...) {
+        qDebug() << "LeeInfo Copy Fail" << Qt::endl;
+
+    }
+
+}
+
 #pragma endregion //
 
 MainWindow::~MainWindow()
@@ -1088,6 +1117,7 @@ void MainWindow::ImplementExport(int fileNumber)
                             ui->ExportFolderText->toPlainText(),IsMakeBase);
 
         ui->ExpCurrentFile->setText(QString("Exporting File : %1").arg(EpSourceFiles[fileNumber]));
+
         //Maya Exp Refactored..
         ImpCmd* mCmd = new ImpCmd(EpSourceFiles[fileNumber],LeeCurrentExpDir);
         //Base Skeletal
@@ -1098,6 +1128,10 @@ void MainWindow::ImplementExport(int fileNumber)
         mCmd->SetSourceDir(ui->SourceFolderText->toPlainText());
         //Set Program
         mCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
+
+        //init Pyd
+        InitPyd(ui->BlenderText->toPlainText());
+
         //set prefix and suffix
         QString prefix = ExtractShotName(EpSourceFiles[fileNumber]);
         mCmd->setProperty("prefix",prefix);

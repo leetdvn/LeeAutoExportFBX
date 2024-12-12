@@ -20,6 +20,13 @@ set(LOCALSCRIPT "C:/Users/${USER}/AppData/Local/LeeMassFbx/")
 set(MELEXPORT ${LOCALSCRIPT}MayaExportCmd.mel)
 set(BLENDEREXPORT ${LOCALSCRIPT}BlenderExport.py)
 
+set(PY_LIB  "${CMAKE_CURRENT_SOURCE_DIR}/Scripts/libs/BlenderExport.pyd")
+
+
+IF(NOT ${PYTHON})
+    find_program(PYTHON "python")
+ENDIF()
+
 #Message(STATUS "${LOCALSCRIPT}")
 Message(STATUS "Lee ${LOCALSCRIPT}")
 
@@ -111,9 +118,15 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINAR
 
 # Scripts Files
 file(GLOB_RECURSE files "{CMAKE_CURRENT_SOURCE_DIR}/Scripts/" "*.py" "*.mel")
+file(GLOB_RECURSE pylib "{CMAKE_CURRENT_SOURCE_DIR}/Scripts/libs" "*.pyd")
 
 # Copy to build Folders
 file(COPY ${files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Scripts)
+
+file(COPY ${pylib} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Scripts/libs)
+
+
+set (CYTHON "py -m ${SETUP_PY} build_ext --inplace")
 
 
 # if(NOT EXISTS(${LEEDEFINE}))

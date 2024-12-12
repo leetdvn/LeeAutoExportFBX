@@ -21,8 +21,8 @@ class MassExportFbx():
         '''
         Init Directories
         '''
-        self.ExportDir = str('{expDir}{prefix}_{fName}_{suffix}').format(expDir=inExportDir)
-        self.ScriptDir = str('{scriptDir}{py}').format(scriptDir=inScriptDir)
+        self.ExportDir =str('{}').format(inExportDir) +  str('{prefix}_{fName}_{suffix}')
+        self.ScriptDir = str('{scriptDir}').format(scriptDir=inScriptDir) + str('{py}')
 
     def SetStringFix(self,inPrefix=str,inSuffix=str,inSkel=str,inBlenderP=str):
         '''
@@ -32,7 +32,7 @@ class MassExportFbx():
         self.suffix=str('{}').format(inSuffix)
         self.Skeletal = str('{}').format(inSkel)
         self.blProgram =str('{}').format(inBlenderP)
-    
+
     def SetMassGeo(self,inMassGeo=str):
         self.MassGeo=inMassGeo
 
@@ -451,7 +451,7 @@ class MassExportFbx():
             self.InitScriptExpSkeletal()
 
         ##=================BAKE====================
-        if str("%3").startswith("On"):
+        if self.MassGeo.startswith("On"):
             bpy.ops.object.make_local(type='ALL')
 
         print('=================EXPORT ARMATURES====================')
@@ -464,7 +464,7 @@ class MassExportFbx():
                 try:
                     geo.make_local()
                 except: pass
-                if str("%3").startswith("On"):
+                if self.MassGeo.startswith("On"):
                     self.set_active_object(geo.name)
 
             self.set_active_object(arm.name)
@@ -493,42 +493,5 @@ class MassExportFbx():
                     print("Issue Export: " + expPath)
 
         print('=================END EXPORT ARMATURES====================')
-
-
-
-# self.ExportDir=str('D:/GalaxySS4/Kun_GLX_SS2_Ep11_Shot043_HIJK_F_V3/{prefix}_{fName}_{suffix}')
-# self.ScriptDir=str('C:/Users/leepl/AppData/Local/LeeMassFbx/Scripts/{py}')
-# self.blProgram =str('C:/Program Files/Blender Foundation/Blender 3.4/blender.exe')
-# self.Skeletal = str('AnimOnly')
-# self.prefix =str('shot043_hijk_f_v3_')
-# self.suffix=str('')
-#==============================================================================
-# self.ExportDir=str('%1{prefix}_{fName}_{suffix}')
-# self.ScriptDir=str('%4{py}')
-# self.blProgram =str('%5')
-# self.Skeletal = str('%6')
-# self.prefix =str('%7')
-# self.suffix=str('%8')
-from LeetdMassExport import MassExportFbx
-MassFbx = MassExportFbx()
-expdir='D:/GalaxySS4/Kun_GLX_SS2_Ep11_Shot043_HIJK_F_V3/' #1
-scriptdir='C:/Users/leepl/AppData/Local/LeeMassFbx/Scripts/' #4
-prefix=str('shot043_hijk_f_v3_') #7
-suffix='' #8
-blprogram='C:/Program Files/Blender Foundation/Blender 3.4/blender.exe' #5
-skel='AnimOnly' #6
-leeGeo='' #3
-blAddon='AutoRigPro' #2
-
-'''
-Requirement Initialize Funtion with String Path and Definations
-'''
-MassFbx.SetInittDir(expdir,scriptdir)
-MassFbx.SetStringFix(prefix,suffix,skel,blprogram)
-MassFbx.SetMassGeo(leeGeo)
-isDebug=False
-MassFbx.LeeMassExport(blAddon,isDebug)
-
-
 
 
