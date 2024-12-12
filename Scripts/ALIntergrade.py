@@ -94,21 +94,55 @@ armature = GetObjectTypes(col,'ARMATURE')
 # bpy.ops.anim.layers_merge_down()
 #bpy.context.object.als.blend_types='COMBINE'
 
+
+#bpy.context.scene.arp_export_name_string = 'Layer'
+#bpy.ops.pose.select_all(action='DESELECT')
+count=0
 for i,arm in enumerate(armature):
     if arm.als.turn_on:
+        bpy.ops.object.select_all(action='DESELECT')
         set_active_object(arm.name)
+        #bpy.ops.object.mode_set(mode = 'POSE')
+        #print(arm.name)
+        if i==2:
+            # for i,bone in  enumerate(arm.data.bones):
+            #     if not bone.hide:
+            #         count+=1
+
+            strips = arm.animation_data.nla_tracks[arm.als.layer_index].strips
+
+            for fcu in strips[0].action.fcurves:
+                if 'pose.bones' in fcu.data_path:
+                    bone = fcu.data_path.split('"')[1]
+                    if bone in arm.data.bones:
+                        count+=1        
+            #bpy.ops.object.mode_set(mode = 'OBJECT')
+
+            #bpy.context.scene.arp_export_actlist_idx = i+1
+            #bpy.context.scene.arp_export_actlist[i].action_to_add = bpy.data.actions[nla.name]
+            #print(nla.name)
+        #set_active_object(arm.name)
         # for i,bone in enumerate(arm.data.bones):
         #     arm.data.bones.active= bone
         #     print('Bone Hide',bone.name)
-        arm.Anim_Layers[0].mute=True
-        #print()
-            # if bone.active: continue
-            # bone.active=True
-        #try:
-        #except: pass
-        #arm.Anim_Layers[0].name = "Leetdvn"
-        # bpy.ops.anim.layers_merge_down()
-        #bpy.context.object.als.layer_index=0
-        #info = str("Layer Number : {LayerNum}").format(LayerNum)
-        #print(arm.name,arm.Anim_Layers[arm.als.layer_index])
-        #print(arm.name,arm.Anim_Layers)
+#         arm.Anim_Layers[0].mute=True
+#         #bpy.context.scene.frame_start,bpy.context.scene.frame_end
+#         startf,endf = GetStartEndFrame(arm)
+#         startf = math.ceil(bpy.context.scene.frame_start)
+#         endf = math.ceil(bpy.context.scene.frame_end)
+#         info = str('start : {} end {}').format(startf,endf)
+
+#         for i,al in enumerate(arm.Anim_Layers):
+#             arm.als.layer_index=0
+#             bpy.ops.anim.remove_anim_layer()
+
+#         for act in arm.animation_data.nla_tracks:
+#             arm.Anim_Layers[0].delete()
+#             arm.animation_data.nla_tracks.remove(act)
+#         print(info)
+        #print(arm.animation_data.nla_tracks)
+
+
+
+
+print(count)
