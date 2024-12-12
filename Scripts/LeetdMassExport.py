@@ -21,8 +21,8 @@ class MassExportFbx():
         '''
         Init Directories
         '''
-        self.ExportDir =str('{}').format(inExportDir) +  str('{prefix}_{fName}_{suffix}')
-        self.ScriptDir = str('{scriptDir}').format(scriptDir=inScriptDir) + str('{py}')
+        self.ExportDir =str('{}{prefix}_{fName}_{suffix}').format(inExportDir)
+        self.ScriptDir = str('{}{py}').format(inScriptDir)
 
     def SetStringFix(self,inPrefix=str,inSuffix=str,inSkel=str,inBlenderP=str):
         '''
@@ -330,6 +330,8 @@ class MassExportFbx():
         collections = bpy.data.collections
         for i,obj in enumerate(collections):
             if str(obj.name).lower() == inCollection: return obj.name,obj
+        
+        raise Exception("Sorry, No Collection MassExport Check your Animator Memer")
     
     def BlenderExport(self,expPath,isCamera=False):
         if not expPath: return
@@ -417,6 +419,9 @@ class MassExportFbx():
     ####################MASSEXPORT FUNC###########################################
     def LeeMassExport(self,Fbx_platform='AutoRigPro',isTesting=False):
         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
+
+        if col is None :
+            raise Exception("Sorry, No Collection MassExport Check your Animator Memer")
         #col = bpy.data.collections[Export]
 
         #self.ArpIsLoaded()
