@@ -101,6 +101,7 @@ private:
     QString logStr;
     QString ipSourceDir;
     QString ExportDir;
+    QString PydLibFile;
     QProcess* mProcess=nullptr;
 
     QStringList InitFillters();

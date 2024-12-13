@@ -127,12 +127,13 @@ file(GLOB_RECURSE files
     "ALIntergrade.py"
     "BaseExport.py"
     "MayaExportCmd.mel")
-file(GLOB_RECURSE pylib "{CMAKE_CURRENT_SOURCE_DIR}/Scripts/libs" "*.pyd")
+file(GLOB_RECURSE pylib "{CMAKE_CURRENT_SOURCE_DIR}/Scripts/libs"
+    "LeetdMassExport.pyd")
 
 # Copy to build Folders
 file(COPY ${files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Scripts)
 
-#file(COPY ${pylib} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Scripts/libs)
+file(COPY ${pylib} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Libs)
 
 
 set (CYTHON "py -m ${SETUP_PY} build_ext --inplace")

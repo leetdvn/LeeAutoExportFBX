@@ -157,25 +157,20 @@ void MainWindow::InitPyd(QString inFolderPath)
 
     QString bVersion = GetBlenderVersion(ui->BlenderText->toPlainText()) + "/python/DLLs/LeetdMassExport.pyd";
 
-    QString pydfileDes = inFolderPath.replace("blender.exe",bVersion);
-    qDebug() << " LeeInfo : " << bVersion << " " << pydfileDes << Qt::endl;
+    PydLibFile = inFolderPath.replace("blender.exe",bVersion);
+    qDebug() << " LeeInfo : " << LEEPYD << " " << PydLibFile << Qt::endl;
 
+    QFile destifile;
+    destifile.setFileName(PydLibFile);
+    if (QFile::exists(PydLibFile))
+        QFile::remove(PydLibFile);
 
-    if (QFile::exists(pydfileDes))
-    {
-        QFile::remove(pydfileDes);
-    }
-
-    try {
-        QFile::copy(LeePyd, pydfileDes);
-
-    } catch (...) {
+    bool isSuccess = QFile::copy(LEEPYD,PydLibFile);
+    if (!isSuccess)
         qDebug() << "LeeInfo Copy Fail" << Qt::endl;
 
-    }
 
-
-    if (!QFile::exists(pydfileDes))
+    if (!QFile::exists(PydLibFile))
     {
         AddToLog("Restart Application with Administrator permission","red");
 
@@ -1088,7 +1083,12 @@ void MainWindow::OnCmdFinish(int exitCode, QProcess::ExitStatus exitStatus,QStri
 
         AddToLog(Warning,QString("Total Fbx : %1").arg(TotalFbx));
         //FbxCompletedCount();
+
+        //Change Progress status
         ui->progressBar->setFormat("Done Job %p%");
+
+        //Remove Python Lib File
+        QFile::remove(PydLibFile);
     }
 
     AddToExpLogs(iCmd->GetSourceFile());

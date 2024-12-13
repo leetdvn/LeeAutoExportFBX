@@ -13,6 +13,7 @@ class MassExportFbx():
     prefix =''
     suffix=''
     MassGeo=''
+    isCustomBake=False
     def __init__(self) -> None:
         # self.ExportDir=str
         # self.ScriptDir=str
@@ -187,6 +188,7 @@ class MassExportFbx():
     def LeeArmatureBake(self,arm):
         if arm is None: return
         
+        self.ClearSelection()
         self.set_active_object(arm.name)
         ###Bake###########
         startf,endf = self.GetStartEndFrame(arm)
@@ -196,13 +198,14 @@ class MassExportFbx():
         act = arm.animation_data.action
         if not act: return
 
-        # for iAct in bpy.data.actions:
+        #for iAct in bpy.data.actions:
         #     if not self.isArmatureAction(iAct,arm): continue
             #active Armature and Change to POSE MODE
         bpy.ops.object.mode_set(mode = 'POSE')
    
         for bone in arm.data.bones:
-            bone.select=True
+            if not bone.hide:
+                bone.select=True
             #bpy.data.objects[bone.name].select_set(True)
 
         bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True,use_current_action=True, bake_types={'POSE'})
@@ -212,7 +215,6 @@ class MassExportFbx():
         #Back to Object Mode
         bpy.ops.object.mode_set(mode = 'OBJECT')
         #bpy.ops.anim.remove_anim_layer()
-        arm.Anim_Layers[len(arm.Anim_Layers)-1].delete()
 
     ##===================AutoRigProInterGrade======================
     def LeeArpExport(self,fileoutput):
@@ -249,7 +251,6 @@ class MassExportFbx():
         bpy.context.scene.arp_frame_range_type='SCENE'
         #bpy.context.scene.arp_bake_only_active=True
         bpy.context.scene.arp_only_containing=True
-        bpy.context.scene.arp_fix_fbx_rot=True
         #bpy.context.scene.arp_rename_for_ue=True
         bpy.context.scene.arp_apply_mods = False
         bpy.context.scene.arp_fix_fbx_rot=True
@@ -381,10 +382,10 @@ class MassExportFbx():
         if LayerCount > 1:
             bpy.ops.object.mode_set(mode = 'POSE')
             #arm.als.layer_index=LayerCount-1
-            #self.select_layer_bones(arm)
-            for i,bone in enumerate(arm.data.bones): 
-                if not bone.hide:
-                    bone.select=True
+            self.select_layer_bones(arm)
+            # for i,bone in enumerate(arm.data.bones): 
+            #     if not bone.hide:
+            #         bone.select=True
             #bpy.context.object.als.layer_index=LayerCount-1
             bpy.context.object.als.mergefcurves = True
             bpy.context.object.als.baketype = 'AL'
@@ -469,7 +470,10 @@ class MassExportFbx():
 
         if armature.__len__() <= 0: return
 
-        self.LeeBakeFunc(Export,isTesting,2)
+        if not self.isCustomBake:
+            self.LeeBakeFunc(Export,isTesting,2)
+        else: self.LeeArmatureBake()
+
         
         if isTesting: return
         # self.ArpIsLoaded()
