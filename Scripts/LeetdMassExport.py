@@ -3,7 +3,6 @@ import math
 import addon_utils
 from pathlib import Path
 import os
-from multiprocessing import Process
 
 class MassExportFbx():
     ExportDir=''
@@ -14,6 +13,8 @@ class MassExportFbx():
     suffix=''
     MassGeo=''
     isCustomBake=False
+    OffAnimLayer=False
+    objectIdx=2
     def __init__(self) -> None:
         # self.ExportDir=str
         # self.ScriptDir=str
@@ -23,6 +24,18 @@ class MassExportFbx():
         # self.suffix=str
         # self.MassGeo=str
         pass
+    
+    def MassTestModules(self,args=str): print(str('MassInfo : {arg}').format(arg=args))
+
+    def SetTestExportIdx(self,Idx=objectIdx):
+        if Idx <= 0 or Idx == self.objectIdx: return
+        self.objectIdx=Idx
+
+    def SetOnOffAnimLayer(self,isTurnOnff=False):
+        self.OffAnimLayer=isTurnOnff
+    
+    def SetCustomBake(self,inCustomBake=False):
+        self.isCustomBake = inCustomBake
 
     def SetInittDir(self,inExportDir=str,inScriptDir=str):
         '''
@@ -149,15 +162,14 @@ class MassExportFbx():
         col = bpy.data.collections[Collection]
         armature = self.GetObjectTypes(col,'ARMATURE')
 
-        Processes = [Process(target=self.BakeAnimLayer(bone)) for i,bone in enumerate(armature) if bone.als.turn_on]  
+        #Processes = [Process(target=self.BakeAnimLayer(bone)) for i,bone in enumerate(armature) if bone.als.turn_on]  
 
-        for i,p in enumerate(Processes):
+        for i,bone in enumerate(armature):
+            if not bone.als.turn_on : continue
             if isTest:
-                if i != inIdx:
-                    continue
-            p.start()
+                if i != inIdx: continue
+            self.BakeAnimLayer(bone)
 
-        for p in Processes: p.join()
    
     def LeeNewBake(self,arm):
         '''
@@ -188,7 +200,7 @@ class MassExportFbx():
     def LeeArmatureBake(self,arm):
         if arm is None: return
         
-        self.ClearSelection()
+        #self.ClearSelection()
         self.set_active_object(arm.name)
         ###Bake###########
         startf,endf = self.GetStartEndFrame(arm)
@@ -216,36 +228,11 @@ class MassExportFbx():
         bpy.ops.object.mode_set(mode = 'OBJECT')
         #bpy.ops.anim.remove_anim_layer()
 
-    ##===================AutoRigProInterGrade======================
-    def LeeArpExport(self,fileoutput):
-        '''
-        Auto Rig Pro Fbx Intergrade
-        '''
-        
-        if not fileoutput: return
-
-        # set some settings...
-        #scn = bpy.context.scene
-        #scn.arp_export_rig_type = 'mped'
-        # types: 'humanoid' for humanoid characters, 'mped' for universal skeletons
-
-        try:
-            bpy.context.scene.arp_engine_type = 'unreal'
-        except:
-            bpy.context.scene.arp_engine_type = 'UNREAL'
-        # other useful settings
-        # scn.arp_keep_bend_bones = True
-        # scn.arp_units_x100 = True
-        # scn.arp_bake_actions = True
-        # scn.arp_export_name_actions = True
-        # scn.arp_export_name_string = "test"
-        # scn.arp_mesh_smooth_type = 'EDGE'
-        # scn.arp_ue_root_motion = True
-        # scn.arp_export_noparent = True
-        #scn.arp_export_twist = True
-        #scn.arp_fix_fbx_matrix=True
-        #scn.arp_ge_sel_only =True
-        #=======================================
+    ##=================== init AutoRig Settings =============================
+    def LeeInitArpSettings(self):
+        #============================================
+        try: bpy.context.scene.arp_engine_type = 'unreal'
+        except: bpy.context.scene.arp_engine_type = 'UNREAL'        
         bpy.context.scene.arp_ge_sel_only = True
         #bpy.context.scene.arp_bake_actions = True
         bpy.context.scene.arp_frame_range_type='SCENE'
@@ -256,13 +243,30 @@ class MassExportFbx():
         bpy.context.scene.arp_fix_fbx_rot=True
         bpy.context.scene.arp_export_tex=False
         bpy.context.scene.arp_see_actions = True
-
         #===================================
         # bpy.context.scene.arp_apply_mods = True
         # bpy.context.scene.arp_ge_sel_only = True
         # bpy.context.scene.arp_rename_for_ue=True
-        # run export
 
+
+    ##===================AutoRigProInterGrade======================
+    def LeeArpExport(self,fileoutput,objectExpot):
+        '''
+        Auto Rig Pro Fbx Intergrade
+        '''
+        if not fileoutput or not objectExpot : return
+        if objectExpot is None or not objectExpot: return
+
+        self.LeeInitArpSettings()
+
+        self.ClearSelection()
+        self.set_active_object(objectExpot.name)
+
+        for bone in objectExpot.data.bones:
+            if not bone.hide:
+                bone.select=True
+
+        # run exportt
         try:
             bpy.ops.arp.arp_export_fbx_panel(filepath=fileoutput)
         except:
@@ -382,10 +386,10 @@ class MassExportFbx():
         if LayerCount > 1:
             bpy.ops.object.mode_set(mode = 'POSE')
             #arm.als.layer_index=LayerCount-1
-            self.select_layer_bones(arm)
-            # for i,bone in enumerate(arm.data.bones): 
-            #     if not bone.hide:
-            #         bone.select=True
+            #self.select_layer_bones(arm)
+            for i,bone in enumerate(arm.data.bones): 
+                if not bone.hide:
+                    bone.select=True
             #bpy.context.object.als.layer_index=LayerCount-1
             bpy.context.object.als.mergefcurves = True
             bpy.context.object.als.baketype = 'AL'
@@ -407,6 +411,8 @@ class MassExportFbx():
         NewLayerName = str("Bake_{bone}").format(bone=arm.name)
         arm.Anim_Layers[len(arm.Anim_Layers)-1].name = NewLayerName
         bpy.context.scene.arp_export_name_string = NewLayerName
+        
+        if self.OffAnimLayer: return
         arm.als.turn_on=False
 
 
@@ -471,7 +477,7 @@ class MassExportFbx():
         if armature.__len__() <= 0: return
 
         if not self.isCustomBake:
-            self.LeeBakeFunc(Export,isTesting,2)
+            self.LeeBakeFunc(Export,isTesting,self.objectIdx)
         else: self.LeeArmatureBake()
 
         
@@ -512,12 +518,9 @@ class MassExportFbx():
                                             )
                 
             elif Fbx_platform=="AutoRigPro":
-                for bone in arm.data.bones:
-                    bone.select=True
-
                 try:
                     if isTesting: continue
-                    self.LeeArpExport(expPath)
+                    self.LeeArpExport(expPath,arm)
                     print("Exported  : " + expPath + "\n")
                     self.ClearSelection()         
                 except:

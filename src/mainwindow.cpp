@@ -147,12 +147,12 @@ void MainWindow::InitLocal()
 
 }
 
-void MainWindow::InitPyd(QString inFolderPath)
+bool MainWindow::InitPyd(QString inFolderPath)
 {
 
     if(inFolderPath.isEmpty()) {
         AddToLog("Pyd Path Not Exist");
-        return;
+        return false;
     }
 
     QString bVersion = GetBlenderVersion(ui->BlenderText->toPlainText()) + "/python/DLLs/LeetdMassExport.pyd";
@@ -172,11 +172,10 @@ void MainWindow::InitPyd(QString inFolderPath)
 
     if (!QFile::exists(PydLibFile))
     {
-        AddToLog("Restart Application with Administrator permission","red");
-
         qDebug() << "Restart Application with Administrator permission" << Qt::endl;
+        return isSuccess;
     }
-
+    return isSuccess;
 }
 
 #pragma endregion //
@@ -1138,7 +1137,7 @@ void MainWindow::ImplementExport(int fileNumber)
         mCmd->SetProgram(ui->MayaText->toPlainText(),ui->BlenderText->toPlainText());
 
         //init Pyd
-        InitPyd(ui->BlenderText->toPlainText());
+        //bool InitBlender = InitPyd(ui->BlenderText->toPlainText());
 
         //set prefix and suffix
         QString prefix = ExtractShotName(EpSourceFiles[fileNumber]);
@@ -1153,6 +1152,11 @@ void MainWindow::ImplementExport(int fileNumber)
             mCmd->setProperty("FbxKit",Kit);
             mCmd->SetScriptPlatForm();
 
+            // if (!InitBlender){
+            //     AddToLog("Restart Application with Administrator permission","red");
+            //     ui->ExportExecute->setEnabled(true);
+            //     return;
+            // }
         }
 
         QString FbxOpt{};
@@ -1376,8 +1380,7 @@ void MainWindow::OnLogs(QString &inLog,QString &Err)
     //Show Log Console
     if(!ui->LeeDebugConsole->isChecked()) return;
 
-    AddToLog(iLog);
-    AddToLog(Error,Err);
+    //AddToLog(Error,Err);
     ScrollToNewLog();
 
 }

@@ -110,7 +110,7 @@ private:
     //init Default
     void InitLocal();
 
-    void InitPyd(QString inFolderPath);
+    bool InitPyd(QString inFolderPath);
     //Maya Files Blender Files
     QStringList MayaFiles,BlenderFiles;
 

@@ -29,7 +29,7 @@
 #define SCRIPTDIR  QDir::currentPath() + QString("/Scripts/")// "C:/Users/leepl/Documents/GitHub/LeeAutoExportFBX/Scripts/"
 
 // Mass Version
-#define MASSVERSION "LeeMassFbx Tools Beta Version 1.22"
+#define MASSVERSION "LeeMassFbx Tools Beta Version 1.23"
 
 //Log
 #define MASSLOGDIR QString("C:/Users/" + qgetenv("USERNAME") + "/AppData/Local/LeeMassFbx/Logs/")
@@ -57,5 +57,8 @@
 
 //PyLib
 #define LEEPYD QDir::currentPath() + QString("/Libs/") + "LeetdMassExport.pyd"
+
+//PyLib
+#define LEELIBDIR QDir::currentPath() + QString("/Libs/")
 
 #endif

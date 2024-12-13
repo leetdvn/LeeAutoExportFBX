@@ -1,3 +1,7 @@
+import sys
+libdir = '%9'
+if not libdir in sys.path:
+    sys.path.append(libdir)
 from LeetdMassExport import MassExportFbx
 MassFbx = MassExportFbx()
 expdir='%1' #1 export directory
@@ -13,6 +17,8 @@ blAddon='%2' #2
 '''
 Requirement Initialize Funtion with String Path and Definations
 '''
+Message="================================================MassExporting=================================================="
+MassFbx.MassTestModules(Message)
 MassFbx.SetInittDir(expdir,scriptdir)
 MassFbx.SetStringFix(prefix,suffix,skel,blprogram)
 MassFbx.SetMassGeo(leeGeo)

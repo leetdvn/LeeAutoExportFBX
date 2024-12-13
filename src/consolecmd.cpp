@@ -124,7 +124,7 @@ void ConsoleCmd::SetScriptPlatForm()
     QString suffix = property("suffix").toString();
 
     QString sContent = BaseScr.endsWith(".py") ?
-                        ScriptCont.arg(MExportDir,BlKit,Mesh,MASSFBXDIR+ "Scripts/",BProgram,FbxOpt,prefix,suffix):
+                        ScriptCont.arg(MExportDir,BlKit,Mesh,MASSFBXDIR+ "Scripts/",BProgram,FbxOpt,prefix,suffix,LEELIBDIR):
                         ScriptCont.arg(MExportDir,FbxOpt,Mesh,prefix,suffix);
 
 
