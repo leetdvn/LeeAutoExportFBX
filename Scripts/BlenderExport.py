@@ -22,5 +22,14 @@ MassFbx.MassTestModules(Message)
 MassFbx.SetInittDir(expdir,scriptdir)
 MassFbx.SetStringFix(prefix,suffix,skel,blprogram)
 MassFbx.SetMassGeo(leeGeo)
+
+## Set Testing Export Index inside Mass Collection
 isDebug=False
+if isDebug:
+    MassFbx.SetTestExportIdx(4)
+## Set Animaion Layer Bake Setting Operator and Bake Direction
+## Operator NEW | MERGE 
+## Direction UP | DOWN | ALL
+##Func MassFbx.SetALBakeDirection('DOWN'). default
+##Func MassFbx.SetALBakeOperator('MERGE') default
 MassFbx.LeeMassExport(blAddon,isDebug)

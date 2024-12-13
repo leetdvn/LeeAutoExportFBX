@@ -15,6 +15,8 @@ class MassExportFbx():
     isCustomBake=False
     OffAnimLayer=False
     objectIdx=2
+    ALBakeDirection='DOWN'
+    ALBakeOps='MERGE'
     def __init__(self) -> None:
         # self.ExportDir=str
         # self.ScriptDir=str
@@ -34,6 +36,12 @@ class MassExportFbx():
     def SetOnOffAnimLayer(self,isTurnOnff=False):
         self.OffAnimLayer=isTurnOnff
     
+    def SetALBakeDirection(self,inDirection=str):
+        self.ALBakeDirection=inDirection
+
+    def SetALBakeOperator(self,inOperator=str):
+        self.ALBakeOps=inOperator 
+
     def SetCustomBake(self,inCustomBake=False):
         self.isCustomBake = inCustomBake
 
@@ -387,30 +395,31 @@ class MassExportFbx():
             bpy.ops.object.mode_set(mode = 'POSE')
             #arm.als.layer_index=LayerCount-1
             #self.select_layer_bones(arm)
-            for i,bone in enumerate(arm.data.bones): 
-                if not bone.hide:
-                    bone.select=True
+            # for i,bone in enumerate(arm.data.bones): 
+            #     if not bone.hide:
+            #         bone.select=True
+            bpy.ops.pose.select_all(action='SELECT')
             #bpy.context.object.als.layer_index=LayerCount-1
             bpy.context.object.als.mergefcurves = True
             bpy.context.object.als.baketype = 'AL'
             bpy.context.scene.als.bake_range_type = 'SCENE'
+            bpy.context.object.als.onlyselected = True
             #arm.als.blend_type='MULTIPLY'
-            arm.als.operator='MERGE'
-            arm.als.direction='ALL'
+            arm.als.operator=self.ALBakeOps
+            arm.als.direction=self.ALBakeDirection
             #bpy.ops.anim.layers_merge_down()
             result = None
             try:
                 result = bpy.ops.anim.layers_merge_down()
                 if 'FINISHED' in result:
-                    print(str('merge all Animation {}').format(arm.name))
+                    print(str('Merge all total {count} layers of ARMTURE : {name}').format(count=LayerCount,name=arm.name))
             except:
                 print(str('merge all Animation failures {}').format(arm.name))
                 pass
             arm.Anim_Layers.update()
             bpy.ops.object.mode_set(mode = 'OBJECT')
-        NewLayerName = str("Bake_{bone}").format(bone=arm.name)
-        arm.Anim_Layers[len(arm.Anim_Layers)-1].name = NewLayerName
-        bpy.context.scene.arp_export_name_string = NewLayerName
+        #NewLayerName = str("Bake_{bone}").format(bone=arm.name)
+        bpy.context.scene.arp_export_name_string = arm.Anim_Layers[len(arm.Anim_Layers)-1].name
         
         if self.OffAnimLayer: return
         arm.als.turn_on=False
@@ -481,7 +490,6 @@ class MassExportFbx():
         else: self.LeeArmatureBake()
 
         
-        if isTesting: return
         # self.ArpIsLoaded()
         if self.Skeletal.endswith("BaseSkeleton"):
             self.InitScriptExpSkeletal()
@@ -493,6 +501,9 @@ class MassExportFbx():
         print('=================EXPORT ARMATURES====================')
 
         for i,arm in enumerate(armature):
+            if isTesting:
+                if i != self.objectIdx: continue
+
             self.ClearSelection()
             Geos = self.GetAllGeometryAttachedArmature(arm)
             arm.make_local()
@@ -519,7 +530,6 @@ class MassExportFbx():
                 
             elif Fbx_platform=="AutoRigPro":
                 try:
-                    if isTesting: continue
                     self.LeeArpExport(expPath,arm)
                     print("Exported  : " + expPath + "\n")
                     self.ClearSelection()         

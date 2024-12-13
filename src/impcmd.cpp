@@ -124,11 +124,11 @@ void ImpCmd::ReadLogs()
     QFile logfile(LogPath);
     if(logfile.open(QIODevice::WriteOnly | QIODevice::Append))
     {
-        logfile.write(err.toLocal8Bit());
+        logfile.write(allLog.toLocal8Bit());
         logfile.close();
     }
 
-    emit OnReadLogs(err,line);
+    emit OnReadLogs(line,err);
     //qDebug() << line << Qt::endl;
 
     //emit OnReadLogs(line);
