@@ -17,6 +17,7 @@ class MassExportFbx():
     objectIdx=2
     ALBakeDirection='DOWN'
     ALBakeOps='MERGE'
+    isExpOverride=False
     def __init__(self) -> None:
         # self.ExportDir=str
         # self.ScriptDir=str
@@ -44,6 +45,9 @@ class MassExportFbx():
 
     def SetCustomBake(self,inCustomBake=False):
         self.isCustomBake = inCustomBake
+
+    def SetSmartExport(self,isSmartExport=False):
+        self.isExpOverride=isSmartExport
 
     def SetInittDir(self,inExportDir=str,inScriptDir=str):
         '''
@@ -176,6 +180,11 @@ class MassExportFbx():
             if not bone.als.turn_on : continue
             if isTest:
                 if i != inIdx: continue
+            
+            checkExistFile = self.GetExportFilePath(bone)
+
+            if self.IsSkipExistsFile(checkExistFile): continue
+            
             self.BakeAnimLayer(bone)
 
    
@@ -378,7 +387,11 @@ class MassExportFbx():
                             object_types=Exportypes,
                             use_custom_props=True,
                             bake_anim_force_startend_keying=False,
-                            use_mesh_modifiers=True
+                            use_mesh_modifiers=True,
+                            bake_anim_use_nla_strips=False,
+                            bake_anim_use_all_actions=False,
+                            axis_forward='Y',
+                            axis_up='Z'
                             )
 
 
@@ -451,6 +464,21 @@ class MassExportFbx():
         #arm.Anim_Layers[0].name = str("{bone}_{MassLayer}").format(bone=arm.name,MassLayer="MassLayer")
         arm.als.turn_on=False
 
+
+    def IsSkipExistsFile(self,inPath=str):
+        if not inPath: return False
+
+        if self.isExpOverride: return Path(inPath).exists()
+
+        return self.isExpOverride 
+
+    
+    def GetExportFilePath(self,inArmature):
+        if not inArmature: return str
+
+        return str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=inArmature.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+
+
     ####################MASSEXPORT FUNC###########################################
     def LeeMassExport(self,Fbx_platform='AutoRigPro',isTesting=False):
         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
@@ -471,14 +499,18 @@ class MassExportFbx():
 
         if not isTesting:
             print('=================EXPORT CAMERA====================')
+
             for cam in cameras:
+                expPath = str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+                if self.IsSkipExistsFile(expPath): 
+                    print(str('Exported Camera : {}').format(expPath))
+                    continue
+
                 self.set_active_object(cam.name)
                 startf,endf = self.GetStartEndFrame(cam)
-                print("Frame : ",startf,endf)
                 startf = math.ceil(startf)
                 endf = math.ceil(endf)
                 bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
-                expPath = str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
                 if cam: self.BlenderExport(expPath,True)
 
             print('=================END EXPORT CAMERA====================')
@@ -501,8 +533,14 @@ class MassExportFbx():
         print('=================EXPORT ARMATURES====================')
 
         for i,arm in enumerate(armature):
+            expPath =  self.GetExportFilePath(arm)
+            
             if isTesting:
                 if i != self.objectIdx: continue
+
+            if self.IsSkipExistsFile(expPath): 
+                print(str('Exported File : {}').format(expPath))
+                continue
 
             self.ClearSelection()
             Geos = self.GetAllGeometryAttachedArmature(arm)
@@ -516,7 +554,6 @@ class MassExportFbx():
 
 
             self.set_active_object(arm.name)
-            expPath =  str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=arm.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
             
             if Fbx_platform=="Blender":
                 bpy.ops.export_scene.fbx(filepath=expPath,

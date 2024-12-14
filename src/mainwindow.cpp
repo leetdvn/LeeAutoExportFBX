@@ -1380,6 +1380,7 @@ void MainWindow::OnLogs(QString &inLog,QString &Err)
     //Show Log Console
     if(!ui->LeeDebugConsole->isChecked()) return;
 
+    AddToLog(Log,iLog);
     //AddToLog(Error,Err);
     ScrollToNewLog();
 
