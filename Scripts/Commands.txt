@@ -1,0 +1,17 @@
+//Create file .o with include 
+gcc -c -fpic -IC:/Users/thang/AppData/Local/Programs/Python/Python310/include LeetdMassExport.c
+
+gcc -shared LeetdMassExport.o -o LeetdMassExport.pyd
+
+gcc -shared BlenderExport.o -o BlenderExport.pyd
+
+gcc -mdll -O -Wall -IC:/Users/thang/AppData/Local/Programs/Python/Python310/include -c -DMS_WIN64 LeetdMassExport.c
+
+gcc -shared -LC:/Users/thang/AppData/Local/Programs/Python/Python310/libs LeetdMassExport.o -lpython310 -o LeetdMassExport.pyd
+
+
+dumpbin /dependents "C:\Users\thang\Documents\GitHub\LeeAutoExportFBX\Scripts\LeetdMassExport.pyd"
+
+
+gcc -g -O3 -Wall -Wstrict-prototypes -fPIC -DMAJOR_VERSION=1 -DMINOR_VERSION=0 -IC:/Users/thang/AppData/Local/Programs/Python/Python310/include -DMS_WIN64 -c LeetdMassExport.c -o LeetdMassExport.o
+gcc -shared LeetdMassExport.o -LC:/Users/thang/AppData/Local/Programs/Python/Python310/libs -lpython310 -o LeetdMassExport.pyd
