@@ -113,7 +113,7 @@ void MainWindow::InfoEnv()
     IsAuthored = StudioIsValid();
 
     logStr = !IsAuthored ? "<font color=\"red\">Cannot use unauthorized tools</font><br>" :
-                         "<font color=\"green\">Welcome To Plus Stuido MassExport Fbx Software</font><br>";
+                         "<font color=\"green\">Welcome to MassExport Fbx Application Writer by Leetdvn </font><br>";
 
     logStr += MASSINFO.arg(_Pc,_Users,_Host =="" || _Host.isEmpty() || _Host.isNull() ? "empty" : _Host);
     ui->ExpCurrentFile->setText(QString("Exporting File : None"));
@@ -219,6 +219,7 @@ void MainWindow::OnSoftWareChanged()
     QTextEdit* softw = qobject_cast<QTextEdit*>(sender());
 
     QString softStr = softw->toPlainText();
+
     QString Wrongsoftlog ;
     //maya Button or blender Soft
     if(softw->objectName() == ui->MayaText->objectName())
@@ -238,12 +239,21 @@ void MainWindow::OnSoftWareChanged()
 
 void MainWindow::OnBrowserFolder()
 {
-     qDebug() << "browser clicked.." << Qt::endl;
+    qDebug() << "browser clicked.." << Qt::endl;
+
+    QPushButton* const senderButton= qobject_cast<QPushButton*>(sender());
+    QString senderText = senderButton->objectName() == ui->SourceBrowserBtn->objectName() ?
+                              ui->SourceFolderText->toPlainText() : ui->ExportFolderText->toPlainText();
+
+    senderText = QDir(senderText).exists() ? senderText : "C:/";
+
+    QString dirpath = senderText.isEmpty() ? "C:/" : senderText;
+
     QFileDialog* fdialog = new QFileDialog();
     fdialog->setFileMode(QFileDialog::Directory);
     fdialog->setOption(QFileDialog::ShowDirsOnly);
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
-                                                    "C:/",
+                                                    dirpath,
                                                     QFileDialog::ShowDirsOnly
                                                         | QFileDialog::DontResolveSymlinks);
 
@@ -251,7 +261,6 @@ void MainWindow::OnBrowserFolder()
 
 
     if(!dir.isNull() || !dir.isEmpty()){
-        QPushButton* const senderButton= qobject_cast<QPushButton*>(sender());
         if(senderButton){
             dir+="/";
             //qDebug() << senderButton->objectName() << Qt::endl;
@@ -318,6 +327,7 @@ void MainWindow::OnBrowserFile()
     }
 
     if(textE !=nullptr)
+        file = file.isEmpty() ? textE->toPlainText() : file;
         textE->setPlainText(file);
 
 
