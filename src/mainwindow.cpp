@@ -1196,10 +1196,11 @@ void MainWindow::ImplementExport(int fileNumber)
         connect(mCmd,&ImpCmd::OnPStateChanged,this,&MainWindow::OnStateChanged);
 
 
-        mCmd->GetProcess()->waitForStarted();
-        if(!mCmd->Message.isEmpty())
-            AddToLog(mCmd->Message);
-
+        QProcess* process=  mCmd->GetProcess();
+        if(process !=nullptr){
+            if(!mCmd->Message.isEmpty())
+                AddToLog(mCmd->Message);
+        }
         EpCount++;
 
        // mImpCmd = mCmd;

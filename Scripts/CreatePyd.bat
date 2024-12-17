@@ -1,2 +1,2 @@
-gcc -g -O3 -Wall -Wstrict-prototypes -fPIC -DMAJOR_VERSION=1 -DMINOR_VERSION=0 -IC:/Users/leepl/AppData/Local/Programs/Python/Python310/include -DMS_WIN64 -c LeetdMassExport.c -o LeetdMassExport.o
-gcc -shared LeetdMassExport.o -LC:/Users/leepl/AppData/Local/Programs/Python/Python310/libs -lpython310 -o ./Libs/LeetdMassExport.pyd
+gcc -g -O3 -Wall -Wstrict-prototypes -fPIC -DMAJOR_VERSION=1 -DMINOR_VERSION=0 -IC:/Users/thang/AppData/Local/Programs/Python/Python310/include -DMS_WIN64 -c LeetdMassExport.c -o LeetdMassExport.o
+gcc -shared LeetdMassExport.o -LC:/Users/thang/AppData/Local/Programs/Python/Python310/libs -lpython310 -o ./Libs/LeetdMassExport.pyd

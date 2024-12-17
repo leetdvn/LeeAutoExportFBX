@@ -18,16 +18,45 @@ class MassExportFbx():
     ALBakeDirection='DOWN'
     ALBakeOps='MERGE'
     isExpOverride=False
+    '''Camera Selection'''
+    selection=True
+    typeObject={"CAMERA"}
+    custom_props=True
+    bake_anim_force=False
+    meshModif=False
+    bake_nla_strips=False
+    bake_all_actions=False
+    axisforward='Y'
+    axisup='Z'
     def __init__(self) -> None:
-        # self.ExportDir=str
-        # self.ScriptDir=str
-        # self.blProgram =str
-        # self.Skeletal = str
-        # self.prefix =str
-        # self.suffix=str
-        # self.MassGeo=str
         pass
     
+    def SetOverrideExportCameraOpt(self,inSelection=True,inCustomProp=True,bakeAnimForce=False,MeshModifier=True,bake_nla=False,bakeAll=False):
+        '''
+        inSelection :  use_selection =  (Default = True)
+        inCustomProp : use_custom_props = (Default = True)
+        bakeAnimForce : bake_anim_force_startend_keying= (Default = False)
+        MeshModifier : use_mesh_modifiers = (Default = True)
+        bake_nla : bake_anim_use_nla_strips = (Default = False)
+        bakeAll : bake_anim_use_all_actions = (Default = False)
+        '''
+        self.selection = inSelection
+        self.custom_props=inCustomProp
+        self.bake_anim_force=bakeAnimForce
+        self.meshModif=MeshModifier
+        self.bake_nla_strips=bake_nla
+        self.bake_all_actions=bakeAll
+        pass
+
+    def SetOverrideExportCameraAxis(self,inForward='Y',inAxisUp='Z'):
+        '''
+        inForward : axis_forward =(Default = 'Y')
+        inAxisUp : axis_up = (Default = 'Z')
+        '''
+        self.axisforward = inForward
+        self.axisup = inAxisUp
+        pass
+
     def MassTestModules(self,args=str): print(str('MassInfo : {arg}').format(arg=args))
 
     def SetTestExportIdx(self,Idx=objectIdx):
@@ -383,15 +412,15 @@ class MassExportFbx():
         else: Exportypes={'ARMATURE','MESH','OTHER'}
 
         bpy.ops.export_scene.fbx(filepath=expPath,
-                            use_selection=True,
+                            use_selection=self.selection,
                             object_types=Exportypes,
-                            use_custom_props=True,
-                            bake_anim_force_startend_keying=False,
-                            use_mesh_modifiers=True,
-                            bake_anim_use_nla_strips=False,
-                            bake_anim_use_all_actions=False,
-                            axis_forward='Y',
-                            axis_up='Z'
+                            use_custom_props=self.custom_props,
+                            bake_anim_force_startend_keying=self.bake_anim_force,
+                            use_mesh_modifiers=self.meshModif,
+                            bake_anim_use_nla_strips=self.bake_nla_strips,
+                            bake_anim_use_all_actions=self.bake_all_actions,
+                            axis_forward=self.axisforward,
+                            axis_up=self.axisup,
                             )
 
 
@@ -479,6 +508,23 @@ class MassExportFbx():
         return str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=inArmature.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
 
 
+    def SetExportCamera(self,cam):
+        if not cam: return
+
+        self.ClearSelection()
+        self.set_active_object(cam.name)
+        try:
+            bpy.ops.object.mode_set(mode = 'OBJECT')
+        except: pass
+
+        expPath = str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
+        if self.IsSkipExistsFile(expPath): return
+        startf,endf = bpy.context.scene.frame_start,bpy.context.scene.frame_end
+        startf = math.ceil(startf)
+        endf = math.ceil(endf)
+        bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
+        if cam: self.BlenderExport(expPath,True)
+
     ####################MASSEXPORT FUNC###########################################
     def LeeMassExport(self,Fbx_platform='AutoRigPro',isTesting=False):
         Export,col = self.GetMassFbxCollection("massexport") #"MassExport"
@@ -501,17 +547,7 @@ class MassExportFbx():
             print('=================EXPORT CAMERA====================')
 
             for cam in cameras:
-                expPath = str('{dir}{prefix}_{fName}_{suffix}').format(dir=self.ExportDir,fName=cam.name,prefix=self.prefix,suffix=self.suffix) + ".fbx"
-                if self.IsSkipExistsFile(expPath): 
-                    print(str('Exported Camera : {}').format(expPath))
-                    continue
-
-                self.set_active_object(cam.name)
-                startf,endf = self.GetStartEndFrame(cam)
-                startf = math.ceil(startf)
-                endf = math.ceil(endf)
-                bpy.ops.nla.bake(frame_start=startf, frame_end=endf, only_selected=True, visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'OBJECT'})
-                if cam: self.BlenderExport(expPath,True)
+                self.SetExportCamera(cam)
 
             print('=================END EXPORT CAMERA====================')
 
