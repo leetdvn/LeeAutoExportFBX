@@ -32,7 +32,7 @@ if isDebug:
 ##Func MassFbx.SetALBakeDirection('DOWN') ------> default value
 ##Func MassFbx.SetALBakeOperator('MERGE') ------> default value
 #Set Skip Exist File ( When Crash tool or reopen Tool will be Skipp file Exported)
-MassFbx.SetSmartExport(False)
+MassFbx.SetSmartExport(True)
 
 #===========Export Camera overrider =======================
 # get camera object and parse to parameter
@@ -40,8 +40,12 @@ MassFbx.SetSmartExport(False)
 ##set export opts override 
 ##func --> MassFbx.SetOverrideExportCameraOpt  <--type to get informations and parameters
 ##func --> MassFbx.SetOverrideExportCameraAxis <--type to get informations
+MassFbx.LeeMassExport(blAddon,isDebug)
 
-obj,col = MassFbx.GetMassFbxCollection("massexport")
-cameras = MassFbx.GetObjectTypes('CAMERA')
-MassFbx.SetExportCamera(cameras[0])
-#MassFbx.LeeMassExport(blAddon,isDebug)
+'''
+##====================EXPORT CAMERA CUSTOM=======================
+Export,col = MassFbx.GetMassFbxCollection("massexport")
+cameras = MassFbx.GetObjectTypes(col,'CAMERA')
+for cam in cameras:
+    MassFbx.SetExportCamera(cameras[0])
+'''
