@@ -33,10 +33,20 @@ C:/Users/leepl/OneDrive/Documents/maya/2020/prefs/icons
 https://graph.microsoft.com/v1.0/users/thangle220583@gmail.com/
 
 
-Import-Module https://graph.microsoft.com/v1.0
-Connect-MgGraph -Scopes "Files.ReadWrite.All"
-$userId = 'thangle220583@gmail'
-Get-MgUserDefaultDrive -UserId $userId
-
-
 dumpbin /dependents "C:/Users/thang/Documents/GitHub/LeeAutoExportFBX/Scripts/LeetdMassExport.pyd"
+
+//One Drive App-ID
+
+url ->> https://graph.microsoft.com/v1.0/users/FF5935C95CDF4ECC/drive
+
+
+
+//Working git lab... tag
+api url gitlab https://gitlab.com/api/v4/projects/61603606/repository/tree?recursive=true&path=Config
+api file url gitlab https://gitlab.com/api/v4/projects/61603606/repository/files/Config%2FDefaultEngine%2Eini?ref=main
+
+ssh-keygen -t rsa -b 4096 -C "leetdvn225@gmail.com"
+
+
+secret onedrive value : 6ED8Q~B0FbCP1HJj6VjlZkVfZbW.LDNDmnWVCb9z
+secret ID : 6e9607e1-1192-4016-8fa3-f25418caf12f
