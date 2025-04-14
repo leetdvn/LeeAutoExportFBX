@@ -1,3 +1,4 @@
+# Copyright 2024 written by Leetdvn email : leetdvn225@gmail.com
 # BATCH EXPORT FBX
 ## Platform Window
 ### Maya  Make Layer Name : MassExport and Drop 3D Object  inside Layer
