@@ -78,3 +78,5 @@ include/Definitions.h
 deploy.bat
 Scripts/.vscode/tasks.json
 Scripts/MayaExportCmd2.mel
+__pycache__*
+Logs*
